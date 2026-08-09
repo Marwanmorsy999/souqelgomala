@@ -1,8 +1,12 @@
+packages:
+  - '.'
+
 # pnpm 11 settings live here (the `pnpm` field in package.json is ignored).
 # Force a single `drizzle-orm` resolution so Drizzle table types produced by
 # two different physical installs never mismatch (was causing type errors).
 overrides:
   drizzle-orm: 0.45.2
+  hono: 4.12.25
 
 dedupePeerDependents: true
 
