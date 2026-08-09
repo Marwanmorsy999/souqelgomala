@@ -1,84 +1,84 @@
 {
-  // ============================================================
-  // Souk El Gomla — Cloudflare Wrangler Configuration
-  // ============================================================
-  // This project deploys as a Next.js application on Cloudflare
-  // using @opennextjs/cloudflare.
-  //
-  // Bindings (env vars / secrets are set via `wrangler secret put`):
-  //   DB              → Cloudflare D1 database
-  //   CACHE           → Cloudflare KV namespace
-  //   ORDER_QUEUE, NOTIFICATION_QUEUE → Cloudflare Queues
-  //   TURNSTILE_SECRET → Cloudflare Turnstile secret (set via `wrangler secret`)
-  //   CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET → Cloudinary (set via `wrangler secret`)
-  // ============================================================
-
-  "name": "souqelgomala",
-  "main": ".open-next/worker.js",
-  "compatibility_date": "2025-11-09",
-  "compatibility_flags": ["nodejs_compat"],
-
-  "vars": {
-    "NEXT_PUBLIC_APP_URL": "http://localhost:3000",
-    "NEXT_PUBLIC_APP_NAME": "Souk El Gomla",
-    "NEXT_PUBLIC_APP_LOCALE": "ar-EG",
-    "NEXT_PUBLIC_APP_CURRENCY": "EGP",
-    // Public Cloudinary cloud name used ONLY for building CDN delivery URLs.
-    // The API key & secret are set via `wrangler secret put` (never in source).
-    "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "pg7nqahy",
-    "NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY": ""
-  },
-
-  "assets": {
-    "directory": ".open-next/assets",
-    "binding": "ASSETS"
-  },
-
-  // --- D1 Database ---
-  "d1_databases": [
-    {
-      "binding": "DB",
-      "database_name": "souk-el-gomla-prod",
-      "preview_database_id": "local-dev-ref"
-    }
-  ],
-
-  // --- KV Namespaces ---
-  "kv_namespaces": [
-    {
-      "binding": "CACHE",
-      "id": "local-cache-dev",
-      "preview_id": "local-cache-dev"
-    }
-  ],
-
-  // --- Queues ---
-  "queues": {
-    "producers": [
-      { "binding": "ORDER_QUEUE", "queue": "souk-el-gomla-order-queue" },
-      { "binding": "NOTIFICATION_QUEUE", "queue": "souk-el-gomla-notification-queue" }
-    ],
-    "consumers": [
-      {
-        "queue": "souk-el-gomla-order-queue",
-        "max_batch_size": 10,
-        "max_batch_timeout": 30
-      },
-      {
-        "queue": "souk-el-gomla-notification-queue",
-        "max_batch_size": 50,
-        "max_batch_timeout": 60
-      }
-    ]
-  },
-
-  // --- Cron Triggers ---
-  "triggers": {
-    "crons": [
-      "0 2 * * *",  // daily at 02:00 UTC — low stock check
-      "*/30 * * * *", // every 30 min — expired session cleanup
-      "0 0 * * *"   // midnight UTC — scheduled offers evaluation
-    ]
-  },
-
+	// ============================================================
+	// Souk El Gomla — Cloudflare Wrangler Configuration
+	// ============================================================
+	// This project deploys as a Next.js application on Cloudflare
+	// using @opennextjs/cloudflare.
+	//
+	// Bindings (env vars / secrets are set via `wrangler secret put`):
+	//   DB              → Cloudflare D1 database
+	//   CACHE           → Cloudflare KV namespace
+	//   ORDER_QUEUE, NOTIFICATION_QUEUE → Cloudflare Queues
+	//   TURNSTILE_SECRET → Cloudflare Turnstile secret (set via `wrangler secret`)
+	//   CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET → Cloudinary (set via `wrangler secret`)
+	// ============================================================
+	"name": "souqelgomala",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2025-11-09",
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
+	"vars": {
+		"NEXT_PUBLIC_APP_URL": "http://localhost:3000",
+		"NEXT_PUBLIC_APP_NAME": "Souk El Gomla",
+		"NEXT_PUBLIC_APP_LOCALE": "ar-EG",
+		"NEXT_PUBLIC_APP_CURRENCY": "EGP",
+		// Public Cloudinary cloud name used ONLY for building CDN delivery URLs.
+		// The API key & secret are set via `wrangler secret put` (never in source).
+		"NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "pg7nqahy",
+		"NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY": ""
+	},
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	// --- D1 Database ---
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "souk-el-gomla-prod",
+			"preview_database_id": "local-dev-ref"
+		}
+	],
+	// --- KV Namespaces ---
+	"kv_namespaces": [
+		{
+			"binding": "CACHE",
+			"id": "79892e5632a941afad47cfa80fbe294d",
+			"preview_id": "local-cache-dev"
+		},
+	],
+	// --- Queues ---
+	"queues": {
+		"producers": [
+			{
+				"binding": "ORDER_QUEUE",
+				"queue": "souk-el-gomla-order-queue"
+			},
+			{
+				"binding": "NOTIFICATION_QUEUE",
+				"queue": "souk-el-gomla-notification-queue"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "souk-el-gomla-order-queue",
+				"max_batch_size": 10,
+				"max_batch_timeout": 30
+			},
+			{
+				"queue": "souk-el-gomla-notification-queue",
+				"max_batch_size": 50,
+				"max_batch_timeout": 60
+			}
+		]
+	},
+	// --- Cron Triggers ---
+	"triggers": {
+		"crons": [
+			"0 2 * * *", // daily at 02:00 UTC — low stock check
+			"*/30 * * * *", // every 30 min — expired session cleanup
+			"0 0 * * *" // midnight UTC — scheduled offers evaluation
+		]
+	},
 }
