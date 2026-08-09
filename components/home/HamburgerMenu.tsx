@@ -58,8 +58,14 @@ export function HamburgerMenu({ open, cartCount, onClose, onNavigate }: Props) {
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
+    if (open) {
+      document.body.classList.add("menu-drawer-open");
+    } else {
+      document.body.classList.remove("menu-drawer-open");
+    }
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("menu-drawer-open");
     };
   }, [open]);
 
@@ -77,7 +83,7 @@ export function HamburgerMenu({ open, cartCount, onClose, onNavigate }: Props) {
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50"
+          className="fixed inset-0 z-[1000]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

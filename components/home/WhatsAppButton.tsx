@@ -1,15 +1,28 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { waLink } from "@/lib/site";
 
 export function WhatsAppButton() {
+  const [hidden, setHidden] = useState(false);
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      setHidden(document.body.classList.contains("menu-drawer-open"));
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <a
       href={waLink}
       target="_blank"
       rel="noopener noreferrer"
       aria-label="تواصل معنا عبر واتساب"
-      className="fixed bottom-24 left-4 z-30 flex size-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 focus-visible:ring-3 focus-visible:ring-ring"
+      className={`whatsapp-fab fixed bottom-24 left-6 z-[99] flex size-14 items-center justify-center rounded-full shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 focus-visible:ring-3 focus-visible:ring-ring md:bottom-6 ${
+        hidden ? "pointer-events-none translate-y-4 opacity-0" : "opacity-100"
+      }`}
       style={{ backgroundColor: "#25D366" }}
     >
       <svg viewBox="0 0 32 32" className="size-7 fill-white" aria-hidden="true">

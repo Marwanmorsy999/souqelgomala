@@ -1,13 +1,32 @@
 export type Product = {
   id: string
+  /** Arabic display name (from D1 `name_ar`). */
   name: string
+  /** Canonical Arabic name alias (DB `name_ar`). Optional on the domain type so
+   *  legacy/mock data without the full canonical shape still typechecks. */
+  name_ar?: string
   english: string
+  /** Display unit label (e.g. "كيلو", "علبة"). Empty for the default `piece`. */
   size: string
+  /** Canonical unit alias (DB `unit`). */
+  unit?: string
+  /** Retail price (DB `price`). */
   retail: number
+  /** Canonical retail price alias (DB `price`). */
+  price?: number
+  /** Wholesale price (DB `wholesale_price`). */
   wholesale: number
+  /** Canonical wholesale price alias (DB `wholesale_price`). */
+  wholesale_price?: number
+  /** Category display name. */
   category: string
+  /** Canonical category id (DB `category_id`). */
+  category_id?: string | null
   inStock: boolean
+  /** Primary image URL. */
   image: string
+  /** Canonical image URL alias. */
+  image_url?: string
   /** Optional previous (higher) price. When present, a discount badge is rendered. */
   oldPrice?: number
   /** Optional brand label (shown on the card when available). */
@@ -66,6 +85,13 @@ export type PaymentMethod = {
   label: string
   note?: string
   available: boolean
+}
+
+export type Brand = {
+  id: string
+  name: string
+  name_en: string
+  logo_url: string
 }
 
 export type StoreFeature = {

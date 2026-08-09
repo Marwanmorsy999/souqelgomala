@@ -510,4 +510,22 @@ CREATE UNIQUE INDEX `returns_return_number_unique` ON `returns` (`return_number`
 CREATE INDEX `idx_returns_order` ON `returns` (`order_id`);--> statement-breakpoint
 CREATE INDEX `idx_returns_customer` ON `returns` (`customer_id`);--> statement-breakpoint
 CREATE INDEX `idx_returns_status` ON `returns` (`status`);--> statement-breakpoint
-CREATE INDEX `idx_returns_return_number` ON `returns` (`return_number`);
+CREATE INDEX `idx_returns_return_number` ON `returns` (`return_number`);--> statement-breakpoint
+CREATE TABLE `reviews` (
+	`id` text PRIMARY KEY NOT NULL,
+	`author_name` text NOT NULL,
+	`author_role` text,
+	`rating` integer DEFAULT 5 NOT NULL,
+	`text` text NOT NULL,
+	`status` text DEFAULT 'pending' NOT NULL,
+	`product_id` text,
+	`created_at` text NOT NULL,
+	`updated_at` text NOT NULL,
+	`moderated_at` text,
+	`moderated_by` text,
+	`rejection_reason` text,
+	`deleted_at` text
+);--> statement-breakpoint
+CREATE INDEX `idx_reviews_status` ON `reviews` (`status`);--> statement-breakpoint
+CREATE INDEX `idx_reviews_product` ON `reviews` (`product_id`);--> statement-breakpoint
+CREATE INDEX `idx_reviews_created` ON `reviews` (`created_at`);

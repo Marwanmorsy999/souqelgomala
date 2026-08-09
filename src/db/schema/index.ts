@@ -30,6 +30,8 @@ export * from './inventory'
 export * from './suppliers'
 // --- Returns ---
 export * from './returns'
+// --- Reviews (social proof) ---
+export * from './reviews'
 // --- Feature Flags ---
 export * from './featureFlags'
 
@@ -45,6 +47,7 @@ import * as operationsSchema from './operations'
 import * as inventorySchema from './inventory'
 import * as suppliersSchema from './suppliers'
 import * as returnsSchema from './returns'
+import * as reviewsSchema from './reviews'
 import * as featureFlagsSchema from './featureFlags'
 
 export const schema = {
@@ -59,5 +62,6 @@ export const schema = {
   ...inventorySchema,
   ...suppliersSchema,
   ...returnsSchema,
+  ...reviewsSchema,
   ...featureFlagsSchema,
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getCategories } from "@/lib/services/catalog";
+import { ClientImage } from "@/components/ui/client-image";
 import type { Category } from "@/lib/types";
 
 type Props = { onSelect: (name: string) => void };
@@ -37,14 +38,14 @@ export function Categories({ onSelect }: Props) {
             className="group flex w-24 shrink-0 snap-start flex-col items-center gap-2 text-center md:w-auto"
             aria-label={`قسم ${c.name}`}
           >
-            <span className="relative size-24 overflow-hidden rounded-full bg-muted shadow-sm ring-1 ring-border/60 transition-transform duration-300 group-hover:-translate-y-1 group-hover:ring-primary/40 md:size-28 lg:size-32">
-              <img
+            <span className="category-icon-wrapper">
+              <ClientImage
                 src={c.image}
                 alt={c.name}
-                loading="lazy"
-                className="size-full object-cover transition-transform duration-500 group-hover:scale-110"
+                className="size-full"
+                imgClassName="size-full object-contain p-1 transition-transform duration-500 group-hover:scale-110"
+                wrapperClassName="size-full"
               />
-              <span className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
             </span>
             <span className="text-sm font-bold leading-tight text-foreground transition-colors group-hover:text-primary">
               {c.name}

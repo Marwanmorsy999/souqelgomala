@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { getProducts } from "@/lib/services/catalog";
+import { useStore } from "@/lib/store";
 import { delivery as deliveryConfig, SITE, waLink } from "@/lib/site";
 import type { CartItem, Product } from "@/lib/types";
 
@@ -48,6 +49,8 @@ export function CheckoutView({ cart, total, onBack, onSuccess }: Props) {
     "address",
   );
   const [address, setAddress] = useState({
+    name: "",
+    phone: "",
     street: "",
     building: "",
     floor: "",
@@ -57,6 +60,7 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
   const [payment, setPayment] = useState("cash");
   const [done, setDone] = useState(false);
   const [productMap, setProductMap] = useState<Record<string, Product>>({});
+  const isWholesale = useStore((s) => s.isWholesale);
 
   useEffect(() => {
     let active = true;
@@ -75,32 +79,86 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
     };
   }, []);
 
-  const delivery = total >= deliveryConfig.freeAbove ? 0 : deliveryConfig.fee;
-  const grandTotal = total + delivery;
-  const filled = address.street.trim().length > 3;
+  const itemsTotal = cart.reduce((sum, item) => {
+    const p = productMap[item.id];
+    if (!p) return sum;
+    const unit = isWholesale ? p.wholesale : p.retail;
+    return sum + unit * item.quantity;
+  }, 0);
+  const subtotal = itemsTotal > 0 ? itemsTotal : total;
+  const delivery = subtotal >= deliveryConfig.freeAbove ? 0 : deliveryConfig.fee;
+  const grandTotal = subtotal + delivery;
+  const filled = address.street.trim().length > 3 && address.phone.trim().length >= 10;
 
-  // Build a readable order summary and send it to the store's WhatsApp.
-  const handleOrder = () => {
+  // Build a readable Arabic order summary, persist the order to D1, then open
+  // the store's WhatsApp message. The pricing mode (retail / wholesale) is
+  // preserved so the admin sees the exact line-item amounts.
+  const handleOrder = async () => {
+    const unitPriceFor = (p: { retail: number; wholesale: number }) =>
+      isWholesale ? p.wholesale : p.retail;
+
+    const itemsPayload = cart
+      .map((item) => {
+        const p = productMap[item.id];
+        if (!p) return null;
+        return {
+          id: p.id,
+          name: p.name_ar || p.name,
+          nameEn: p.english,
+          quantity: item.quantity,
+          unitPrice: unitPriceFor(p),
+        };
+      })
+      .filter(Boolean) as {
+      id: string;
+      name: string;
+      nameEn?: string;
+      quantity: number;
+      unitPrice: number;
+    }[];
+
     const lines = [
       "طلب جديد من سوق الجملة 🛒",
+      isWholesale ? "(سعر الجملة)" : "",
       "",
-...cart.map((item) => {
-        const p = productMap[item.id];
-        return p
-          ? `• ${p.name} (${p.size}) × ${item.quantity} = ${p.retail * item.quantity} ج.م`
-          : `• صنف ${item.id} × ${item.quantity}`;
-      }),
+      ...itemsPayload.map(
+        (it) =>
+          `• ${it.name} (${productMap[it.id]?.size ?? ""}) × ${it.quantity} = ${
+            it.unitPrice * it.quantity
+          } ج.م`,
+      ),
       "",
-      `المجموع: ${total} ج.م`,
+      `المجموع: ${subtotal} ج.م`,
       delivery > 0 ? `التوصيل: ${delivery} ج.م` : "التوصيل: مجاني",
       `الإجمالي: ${grandTotal} ج.م`,
       "",
+      address.name ? `الاسم: ${address.name}` : "",
+      `رقم الموبايل: ${address.phone}`,
       `العنوان: ${address.street}${address.building ? ` — عمارة ${address.building}` : ""}${address.floor ? ` — دور ${address.floor}` : ""}`,
       `وقت التوصيل: ${timeSlot}`,
       address.notes ? `ملاحظات: ${address.notes}` : "",
     ]
       .filter(Boolean)
       .join("\n");
+
+    // Persist first (best-effort — still open WhatsApp if it fails).
+    try {
+      await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customerName: address.name,
+          customerPhone: address.phone,
+          customerAddress: `${address.street}${address.building ? ` — عمارة ${address.building}` : ""}${address.floor ? ` — دور ${address.floor}` : ""}`,
+          notes: address.notes,
+          deliveryFee: delivery,
+          pricingMode: isWholesale ? "wholesale" : "retail",
+          items: itemsPayload,
+        }),
+      });
+    } catch {
+      /* ignore — WhatsApp remains the source of truth for the customer */
+    }
 
     window.open(
       `${waLink}?text=${encodeURIComponent(lines)}`,
@@ -189,6 +247,32 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
                 <h2 className="font-black">عنوان التوصيل</h2>
               </div>
               <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="name">الاسم</Label>
+                  <Input
+                    id="name"
+                    value={address.name}
+                    onChange={(e) =>
+                      setAddress((a) => ({ ...a, name: e.target.value }))
+                    }
+                    placeholder="الاسم"
+                    className="rounded-xl"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <Label htmlFor="phone">رقم الموبايل *</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    dir="ltr"
+                    value={address.phone}
+                    onChange={(e) =>
+                      setAddress((a) => ({ ...a, phone: e.target.value }))
+                    }
+                    placeholder="01xxxxxxxxx"
+                    className="rounded-xl"
+                  />
+                </div>
                 <div className="flex flex-col gap-1">
                   <Label htmlFor="street">الشارع والمنطقة *</Label>
                   <Input
@@ -307,24 +391,25 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
             <Card className="rounded-3xl">
               <CardContent className="flex flex-col gap-3 p-5">
                 <h2 className="font-black">مراجعة الطلب</h2>
-{cart.map((item) => {
+                {cart.map((item) => {
                   const product = productMap[item.id];
                   if (!product) return null;
+                  const unit = isWholesale ? product.wholesale : product.retail;
                   return (
                     <div key={item.id} className="flex items-center gap-3">
                       <img
-                        src={product.image}
+                        src={product.image_url}
                         alt={product.name}
                         className="size-12 rounded-xl object-cover"
                       />
                       <div className="flex-1">
-                        <p className="font-bold text-sm">{product.name}</p>
+                        <p className="font-bold text-sm">{product.name_ar || product.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {item.quantity} × {product.retail} ج.م
+                          {item.quantity} × {unit} ج.م
                         </p>
                       </div>
                       <p className="font-bold">
-                        {product.retail * item.quantity} ج.م
+                        {unit * item.quantity} ج.م
                       </p>
                     </div>
                   );
@@ -333,7 +418,7 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
                 <div className="flex flex-col gap-1 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">المنتجات</span>
-                    <span>{total} ج.م</span>
+                    <span>{subtotal} ج.م</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">التوصيل</span>

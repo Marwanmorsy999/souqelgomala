@@ -14,6 +14,7 @@
 
 import type {
   Category,
+  Brand,
   FaqItem,
   PaymentMethod,
   StoreFeature,
@@ -179,10 +180,48 @@ export const paymentMethods: PaymentMethod[] = [
 
 /**
  * Brands strip — neutral "العلامات المتوفرة" presentation.
- * ⚠️ Only real brands that already appear in the demo catalog are listed.
- * Do NOT fabricate partnerships / official distribution.
+ * ⚠️ Logo URLs are PLACEHOLDER data URIs. Replace with Cloudinary secure_url
+ * values from the category_media / product_media tables when real brand assets
+ * are uploaded via the admin dashboard.
  */
-export const brands: string[] = ["ليبتون"];
+export const brands: Brand[] = [
+  {
+    id: "lipton",
+    name: "ليبتون",
+    name_en: "Lipton",
+    logo_url: "/brands/lipton.svg",
+  },
+  {
+    id: "pepsi",
+    name: "بيبسي",
+    name_en: "Pepsi",
+    logo_url: "/brands/pepsi.svg",
+  },
+  {
+    id: "nescafe",
+    name: "نسكافيه",
+    name_en: "Nescafé",
+    logo_url: "/brands/nescafe.svg",
+  },
+  {
+    id: "indomie",
+    name: "إندومي",
+    name_en: "Indomie",
+    logo_url: "/brands/indomie.svg",
+  },
+  {
+    id: "fine",
+    name: "فاين",
+    name_en: "Fine",
+    logo_url: "/brands/fine.svg",
+  },
+  {
+    id: "juhayna",
+    name: "جهينة",
+    name_en: "Juhayna",
+    logo_url: "/brands/juhayna.svg",
+  },
+];
 
 /**
  * Customer testimonials.

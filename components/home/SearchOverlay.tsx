@@ -111,7 +111,7 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-50 flex flex-col bg-background"
+          className="fixed inset-0 z-[1100] flex flex-col bg-background"
           initial={{ opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -12 }}

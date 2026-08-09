@@ -150,3 +150,53 @@
 #__next {
   isolation: isolate;
 }
+
+/*
+ * Z-index layering system:
+ * 10-29  — page content (cards, sections)
+ * 30     — sticky header, bottom nav
+ * 40     — header (already set)
+ * 99     — floating action buttons (WhatsApp FAB)
+ * 1000+  — overlays, drawers, modals
+ */
+
+/* Category icon wrapper — transparent PNG / logo presentation.
+   Uses object-fit: contain so varying aspect ratios never distort. */
+.category-icon-wrapper {
+  position: relative;
+  display: block;
+  width: 6rem;
+  height: 6rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background:
+    radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%),
+    color-mix(in oklab, var(--muted) 90%, var(--background));
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), inset 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.category-icon-wrapper:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.1), inset 0 0 0 1px color-mix(in oklab, var(--primary) 40%, transparent);
+}
+
+@media (min-width: 768px) {
+  .category-icon-wrapper {
+    width: 7rem;
+    height: 7rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .category-icon-wrapper {
+    width: 8rem;
+    height: 8rem;
+  }
+}
+
+/* Hide WhatsApp FAB when mobile drawer is open */
+.menu-drawer-open .whatsapp-fab {
+  pointer-events: none !important;
+  opacity: 0 !important;
+}

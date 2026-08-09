@@ -17,13 +17,19 @@ import {
 export interface StorefrontProduct {
   id: string
   name: string
+  name_ar?: string
   english: string
   size: string
+  unit?: string
   retail: number
+  price?: number
   wholesale: number
+  wholesale_price?: number
   category: string
+  category_id?: string | null
   inStock: boolean
   image: string
+  image_url?: string
   oldPrice?: number
   brand?: string
   description?: string
@@ -75,13 +81,19 @@ export function mapProductToStorefront(
   return {
     id: product.id,
     name: product.name_ar,
+    name_ar: product.name_ar,
     english: product.name_en ?? '',
     size: formatUnit(product.unit),
+    unit: product.unit,
     retail,
+    price: retail,
     wholesale,
+    wholesale_price: wholesale,
     category: opts.categoryName ?? '',
+    category_id: product.category_id ?? null,
     inStock,
     image,
+    image_url: image,
     oldPrice,
     brand: product.brand ?? undefined,
     description: product.description ?? undefined,

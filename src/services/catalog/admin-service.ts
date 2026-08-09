@@ -19,7 +19,7 @@ import type { User } from '@/services/auth'
 import { hasPermission, type Role } from '@/lib/permissions'
 import { createProductSchema, updateProductSchema, type CreateProductInput, type UpdateProductInput } from '@/lib/validations'
 import { nanoid } from 'nanoid'
-import { eq, inArray, isNull, and } from 'drizzle-orm'
+import { eq, inArray, isNull, and, desc } from 'drizzle-orm'
 import { deleteCloudinaryAsset } from '@/lib/cloudinary/upload'
 import {
   invalidateCatalogCache,
@@ -296,4 +296,80 @@ export async function deleteCategoryMedia(user: User, mediaId: string) {
 /** Standalone id generator (used by tests). */
 export function generateId(): string {
   return nanoid(16)
+}
+
+// ============================================
+// CATEGORY WRITES (ADMIN)
+// ============================================
+
+/** List every category (including hidden) for the admin table. */
+export async function listCategoriesAdmin() {
+  return getDb()
+    .select()
+    .from(categories)
+    .where(isNull(categories.deleted_at))
+    .orderBy(desc(categories.sort_order), desc(categories.created_at))
+}
+
+/** Create a category. Returns the created row. */
+export async function createCategory(
+  user: User,
+  input: { nameAr: string; nameEn?: string; parentId?: string | null; image?: string; sortOrder?: number; isVisible?: boolean }
+) {
+  assertCanWrite(user, 'categories')
+  const ts = now()
+  const [row] = await getDb()
+    .insert(categories)
+    .values({
+      id: crypto.randomUUID(),
+      name_ar: input.nameAr,
+      name_en: input.nameEn ?? null,
+      parent_id: input.parentId ?? null,
+      image: input.image ?? null,
+      sort_order: input.sortOrder ?? 0,
+      is_visible: input.isVisible ?? true,
+      created_at: ts,
+      updated_at: ts,
+    })
+    .returning()
+  await invalidateCategoryCache(row.id, row.name_ar)
+  return row
+}
+
+/** Update a category (partial). */
+export async function updateCategory(
+  user: User,
+  id: string,
+  input: { nameAr?: string; nameEn?: string; parentId?: string | null; image?: string; sortOrder?: number; isVisible?: boolean }
+) {
+  assertCanWrite(user, 'categories')
+  const existing = await getDb().select().from(categories).where(eq(categories.id, id)).limit(1)
+  if (!existing[0]) throw new AdminCatalogError('القسم غير موجود', 404)
+  await getDb()
+    .update(categories)
+    .set({
+      ...(input.nameAr !== undefined ? { name_ar: input.nameAr } : {}),
+      ...(input.nameEn !== undefined ? { name_en: input.nameEn ?? null } : {}),
+      ...(input.parentId !== undefined ? { parent_id: input.parentId ?? null } : {}),
+      ...(input.image !== undefined ? { image: input.image ?? null } : {}),
+      ...(input.sortOrder !== undefined ? { sort_order: input.sortOrder } : {}),
+      ...(input.isVisible !== undefined ? { is_visible: input.isVisible } : {}),
+      updated_at: now(),
+    })
+    .where(eq(categories.id, id))
+  await invalidateCategoryCache(id, existing[0].name_ar)
+  return { success: true }
+}
+
+/** Soft-delete a category. */
+export async function softDeleteCategory(user: User, id: string) {
+  assertCanWrite(user, 'categories')
+  const existing = await getDb().select().from(categories).where(eq(categories.id, id)).limit(1)
+  if (!existing[0]) throw new AdminCatalogError('القسم غير موجود', 404)
+  await getDb()
+    .update(categories)
+    .set({ deleted_at: now(), updated_at: now(), is_visible: false })
+    .where(eq(categories.id, id))
+  await invalidateCategoryCache(id, existing[0].name_ar)
+  return { success: true }
 }

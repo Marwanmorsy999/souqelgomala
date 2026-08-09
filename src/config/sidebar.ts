@@ -52,6 +52,12 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         permission: 'categories.read',
       },
       {
+        label: 'التقييمات',
+        icon: 'MessageSquareHeart',
+        path: '/admin/reviews',
+        permission: 'reviews.read',
+      },
+      {
         label: 'العروض',
         icon: 'Tag',
         path: '/admin/offers',

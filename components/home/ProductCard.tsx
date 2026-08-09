@@ -4,6 +4,7 @@ import { Minus, Plus, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ClientImage } from "@/components/ui/client-image";
 import { useStore } from "@/lib/store";
 import type { Product } from "@/lib/types";
 
@@ -24,29 +25,27 @@ export function ProductArtwork({
     : 0;
 
   return (
-    <div
-      className={`relative aspect-square w-full overflow-hidden bg-muted ${large ? "rounded-2xl" : "rounded-t-2xl"}`}
+    <ClientImage
+      src={product.image_url || product.image}
+      alt={product.name}
+      eager={large}
+      className={`aspect-square w-full ${large ? "rounded-2xl" : "rounded-t-2xl"}`}
+      imgClassName="size-full object-contain p-2"
     >
-      <img
-        src={product.image}
-        alt={product.name}
-        loading="lazy"
-        className="size-full object-cover"
-      />
       {discount > 0 && (
         <span className="absolute right-2 top-2 rounded-full bg-destructive px-2 py-1 text-[11px] font-black text-white shadow-sm">
           خصم {discount}%
         </span>
       )}
-      <div className="absolute bottom-2 right-2 rounded-full bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground shadow-sm backdrop-blur">
+      <div className="absolute bottom-2 right-2 z-10 rounded-full bg-background/90 px-2 py-1 text-[10px] font-semibold text-foreground shadow-sm backdrop-blur">
         {product.size}
       </div>
       {!product.inStock && (
-        <span className="absolute left-2 top-2 rounded-full bg-background/90 px-2.5 py-1 text-xs font-bold text-destructive shadow-sm">
+        <span className="absolute left-2 top-2 z-10 rounded-full bg-background/90 px-2.5 py-1 text-xs font-bold text-destructive shadow-sm">
           نفذت الكمية
         </span>
       )}
-    </div>
+    </ClientImage>
   );
 }
 
