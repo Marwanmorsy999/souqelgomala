@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Clock3, Sparkles } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { products, bestSellingIds } from '@/lib/data'
@@ -39,6 +39,11 @@ type Props = { onUrgentChange: (urgent: boolean) => void }
 
 export function FlashSaleBanner({ onUrgentChange }: Props) {
   const flashProducts = bestSellingIds.map((id) => products.find((p) => p.id === id)).filter(Boolean)
+
+  const handleUrgent = useCallback(
+    (...args: Parameters<typeof onUrgentChange>) => onUrgentChange(...args),
+    [onUrgentChange]
+  )
 
   return (
     <section className="relative overflow-hidden rounded-3xl bg-primary p-5 text-primary-foreground shadow-lg shadow-primary/10">
