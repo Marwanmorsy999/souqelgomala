@@ -17,6 +17,7 @@ import type {
   Brand,
   FaqItem,
   PaymentMethod,
+  SocialPost,
   StoreFeature,
   Testimonial,
 } from "./types";
@@ -34,7 +35,7 @@ function image(photoId: string, width = 800, height?: number): string {
 export const SITE = {
   name: "سوق الجملة",
   nameEn: "Souk Elgomla",
-  tagline: "وفر العمله واشتري من الجمله",
+  tagline: "وفر العملة واشتري من الجملة",
   description: "منتجات غذائية ومنزلية بأسعار الجملة للجميع.",
   // Location — supplied by the business.
   location: "كفر شكر، القليوبية، مصر",
@@ -307,3 +308,85 @@ export const delivery = {
   freeAbove: 300,
   demo: true,
 };
+
+/**
+ * Hero photography config — the REAL Souq El Gomla shop photo.
+ *
+ * The hero is designed around an actual photo of the shop (supporting the
+ * existing asset system):
+ *   - `publicId` → a Cloudinary public_id, rendered through `heroImageUrl()`
+ *   - `image`    → any direct image URL (e.g. a file dropped in `public/photos/`)
+ *
+ * Until the business shares the real photo, leave BOTH empty — the storefront
+ * renders an intentional branded deep-green fallback instead of generic
+ * supermarket/mall stock photography.
+ */
+export type HeroConfig = {
+  /** Cloudinary public_id of the real shop photo (takes priority). */
+  publicId?: string
+  /** Direct image URL used when `publicId` is empty. */
+  image?: string
+  /** Accessible label for the photo. */
+  alt?: string
+}
+
+export const heroConfig: HeroConfig = {
+  // publicId: "souq-el-gomla/shop-front", // ← real photo goes here
+  // image: "/photos/shop-front.jpg",      // ← or here (place file in public/)
+  alt: "واجهة محل سوق الجملة — كفر شكر، القليوبية",
+}
+
+/**
+ * Latest social content — "📱 شوف عروضنا أول بأول".
+ *
+ * These are the posts the business publishes every day (offers, videos from
+ * inside the shop, new deliveries). The storefront renders them as real social
+ * cards on the homepage.
+ *
+ * ⚠️ PLACEHOLDER LIST — until the admin-managed social post system ships, this
+ * config list stands in for the future `GET /api/social` payload. The shape
+ * (see `lib/types.ts` `SocialPost`) is identical so the UI can switch to a
+ * backend without changes. When a post is the "عرض النهارده", set
+ * `featured: true` — it is the same flag that will pop it into the daily
+ * offers section in the future workflow.
+ */
+export const socialPosts: SocialPost[] = [
+  {
+    id: 'sp-fb-today',
+    platform: 'facebook',
+    url: SITE.social.facebook,
+    title: '🔥 عروض النهارده — كله بأسعار الجملة',
+    caption:
+      'بننشر عروض اليوم على الصفحة من الصبح — تفاصيل كل عرض وأقرب وصوله في المنشور.',
+    date: '2026-08-09T10:15:00+02:00',
+    featured: true,
+  },
+  {
+    id: 'sp-tt-today',
+    platform: 'tiktok',
+    url: SITE.social.tiktok,
+    title: 'جولة جوه المحل 🏪',
+    caption:
+      'فيديو عرض النهارده على تيك توك — الصورة من الرف ده هي اللي بتتشاف جوه السوق.',
+    date: '2026-08-09T09:40:00+02:00',
+    featured: true,
+  },
+  {
+    id: 'sp-ig-offer',
+    platform: 'instagram',
+    url: SITE.social.instagram,
+    title: 'كرتونة × 24 بأحسن سعر 💥',
+    caption:
+      'السعر ده للكرتونة كاملة — كلمنا على الواتساب قبل ما الكمية تخلص.',
+    date: '2026-08-08T18:30:00+02:00',
+  },
+  {
+    id: 'sp-fb-arrival',
+    platform: 'facebook',
+    url: SITE.social.facebook,
+    title: 'وصلت مصنعيات جديدة 🚚',
+    caption:
+      'تشكيلة جديدة نزلت على رفوف المحل — اسأل عن المتوفر على الواتساب.',
+    date: '2026-08-07T13:00:00+02:00',
+  },
+]

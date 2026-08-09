@@ -14,9 +14,8 @@ export function Footer() {
     ["الأقسام", "categories"],
     ["المنتجات", "products"],
     ["العروض", "offers"],
-    ["من نحن", "home"],
+    ["السوشيال ميديا", "social"],
     ["تواصل معنا", "contact"],
-    ["الأسئلة الشائعة", "faq"],
   ] as const;
 
   return (

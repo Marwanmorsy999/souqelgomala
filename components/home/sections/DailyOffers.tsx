@@ -1,26 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarDays, Flame, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
-import { MessageCircle } from "lucide-react";
 import { ClientImage } from "@/components/ui/client-image";
 import { OfferProductCard } from "@/components/home/OfferProductCard";
 import { getDailyOffers, type DailyOffersPayload } from "@/lib/services/catalog";
 import { waLink } from "@/lib/site";
+import { isPlaceholderImage } from "@/lib/utils";
 import type { Product, Offer } from "@/lib/types";
 
+const dayMonthFmt = new Intl.DateTimeFormat("ar-EG", {
+  day: "numeric",
+  month: "long",
+});
+
+function formatDayMonth(iso: string): string {
+  const d = new Date(iso);
+  return Number.isNaN(d.getTime()) ? iso : dayMonthFmt.format(d);
+}
+
 /**
- * Daily Offers section — "🔥 عروض النهارده"
+ * Daily Offers — "🔥 عروض النهارده" sales board.
  *
- * This is the primary recurring-engagement surface on the homepage. It pulls
- * real, admin-managed data:
- *   - Campaign offers from the D1 `offers` table (when the admin module ships)
- *   - Discounted products (offer_price / compare_at pricing)
- *   - Featured products (is_featured flag)
+ * This is the business's daily-selling surface (posts almost every day on
+ * Facebook / Instagram / TikTok). The section is kept COMPACT: if only a few
+ * offers exist they stay in a tight grid — never stretched across giant empty
+ * areas — and product cards with no photo render as branded info cards, never
+ * as giant gray placeholder boxes.
  *
- * No prices or offers are ever invented — if nothing is available the section
- * degrades to a WhatsApp call-to-action that matches the business's daily
- * social-media workflow.
+ * Data always comes from the D1-backed catalog API. If nothing is active the
+ * section degrades to a compact WhatsApp CTA matching the social workflow.
  */
 export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) {
   const [data, setData] = useState<DailyOffersPayload | null>(null);
@@ -33,7 +43,7 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
         if (active) setData(result);
       })
       .catch(() => {
-        /* catalog unavailable — fall through to empty state */
+        /* catalog unavailable — honest compact empty state */
       })
       .finally(() => active && setLoading(false));
     return () => {
@@ -41,69 +51,60 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
     };
   }, []);
 
-  const hasCampaignOffers = data && data.offers.length > 0;
-  const hasProducts = data && (data.discounted.length > 0 || data.featured.length > 0);
-  const hasContent = hasCampaignOffers || hasProducts;
+  const campaignOffers = data?.offers ?? [];
 
-  // Merge discounted + featured into a single deduplicated product list.
-  const offerProducts: Product[] = data
-    ? [
-        ...data.discounted,
-        ...data.featured.filter(
-          (f) => !data.discounted.some((d) => d.id === f.id),
-        ),
-      ].slice(0, 12)
-    : [];
+  // Don't double-list campaign products in the discounted/featured grid.
+  const campaignProductIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const offer of campaignOffers)
+      for (const p of offer.products) ids.add(p.id);
+    return ids;
+  }, [campaignOffers]);
 
-  if (loading) {
-    return (
-      <section id="offers" className="scroll-mt-20">
-        <div className="mx-auto max-w-7xl px-4">
-          <SectionHeader loaded={false} />
-          <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-[4/3] w-64 shrink-0 snap-start animate-pulse rounded-2xl bg-muted md:w-auto"
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-    );
-  }
+  const offerProducts = useMemo(() => {
+    if (!data) return [];
+    return [
+      ...data.discounted,
+      ...data.featured.filter((f) => !data.discounted.some((d) => d.id === f.id)),
+    ]
+      .filter((p) => !campaignProductIds.has(p.id))
+      .slice(0, 6);
+  }, [data, campaignProductIds]);
+
+  const hasAny = campaignOffers.length > 0 || offerProducts.length > 0;
 
   return (
-    <section id="offers" className="scroll-mt-20">
-      <div className="mx-auto max-w-7xl px-4">
-        <SectionHeader loaded={true} data={data ?? undefined} />
+    <section id="offers" className="mx-auto max-w-6xl scroll-mt-20 px-4">
+      <SectionHeader loaded={!loading} />
 
-        {hasContent ? (
-          <div className="flex flex-col gap-6">
-            {/* Campaign offers (when available) */}
-            {hasCampaignOffers &&
-              data!.offers.map((offer) => (
-                <CampaignOfferCard
-                  key={offer.id}
-                  offer={offer}
-                  onOpen={onOpen}
-                />
-              ))}
+      {loading ? (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-44 animate-pulse rounded-2xl bg-muted" />
+          ))}
+        </div>
+      ) : hasAny ? (
+        <div className="flex flex-col gap-5">
+          {campaignOffers.map((offer) => (
+            <CampaignOfferCard key={offer.id} offer={offer} onOpen={onOpen} />
+          ))}
 
-            {/* Featured + discounted product carousel */}
-            {offerProducts.length > 0 && (
-              <ProductCarousel
-                products={offerProducts}
-                label="📦 منتجات مخفضة ومميزة"
-                onOpen={onOpen}
-              />
-            )}
-          </div>
-        ) : (
-          /* Empty state — honest, matches the social-media-first workflow */
-          <EmptyOffersState />
-        )}
-      </div>
+          {offerProducts.length > 0 && (
+            <div>
+              <p className="mb-2 text-sm font-black text-foreground">
+                منتجات مخفضة ومميزة
+              </p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {offerProducts.map((p) => (
+                  <OfferProductCard key={p.id} product={p} onOpen={onOpen} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <EmptyOffersState />
+      )}
     </section>
   );
 }
@@ -112,40 +113,51 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
 /* Helpers & sub-components                                           */
 /* ------------------------------------------------------------------ */
 
-function SectionHeader({
-  loaded,
-  data,
-}: {
-  loaded: boolean;
-  data?: DailyOffersPayload;
-}) {
+function SectionHeader({ loaded }: { loaded: boolean }) {
+  const today = useMemo(
+    () =>
+      new Intl.DateTimeFormat("ar-EG", {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+      }).format(new Date()),
+    [],
+  );
+
   return (
-    <div className="mb-5 flex flex-col gap-1">
-      <h2 className="text-2xl font-black text-primary sm:text-3xl">
-        🔥 عروض النهارده
-      </h2>
-      <p className="text-sm text-muted-foreground">
-        أحدث عروض وأسعار سوق الجملة
-      </p>
-      {!loaded && <div className="h-3 w-32 animate-pulse rounded bg-muted" />}
-      {loaded && data && (
-        <p
-          className="text-xs text-muted-foreground"
-          aria-label="آخر تحديث"
-          title={data.updatedAt}
-        >
-          آخر تحديث: اليوم{' '}
-          {new Date(data.updatedAt).toLocaleTimeString('ar-EG', {
-            hour: '2-digit',
-            minute: '2-digit',
-            hour12: true,
-          })}
+    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <h2 className="text-2xl font-black text-foreground sm:text-3xl">
+          🔥 عروض النهارده
+        </h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          بيع النهارده في سوق الجملة — أسعار الجملة من المحل مباشرة
         </p>
-      )}
+        {!loaded && (
+          <div className="mt-2 h-3 w-32 animate-pulse rounded bg-muted" />
+        )}
+      </div>
+      <span className="inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-bold text-foreground">
+        <CalendarDays className="size-4 text-accent" />
+        {today}
+      </span>
     </div>
   );
 }
 
+function discountTextFor(offer: Offer): string {
+  if (offer.discountType === "percentage" && offer.value)
+    return `${Math.round(offer.value)}% خصم`;
+  if (offer.discountType === "fixed_price" && offer.value)
+    return `${offer.value} ج.م خصم`;
+  if (offer.discountType === "buy_x_get_y" && offer.buyX && offer.getY)
+    return `اشترِ ${offer.buyX} واحصل على ${offer.getY} مجاناً`;
+  return "عرض خاص";
+}
+
+/* __SPLIT__ */
+
+/** One campaign offer — compact sales row (badge + title + product grid). */
 function CampaignOfferCard({
   offer,
   onOpen,
@@ -153,44 +165,48 @@ function CampaignOfferCard({
   offer: Offer;
   onOpen: (product: Product) => void;
 }) {
-  const discountText =
-    offer.discountType === 'percentage' && offer.value
-      ? `${Math.round(offer.value)}% خصم`
-      : offer.discountType === 'fixed_price' && offer.value
-        ? `${offer.value} ج.م خصم`
-        : offer.discountType === 'buy_x_get_y' && offer.buyX && offer.getY
-          ? `اشترِ ${offer.buyX} واحصل على ${offer.getY} مجاناً`
-          : 'عرض خاص';
+  const products = offer.products.slice(0, 4);
 
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="rounded-2xl border border-orange-200 bg-gradient-to-b from-orange-50/60 to-transparent p-4 dark:border-orange-900 dark:from-orange-950/30"
+      className="rounded-2xl border border-orange-200/70 bg-gradient-to-b from-orange-50/60 to-transparent p-3 dark:border-orange-900 dark:from-orange-950/20 sm:p-4"
     >
-      {offer.banner && (
-        <div className="mb-3 aspect-[3/1] w-full overflow-hidden rounded-xl">
+      {offer.banner && !isPlaceholderImage(offer.banner) && (
+        <div className="mb-3 overflow-hidden rounded-xl">
           <ClientImage
             src={offer.banner}
             alt={offer.title}
-            className="aspect-[3/1] w-full rounded-xl"
+            className="aspect-[4/1]"
             imgClassName="size-full object-cover"
           />
         </div>
       )}
 
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-accent px-3 py-1 text-xs font-black text-accent-foreground shadow-sm">
-          {discountText}
+      <div className="flex flex-wrap items-center gap-2 px-1 pb-3">
+        <span className="inline-flex items-center gap-1 rounded-full bg-accent px-3 py-1 text-xs font-black text-accent-foreground shadow-sm">
+          <Flame className="size-3.5" />
+          {discountTextFor(offer)}
         </span>
         <h3 className="font-black text-foreground">{offer.title}</h3>
+        {offer.endDate && (
+          <span className="text-xs text-muted-foreground">
+            ~ حتى {formatDayMonth(offer.endDate)}
+          </span>
+        )}
       </div>
 
-      {offer.products.length > 0 && (
-        <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2">
-          {offer.products.map((p) => (
-            <OfferProductCard key={p.id} product={p} onOpen={onOpen} />
+      {products.length > 0 && (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {products.map((p) => (
+            <OfferProductCard
+              key={p.id}
+              product={p}
+              onOpen={onOpen}
+              offerLabel="عرض النهارده"
+            />
           ))}
         </div>
       )}
@@ -198,44 +214,26 @@ function CampaignOfferCard({
   );
 }
 
-function ProductCarousel({
-  products,
-  label,
-  onOpen,
-}: {
-  products: Product[];
-  label: string;
-  onOpen: (product: Product) => void;
-}) {
-  return (
-    <div>
-      <p className="mb-2 text-sm font-black text-foreground">{label}</p>
-      <div className="scrollbar-hide -mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-2 md:snap-none md:overflow-visible md:px-0 md:gap-4 lg:grid-cols-3">
-        {products.map((p) => (
-          <OfferProductCard key={p.id} product={p} onOpen={onOpen} />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function EmptyOffersState() {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border/60 bg-card p-6 text-center md:py-10">
-      <p className="text-sm font-bold text-muted-foreground">
-        ما فيش عروض مسجلة دلوقتي على الموقع.
-      </p>
-      <p className="text-xs text-muted-foreground">
-        بننشر العروض اليومية على صفحتنا على الفيس وإنستجرام وتيك توك.
-      </p>
+    <div className="flex flex-col items-start gap-3 rounded-2xl border border-border/60 bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="font-bold text-foreground">
+          ما فيش عروض مُسجلة النهارده على الموقع لسه 🕐
+        </p>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          بننشر عروض اليوم على الفيسبوك والإنستجرام وتيك توك — تابعنا أو اسألنا
+          على واتساب.
+        </p>
+      </div>
       <a
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-1 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+        className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
       >
         <MessageCircle className="size-4" />
-        استفسر عن العروض على واتساب
+        استفسر عن عروض النهارده
       </a>
     </div>
   );

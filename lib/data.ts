@@ -309,5 +309,3 @@ export const categories = [
   ["أطفال", "♧"],
   ["عناية شخصية", "◉"],
 ];
-
-export const heroImage = image("photo-1542838132-92c53300491e", 1400, 900);

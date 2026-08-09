@@ -14,14 +14,8 @@ import { Hero } from "@/components/home/sections/Hero";
 import { PromoBanner } from "@/components/home/sections/PromoBanner";
 import { DailyOffers } from "@/components/home/sections/DailyOffers";
 import { Categories } from "@/components/home/sections/Categories";
-import { TrustBanner } from "@/components/home/sections/TrustBanner";
 import { LatestProducts } from "@/components/home/sections/LatestProducts";
-import { Testimonials } from "@/components/home/sections/Testimonials";
-import { StoreFeatures } from "@/components/home/sections/StoreFeatures";
-import { Brands } from "@/components/home/sections/Brands";
-import { PaymentMethods } from "@/components/home/sections/PaymentMethods";
-import { Faq } from "@/components/home/sections/Faq";
-import { NewsletterSocial } from "@/components/home/sections/NewsletterSocial";
+import { SocialFeed } from "@/components/home/sections/SocialFeed";
 import { Footer } from "@/components/home/sections/Footer";
 
 import { ProductDetail } from "@/components/home/ProductDetail";
@@ -189,22 +183,16 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
           transition={{ duration: 0.22 }}
         >
           {view === "home" && (
-            <div className="flex flex-col gap-12 pb-4 pt-3">
+            <div className="flex flex-col gap-10 pb-4 pt-3">
               <Hero
-                onShop={() => goToAnchor("categories")}
+                onShop={() => goToAnchor("products")}
                 onOffers={() => goToAnchor("offers")}
               />
-              <PromoBanner />
               <DailyOffers onOpen={setSelected} />
               <Categories onSelect={handleCategory} />
-              <TrustBanner />
               <LatestProducts onOpen={setSelected} />
-              <Testimonials />
-              <StoreFeatures />
-              <Brands />
-              <PaymentMethods />
-              <Faq />
-              <NewsletterSocial />
+              <SocialFeed />
+              <PromoBanner />
               <Footer />
             </div>
           )}

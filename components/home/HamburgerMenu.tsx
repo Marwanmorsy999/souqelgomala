@@ -14,7 +14,9 @@ import {
   X,
 } from "lucide-react";
 import type { ComponentType } from "react";
-import { categories, SITE } from "@/lib/site";
+import { getCategories } from "@/lib/services/catalog";
+import type { Category } from "@/lib/types";
+import { SITE } from "@/lib/site";
 
 type Props = {
   open: boolean;
@@ -48,6 +50,18 @@ const links: MenuLink[] = [
 
 export function HamburgerMenu({ open, cartCount, onClose, onNavigate }: Props) {
   const [expanded, setExpanded] = useState(false);
+  const [menuCategories, setMenuCategories] = useState<Category[]>([]);
+
+  // Real catalog categories (same D1 source as the homepage chips).
+  useEffect(() => {
+    let active = true;
+    getCategories()
+      .then((cats) => active && setMenuCategories(cats))
+      .catch(() => active && setMenuCategories([]));
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
@@ -142,7 +156,7 @@ export function HamburgerMenu({ open, cartCount, onClose, onNavigate }: Props) {
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              {categories.map((c) => (
+                              {menuCategories.map((c) => (
                                 <li key={c.id}>
                                   <button
                                     onClick={() => {

@@ -9,6 +9,9 @@ const cairo = Cairo({ subsets: ["arabic", "latin"], variable: "--font-cairo" });
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000",
+  ),
   title: "سوق الجملة | Souk El Gomla — بقالة جملة وقطاعي في كفر شكر",
   description:
     "سوق الجملة: بقالة جملة وقطاعي بأسعار مناسبة للبيت والمحل. توصيل في كفر شكر والقليوبية، دفع كاش عند الاستلام.",
@@ -45,8 +48,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f8faf6" },
-    { media: "(prefers-color-scheme: dark)", color: "#102116" },
+    { media: "(prefers-color-scheme: light)", color: "#faf8f4" },
+    { media: "(prefers-color-scheme: dark)", color: "#191918" },
   ],
 };
 

@@ -118,3 +118,40 @@ export type StoreFeature = {
   title: string
   description: string
 }
+
+/** Which social channel a post was published on. */
+export type SocialPlatform = 'facebook' | 'instagram' | 'tiktok' | 'whatsapp'
+
+/**
+ * A social post shown in the storefront "📱 شوف عروضنا أول بأول" section.
+ *
+ * This is the ADMIN-MANAGED SOCIAL POST contract. The business publishes its
+ * daily offers on Facebook / Instagram / TikTok; the storefront section below
+ * is built to display those posts as REAL social content.
+ *
+ *   - platform   → which channel published the post
+ *   - url        → canonical post/profile URL (opens on the platform)
+ *   - thumbnail  → optional image; when missing a branded platform tile renders
+ *   - title      → short title (e.g. "عرض النهارده")
+ *   - caption    → optional copy shown under the title
+ *   - date       → ISO publish date (rendered as a relative date)
+ *   - featured   → marks TODAY's offer post. Future workflow: the admin marks
+ *                  one post as "عرض النهارده" and it surfaces BOTH here and in
+ *                  the "🔥 عروض النهارده" section without duplicating content.
+ *
+ * ⚠️ Currently driven by config (`lib/site.ts` `socialPosts`). The shape is
+ * intentionally identical to what a future `GET /api/social` endpoint will
+ * return so this section can switch to the backend without UI changes.
+ */
+export type SocialPost = {
+  id: string
+  platform: SocialPlatform
+  url: string
+  thumbnail?: string
+  title: string
+  caption?: string
+  date: string
+  featured?: boolean
+  /** Future bridge: when set, this post also represents the linked daily offer. */
+  linkedOfferId?: string
+}

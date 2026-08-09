@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight, Heart, Minus, Plus, Share2, Store } from "lucide-react";
+import { ArrowRight, Heart, Minus, Package, Plus, Share2, Store } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { getProducts } from "@/lib/services/catalog";
+import { hasProductImage, packageLabel } from "@/lib/utils";
 import { ProductCard } from "./ProductCard";
 import ProductJsonLd from "./ProductJsonLd";
 import type { Product } from "@/lib/types";
@@ -117,31 +118,43 @@ export function ProductDetail({
               setPointerStart(null);
             }}
           >
-            <img
-              src={gallery[activeImage]}
-              alt={`${product.name} صورة ${activeImage + 1}`}
-              className="aspect-square w-full snap-center object-cover"
-            />
+            {hasProductImage(product) ? (
+              <img
+                src={gallery[activeImage]}
+                alt={`${product.name} صورة ${activeImage + 1}`}
+                className="aspect-square w-full snap-center object-cover"
+              />
+            ) : (
+              <div className="flex aspect-square w-full flex-col items-center justify-center gap-2 bg-gradient-to-br from-primary/10 via-card to-accent/10">
+                <Package className="size-12 text-primary/40" />
+                <p className="px-6 text-center font-black">{product.name}</p>
+                <p className="text-xs text-muted-foreground">
+                  {packageLabel(product)} — منتجات سوق الجملة
+                </p>
+              </div>
+            )}
           </div>
           {!product.inStock && (
             <span className="absolute right-3 top-3 rounded-full bg-destructive px-3 py-1.5 text-xs font-bold text-destructive-foreground">
               نفذت الكمية
             </span>
           )}
-          <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-background/80 px-2.5 py-1.5">
-            {gallery.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setActiveImage(i)}
-                aria-label={`الصورة ${i + 1}`}
-                className={`size-2 rounded-full transition ${activeImage === i ? "bg-primary" : "bg-muted-foreground/40"}`}
-              />
-            ))}
-          </div>
+          {hasProductImage(product) && (
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 rounded-full bg-background/80 px-2.5 py-1.5">
+              {gallery.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setActiveImage(i)}
+                  aria-label={`الصورة ${i + 1}`}
+                  className={`size-2 rounded-full transition ${activeImage === i ? "bg-primary" : "bg-muted-foreground/40"}`}
+                />
+              ))}
+            </div>
+          )}
         </section>
 
         <section className="flex flex-col gap-4 py-5">
-          {/* Name + rating */}
+          {/* Name + product facts (no invented brands/reviews) */}
           <div>
             <div className="flex items-start justify-between gap-3">
               <div>
@@ -151,13 +164,17 @@ export function ProductDetail({
                 </p>
               </div>
               <Badge variant="secondary" className="shrink-0">
-                {product.id === "oil" ? "أولمب" : "ريماس لاند"}
+                {product.brand || product.category || "سوق الجملة"}
               </Badge>
             </div>
-            <div className="mt-3 flex items-center gap-2 text-sm">
-              <span className="text-accent">★★★★☆</span>
-              <span className="font-bold">4.2</span>
-              <span className="text-muted-foreground">(127 تقييم)</span>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
+                <Package className="size-3.5" />
+                {packageLabel(product)}
+              </span>
+              <span className="rounded-full bg-accent/10 px-3 py-1 text-xs font-bold text-accent">
+                الدفع كاش عند الاستلام
+              </span>
             </div>
           </div>
 

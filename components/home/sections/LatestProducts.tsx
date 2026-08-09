@@ -34,15 +34,15 @@ export function LatestProducts({ onOpen }: Props) {
   const all = [
     ...best,
     ...latest.filter((p) => !best.some((b) => b.id === p.id)),
-  ];
+  ].slice(0, 8);
 
   return (
     <section id="products" className="mx-auto max-w-6xl scroll-mt-20 px-4">
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h2 className="text-xl font-black sm:text-2xl">أحدث المنتجات</h2>
+          <h2 className="text-xl font-black sm:text-2xl">🔥 الأكثر طلبًا</h2>
           <p className="text-sm text-muted-foreground">
-            اختياراتنا اللي بتطلبها أكتر
+            الأصناف اللي بتخلص الأول من المحل
           </p>
         </div>
         <button

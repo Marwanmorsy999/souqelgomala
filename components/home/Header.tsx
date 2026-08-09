@@ -111,9 +111,13 @@ export function Header({
             <a
               key={href}
               href={href}
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted hover:text-primary"
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
+                label === "العروض"
+                  ? "font-black text-accent hover:bg-accent/10"
+                  : "text-foreground hover:bg-muted hover:text-primary"
+              }`}
             >
-              {label}
+              {label === "العروض" ? "🔥 عروض النهارده" : label}
             </a>
           ))}
         </nav>
