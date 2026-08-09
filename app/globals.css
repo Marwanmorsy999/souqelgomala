@@ -118,34 +118,16 @@
 /*
  * Branded hero fallback — replaces generic supermarket stock photography
  * until the real Souq El Gomla shop photo is supplied via `heroConfig`
- * (lib/site.ts). Deep green + orange glow + subtle market-grid texture.
+ * (lib/site.ts). A plain deep-green band; the photo does the visual work
+ * the moment it is available.
  */
 .hero-branded {
-  background:
-    radial-gradient(
-      54rem 30rem at 90% -18%,
-      color-mix(in oklch, var(--accent) 32%, transparent),
-      transparent 60%
-    ),
-    radial-gradient(
-      40rem 26rem at -12% 118%,
-      color-mix(in oklch, var(--primary) 62%, transparent),
-      transparent 62%
-    ),
-    linear-gradient(155deg, oklch(0.21 0.065 150) 0%, oklch(0.29 0.085 150) 46%, oklch(0.44 0.11 148) 100%);
-}
-.hero-branded::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image:
-    linear-gradient(color-mix(in oklch, white 7%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in oklch, white 7%, transparent) 1px, transparent 1px);
-  background-size: 4.5rem 4.5rem;
-  opacity: 0.5;
-  -webkit-mask-image: radial-gradient(75% 95% at 50% 18%, black, transparent 78%);
-  mask-image: radial-gradient(75% 95% at 50% 18%, black, transparent 78%);
-  pointer-events: none;
+  background: linear-gradient(
+    160deg,
+    oklch(0.2 0.06 150) 0%,
+    oklch(0.29 0.085 150) 55%,
+    oklch(0.42 0.1 148) 100%
+  );
 }
 
 @layer base {
@@ -177,6 +159,17 @@
 }
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
+}
+
+/*
+ * Homepage section container — practical desktop width (~1280px) with
+ * consistent mobile edge padding. Inner carousels pair it with -mx-3/-mx-4
+ * + px to reach the viewport edges on mobile without ever overflowing it.
+ */
+@layer components {
+  .site-section {
+    @apply mx-auto w-full max-w-7xl px-3 sm:px-4;
+  }
 }
 
 /* Keep sticky/fixed elements (header, bottom nav, FAB) above page content */

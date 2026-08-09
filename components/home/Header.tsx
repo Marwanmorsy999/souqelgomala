@@ -35,9 +35,17 @@ export function Header({
         scrolled ? "border-b shadow-sm" : "border-b border-transparent"
       }`}
     >
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-3 sm:px-4">
-        {/* Right group (mobile: hamburger + search; desktop: logo) */}
+      <div className="site-section flex h-14 items-center justify-between gap-2">
+        {/* Left group */}
         <div className="flex items-center gap-1">
+          <button
+            onClick={onMenu}
+            aria-label="القائمة"
+            className="flex size-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted md:hidden"
+          >
+            <Menu className="size-5" />
+          </button>
+
           {/* Desktop logo */}
           <button
             onClick={onMenu}
@@ -47,27 +55,11 @@ export function Header({
             <img
               src={logoUrl}
               alt="سوق الجملة"
-              className="size-10 rounded-xl object-contain"
+              className="size-9 rounded-lg object-contain"
             />
             <span className="hidden text-lg font-black lg:block">
               {SITE.name}
             </span>
-          </button>
-          <button
-            onClick={onMenu}
-            aria-label="القائمة"
-            className="flex size-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted md:hidden"
-          >
-            <Menu className="size-5" />
-          </button>
-
-          {/* Search icon (mobile) */}
-          <button
-            onClick={onSearch}
-            aria-label="بحث"
-            className="flex size-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted md:hidden"
-          >
-            <Search className="size-5" />
           </button>
         </div>
 
@@ -80,7 +72,7 @@ export function Header({
           <img
             src={logoUrl}
             alt="سوق الجملة"
-            className="size-11 rounded-xl object-contain"
+            className="size-10 rounded-lg object-contain"
           />
         </button>
 
@@ -113,7 +105,7 @@ export function Header({
               href={href}
               className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
                 label === "العروض"
-                  ? "font-black text-accent hover:bg-accent/10"
+                  ? "font-black text-primary hover:bg-primary/10"
                   : "text-foreground hover:bg-muted hover:text-primary"
               }`}
             >
@@ -122,7 +114,7 @@ export function Header({
           ))}
         </nav>
 
-        {/* Left group */}
+        {/* Right group */}
         <div className="flex items-center gap-1">
           {/* Desktop phone CTA */}
           <a
@@ -133,13 +125,13 @@ export function Header({
             <span dir="ltr">{SITE.phoneMain}</span>
           </a>
 
-          {/* Account */}
+          {/* Search (mobile) */}
           <button
-            onClick={onAccount}
-            aria-label="حسابي"
-            className="flex size-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted"
+            onClick={onSearch}
+            aria-label="بحث"
+            className="flex size-10 items-center justify-center rounded-xl text-foreground transition-colors hover:bg-muted md:hidden"
           >
-            <UserRound className="size-5" />
+            <Search className="size-5" />
           </button>
 
           {/* Cart */}

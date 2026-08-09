@@ -20,7 +20,7 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="تواصل معنا عبر واتساب"
-      className={`whatsapp-fab fixed bottom-24 left-6 z-[99] flex size-14 items-center justify-center rounded-full shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 focus-visible:ring-3 focus-visible:ring-ring md:bottom-6 ${
+      className={`whatsapp-fab fixed bottom-24 left-6 z-[99] flex size-14 items-center justify-center rounded-full text-white shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 focus-visible:ring-3 focus-visible:ring-ring md:bottom-6 ${
         hidden ? "pointer-events-none translate-y-4 opacity-0" : "opacity-100"
       }`}
       style={{ backgroundColor: "#25D366" }}

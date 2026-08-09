@@ -184,10 +184,7 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
         >
           {view === "home" && (
             <div className="flex flex-col gap-10 pb-4 pt-3">
-              <Hero
-                onShop={() => goToAnchor("products")}
-                onOffers={() => goToAnchor("offers")}
-              />
+              <Hero onOffers={() => goToAnchor("offers")} />
               <DailyOffers onOpen={setSelected} />
               <Categories onSelect={handleCategory} />
               <LatestProducts onOpen={setSelected} />

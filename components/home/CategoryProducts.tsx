@@ -1,8 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PackageSearch, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { ProductCard } from "@/components/home/ProductCard";
 import { getProductsByCategory } from "@/lib/services/catalog";
 import type { Product } from "@/lib/types";
@@ -45,10 +43,16 @@ export function CategoryProducts({ category, onBack, onOpen }: Props) {
 
   return (
     <main className="min-h-screen bg-background pb-28" dir="rtl">
-      <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/95 px-4 py-4 backdrop-blur">
-        <Button variant="ghost" size="icon" onClick={onBack} aria-label="رجوع">
-          <ChevronRight className="size-5" />
-        </Button>
+      <header className="sticky top-0 z-20 flex items-center justify-between border-b bg-background/95 px-4 py-4">
+        <button
+          onClick={onBack}
+          aria-label="رجوع"
+          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+        >
+          <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
+        </button>
         <div className="text-center">
           <h1 className="text-lg font-black">قسم {category}</h1>
           <p className="text-xs text-muted-foreground">
@@ -58,24 +62,21 @@ export function CategoryProducts({ category, onBack, onOpen }: Props) {
         <span className="size-9" />
       </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-5">
+      <div className="site-section py-5">
         {loading ? (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
               <div
                 key={i}
-                className="aspect-[3/4] animate-pulse rounded-2xl bg-muted"
+                className="h-56 animate-pulse rounded-xl bg-muted"
               />
             ))}
           </div>
         ) : products.length === 0 ? (
           <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-center">
-            <PackageSearch className="size-14 text-muted-foreground/40" />
-            <h2 className="text-xl font-black">
-              لا توجد منتجات في هذا القسم حالياً
-            </h2>
+            <p className="text-lg font-black">لا توجد منتجات في هذا القسم حالياً</p>
             <p className="text-sm text-muted-foreground">
-              قسم {category} سيتم تحديثه قريباً — أو تواصل معنا على واتساب.
+              تواصل معنا على واتساب لمعرفة المتوفر.
             </p>
           </div>
         ) : (

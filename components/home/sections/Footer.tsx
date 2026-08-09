@@ -1,12 +1,6 @@
-import { MapPin, Phone } from "lucide-react";
-import {
-  FacebookIcon,
-  InstagramIcon,
-  TikTokIcon,
-  WhatsAppIcon,
-} from "@/components/ui/SocialIcons";
+import { Phone } from "lucide-react";
 import { logoUrl } from "@/lib/data";
-import { SITE, telAlt, telMain, waLink } from "@/lib/site";
+import { SITE, telAlt, telMain } from "@/lib/site";
 
 export function Footer() {
   const links = [
@@ -14,21 +8,20 @@ export function Footer() {
     ["الأقسام", "categories"],
     ["المنتجات", "products"],
     ["العروض", "offers"],
-    ["السوشيال ميديا", "social"],
     ["تواصل معنا", "contact"],
   ] as const;
 
   return (
     <footer className="border-t bg-muted/40">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        <div className="grid gap-8 md:grid-cols-[1.3fr_1fr_1fr]">
+      <div className="site-section py-10">
+        <div className="grid gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3">
               <img
                 src={logoUrl}
                 alt="سوق الجملة"
-                className="size-12 rounded-xl object-contain"
+                className="size-10 rounded-lg object-contain"
               />
               <div>
                 <p className="text-lg font-black">{SITE.name}</p>
@@ -37,43 +30,28 @@ export function Footer() {
                 </p>
               </div>
             </div>
-            <p className="mt-3 max-w-xs text-sm leading-7 text-muted-foreground">
-              {SITE.description}
+            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+              {SITE.location}
             </p>
-            <div className="mt-4 flex gap-2">
-              {[
-                {
-                  icon: FacebookIcon,
-                  label: "فيسبوك",
-                  href: SITE.social.facebook,
-                },
-                {
-                  icon: InstagramIcon,
-                  label: "إنستجرام",
-                  href: SITE.social.instagram,
-                },
-                {
-                  icon: TikTokIcon,
-                  label: "تيك توك",
-                  href: SITE.social.tiktok,
-                },
-                { icon: WhatsAppIcon, label: "واتساب", href: waLink },
-              ].map(({ icon: Icon, label, href }) => (
-                <a
-                  key={label}
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={label}
-                  className="flex size-10 items-center justify-center rounded-xl border border-border bg-card text-foreground transition-colors hover:border-primary hover:text-primary"
-                >
-                  <Icon className="size-4" />
-                </a>
-              ))}
+            <div className="mt-4 flex flex-col gap-2 text-sm">
+              <a
+                href={telMain}
+                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Phone className="size-4 text-primary" />
+                <span dir="ltr">{SITE.phoneMain}</span>
+              </a>
+              <a
+                href={telAlt}
+                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+              >
+                <Phone className="size-4 text-primary" />
+                <span dir="ltr">{SITE.phoneAlt}</span>
+              </a>
             </div>
           </div>
 
-          {/* Useful links */}
+          {/* Links */}
           <nav aria-label="روابط مفيدة">
             <p className="mb-3 text-sm font-black">روابط مفيدة</p>
             <ul className="flex flex-col gap-2">
@@ -90,35 +68,47 @@ export function Footer() {
             </ul>
           </nav>
 
-          {/* Contact */}
+          {/* Social */}
           <div>
-            <p className="mb-3 text-sm font-black">تواصل معنا</p>
-            <ul className="flex flex-col gap-3 text-sm">
+            <p className="mb-3 text-sm font-black">السوشيال ميديا</p>
+            <ul className="flex flex-col gap-2 text-sm">
+              <li>
+                <a
+                  href={SITE.social.facebook}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                >
+                  فيسبوك
+                </a>
+              </li>
+              <li>
+                <a
+                  href={SITE.social.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                >
+                  إنستجرام
+                </a>
+              </li>
+              <li>
+                <a
+                  href={SITE.social.tiktok}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-muted-foreground transition-colors hover:text-primary"
+                >
+                  تيك توك
+                </a>
+              </li>
               <li>
                 <a
                   href={telMain}
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+                  className="text-muted-foreground transition-colors hover:text-primary"
                 >
-                  <Phone className="size-4 text-primary" />
-                  <span dir="ltr">{SITE.phoneMain}</span>
+                  واتساب
                 </a>
-              </li>
-              <li>
-                <a
-                  href={telAlt}
-                  className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
-                >
-                  <Phone className="size-4 text-primary" />
-                  <span dir="ltr">{SITE.phoneAlt}</span>
-                </a>
-              </li>
-              <li className="flex items-start gap-2 text-muted-foreground">
-                <MapPin className="mt-0.5 size-4 shrink-0 text-primary" />
-                <span>
-                  {SITE.location}
-                  <br />
-                  شارع جمال عبد الناصر — خلف مسجد آل عطا الله
-                </span>
               </li>
             </ul>
           </div>
@@ -128,7 +118,7 @@ export function Footer() {
           <p>
             © {new Date().getFullYear()} {SITE.name} — جميع الحقوق محفوظة.
           </p>
-          <p>{SITE.description}</p>
+          <p>{SITE.location}</p>
         </div>
       </div>
     </footer>
