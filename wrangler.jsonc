@@ -14,12 +14,12 @@
 	// ============================================================
 	"name": "souqelgomala",
 	"main": ".open-next/worker.js",
-	"compatibility_date": "2025-11-09",
+	"compatibility_date": "2026-08-09",
 	"compatibility_flags": [
 		"nodejs_compat"
 	],
 	"vars": {
-		"NEXT_PUBLIC_APP_URL": "http://localhost:3000",
+		"NEXT_PUBLIC_APP_URL": "https://souqelgomala.m-2396.workers.dev",
 		"NEXT_PUBLIC_APP_NAME": "Souk El Gomla",
 		"NEXT_PUBLIC_APP_LOCALE": "ar-EG",
 		"NEXT_PUBLIC_APP_CURRENCY": "EGP",
@@ -37,7 +37,7 @@
 		{
 			"binding": "DB",
 			"database_name": "souk-el-gomla-prod",
-			"preview_database_id": "local-dev-ref"
+			"preview_database_id": "a4b40f8e-1d8c-4719-8c10-e850bcd943f4"
 		}
 	],
 	// --- KV Namespaces ---
@@ -60,18 +60,6 @@
 				"queue": "souk-el-gomla-notification-queue"
 			}
 		],
-		"consumers": [
-			{
-				"queue": "souk-el-gomla-order-queue",
-				"max_batch_size": 10,
-				"max_batch_timeout": 30
-			},
-			{
-				"queue": "souk-el-gomla-notification-queue",
-				"max_batch_size": 50,
-				"max_batch_timeout": 60
-			}
-		]
 	},
 	// --- Cron Triggers ---
 	"triggers": {
