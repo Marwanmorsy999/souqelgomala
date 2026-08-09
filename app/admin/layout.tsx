@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { ShellProvider } from '@/components/layout/shell-context'
 import { AppShell } from '@/components/layout/app-shell'
 import { requireAuth, requireRole } from '@/services/auth'
+import { headers } from 'next/headers'
 
 export const metadata: Metadata = {
   title: 'لوحة التحكم | سوق الجملة',
@@ -16,6 +17,14 @@ export const metadata: Metadata = {
  * Content pages remain server components by default.
  */
 export default async function AdminLayout({ children }: { children: ReactNode }) {
+  const headersList = await headers()
+  const pathname = headersList.get('x-invoke-path') || headersList.get('x-pathname') || ''
+
+  // Bypass auth guard for login page
+  if (pathname === '/admin/login') {
+    return <>{children}</>
+  }
+
   // Auth guard — redirects to login if not authenticated
   const user = await requireAuth()
 
