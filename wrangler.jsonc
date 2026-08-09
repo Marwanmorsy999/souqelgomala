@@ -37,7 +37,7 @@
 		{
 			"binding": "DB",
 			"database_name": "souk-el-gomla-prod",
-			"preview_database_id": "a4b40f8e-1d8c-4719-8c10-e850bcd943f4",
+			"database_id": "0dc1da7c-cfc1-425e-868a-c3c740b44935",
 			"migrations_dir": "drizzle/migrations"
 		}
 	],

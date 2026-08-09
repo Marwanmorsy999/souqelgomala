@@ -14,6 +14,9 @@ VALUES
   ('manager', 'مدير', 'Can manage most resources',
    '["dashboard.read","orders.read","orders.update","orders.assign_driver","products.read","products.write","categories.read","categories.write","customers.read","customers.write","offers.read","offers.write","delivery.read","delivery.write","branches.read","reports.read","settings.read","settings.write","suppliers.read","suppliers.write","purchase_orders.read","purchase_orders.write","inventory.read","inventory.write","returns.read","returns.write"]',
    1, datetime('now'), datetime('now')),
+  ('employee', 'موظف', 'Read-only access plus limited order updates',
+   '["dashboard.read","orders.read","orders.update","products.read","categories.read","customers.read","delivery.read","reports.read","inventory.read","returns.read"]',
+   1, datetime('now'), datetime('now'));
 
 -- BRANCHES
 INSERT OR IGNORE INTO branches (id, name_ar, name_en, code, address, phone, working_hours, latitude, longitude, google_maps_url, manager_id, is_active, created_at, updated_at)
@@ -24,6 +27,8 @@ VALUES
 
 -- PROFILES (seed admin — password_hash NULL; set via auth flow)
 INSERT OR IGNORE INTO profiles (id, email, password_hash, full_name, phone, role, avatar, branch_id, is_active, created_at, updated_at)
+VALUES
+  ('10000000-0000-0000-0000-000000000001', 'admin@soukelgomla.com', NULL, 'مدير النظام', '01012345678', 'owner', NULL, '00000000-0000-0000-0000-000000000001', 1, datetime('now'), datetime('now'));
 
 -- CATEGORIES
 INSERT OR IGNORE INTO categories (id, name_ar, name_en, parent_id, sort_order, is_visible, created_at, updated_at)
@@ -60,6 +65,9 @@ VALUES
   ('ff-coupons', 'coupons', 'fgrp-marketing', 'الكوبونات', 'Coupons and promo codes', 0, '{}', datetime('now'), datetime('now')),
   ('ff-inventory', 'inventory', 'fgrp-operations', 'المخزون', 'Inventory management module', 1, '{}', datetime('now'), datetime('now')),
   ('ff-suppliers', 'suppliers', 'fgrp-operations', 'الموردين', 'Supplier management module', 1, '{}', datetime('now'), datetime('now')),
+  ('ff-purchase_orders', 'purchase_orders', 'fgrp-operations', 'أوامر الشراء', 'Purchase orders module', 1, '{}', datetime('now'), datetime('now')),
+  ('ff-returns', 'returns', 'fgrp-operations', 'المرتجعات', 'Returns management module', 1, '{}', datetime('now'), datetime('now')),
+  ('ff-ai_assistant', 'ai_assistant', 'fgrp-ai', 'المساعد الذكي', 'AI assistant features', 0, '{}', datetime('now'), datetime('now'));
 
 -- SETTINGS
 INSERT OR IGNORE INTO settings (id, key, value, description, created_at, updated_at)
@@ -83,6 +91,8 @@ VALUES
   ('20000000-0000-0000-0000-000000000004', '6221000110014', 'SKU-MOZ-001', 'mozzarella', 'موتزريلا', 'Mozzarella', 'موتزريلا طازجة 500 جرام', NULL, '10000000-0000-0000-0000-000000000020', 85, NULL, 55, '500 جرام', 0.5, 45, 15, 4, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now')),
   ('20000000-0000-0000-0000-000000000005', '6221000110015', 'SKU-PAS-001', 'pasta', 'مكرونة', 'Pasta', 'مكرونة إيطالية 500 جرام', NULL, '10000000-0000-0000-0000-000000000010', 18, NULL, 12, '500 جرام', 0.5, 30, 20, 5, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now')),
   ('20000000-0000-0000-0000-000000000006', '6221000110016', 'SKU-CHS-001', 'white-cheese', 'جبنة بيضاء', 'White Cheese', 'جبنة بيضاء 500 جرام', NULL, '10000000-0000-0000-0000-000000000020', 55, NULL, 35, '500 جرام', 0.5, 40, 15, 6, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now')),
+  ('20000000-0000-0000-0000-000000000007', '6221000110017', 'SKU-BUT-001', 'butter', 'زبدة', 'Butter', 'زبدة طازجة 250 جرام', NULL, '10000000-0000-0000-0000-000000000021', 42, NULL, 28, '250 جرام', 0.25, 50, 10, 7, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now')),
+  ('20000000-0000-0000-0000-000000000008', '6221000110018', 'SKU-TEA-001', 'lipton-tea', 'شاي ليبتون', 'Lipton Tea', 'شاي أحمر ليبتون 100 كيس', NULL, '10000000-0000-0000-0000-000000000030', 68, NULL, 45, '100 كيس', 1, 35, 10, 8, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now'));
 
 -- OFFERS
 INSERT OR IGNORE INTO offers (id, banner, campaign_name, discount_type, value, buy_x, get_y, product_ids, start_date, end_date, status, created_at, updated_at)
@@ -98,6 +108,9 @@ VALUES
   ('70000000-0000-0000-0000-000000000002', '01123456789', 'فاطمة حسن', NULL, 185, 185, 1, 0, 0, datetime('now'), datetime('now'));
 
 INSERT OR IGNORE INTO customer_addresses (id, customer_id, label, city, address, is_default, created_at, updated_at)
+VALUES
+  ('80000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'المنزل', 'الجيزة', 'شارع التحرير، الدقي، الجيزة', 1, datetime('now'), datetime('now')),
+  ('80000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', 'العمل', 'القاهرة', 'شارع جامعة الدول، المهندسين، الجيزة', 1, datetime('now'), datetime('now'));
 
 -- ORDERS + ORDER ITEMS
 INSERT OR IGNORE INTO orders (id, order_number, customer_id, customer_name, customer_phone, customer_address, branch_id, status, source, payment_status, payment_method, subtotal, discount, delivery_fee, total, notes, created_at, updated_at)
@@ -118,6 +131,10 @@ VALUES
   ('a3000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', NULL, 'delivered', NULL, NULL, datetime('now', '-2 hours')),
   ('a3000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002', NULL, 'preparing', NULL, NULL, datetime('now', '-1 day'));
 
+INSERT OR IGNORE INTO order_timeline (id, order_id, type, note, actor_id, metadata, created_at)
+VALUES
+  ('a4000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', 'status_change', 'تم تسليم الطلب', NULL, '{}', datetime('now', '-2 hours')),
+  ('a4000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002', 'status_change', 'تم قبول الطلب', NULL, '{}', datetime('now', '-1 day'));
 
 -- DELIVERY
 INSERT OR IGNORE INTO delivery_drivers (id, name, phone, vehicle, branch_id, status, created_at, updated_at)
@@ -136,7 +153,9 @@ VALUES
   ('50000000-0000-0000-0000-000000000015', 'مصر الجديدة', 'القاهرة', 30, 300, 1, datetime('now'), datetime('now')),
   ('50000000-0000-0000-0000-000000000016', 'شبرا', 'القاهرة', 35, 300, 1, datetime('now'), datetime('now'));
 
--- DELIVERY ASSIGNMENT
+INSERT OR IGNORE INTO delivery_assignments (id, order_id, driver_id, assigned_by, status, notes, assigned_at, created_at)
+VALUES
+  ('a1000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', NULL, NULL, 'delivered', NULL, datetime('now', '-2 hours'), datetime('now', '-2 hours'));
 
 -- INVENTORY MOVEMENTS
 INSERT OR IGNORE INTO inventory_movements (id, product_id, movement_type, quantity, reason, reference_type, reference_id, created_by, created_at)
@@ -161,30 +180,3 @@ VALUES
   ('c1000000-0000-0000-0000-000000000001', NULL, 'system.seeded', 'database', NULL, '{"migration": "0002_seed_data"}', datetime('now'));
 
 PRAGMA foreign_keys = ON;
-
-INSERT OR IGNORE INTO delivery_assignments (id, order_id, driver_id, assigned_by, status, notes, assigned_at, created_at)
-VALUES
-  ('a1000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', NULL, NULL, 'delivered', NULL, datetime('now', '-2 hours'), datetime('now', '-2 hours'));
-
-INSERT OR IGNORE INTO order_timeline (id, order_id, type, note, actor_id, metadata, created_at)
-VALUES
-  ('a4000000-0000-0000-0000-000000000001', '90000000-0000-0000-0000-000000000001', 'status_change', 'تم تسليم الطلب', NULL, '{}', datetime('now', '-2 hours')),
-  ('a4000000-0000-0000-0000-000000000002', '90000000-0000-0000-0000-000000000002', 'status_change', 'تم قبول الطلب', NULL, '{}', datetime('now', '-1 day'));
-
-VALUES
-  ('80000000-0000-0000-0000-000000000001', '70000000-0000-0000-0000-000000000001', 'المنزل', 'الجيزة', 'شارع التحرير، الدقي، الجيزة', 1, datetime('now'), datetime('now')),
-  ('80000000-0000-0000-0000-000000000002', '70000000-0000-0000-0000-000000000002', 'العمل', 'القاهرة', 'شارع جامعة الدول، المهندسين، الجيزة', 1, datetime('now'), datetime('now'));
-
-  ('20000000-0000-0000-0000-000000000007', '6221000110017', 'SKU-BUT-001', 'butter', 'زبدة', 'Butter', 'زبدة طازجة 250 جرام', NULL, '10000000-0000-0000-0000-000000000021', 42, NULL, 28, '250 جرام', 0.25, 50, 10, 7, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now')),
-  ('20000000-0000-0000-0000-000000000008', '6221000110018', 'SKU-TEA-001', 'lipton-tea', 'شاي ليبتون', 'Lipton Tea', 'شاي أحمر ليبتون 100 كيس', NULL, '10000000-0000-0000-0000-000000000030', 68, NULL, 45, '100 كيس', 1, 35, 10, 8, NULL, 0, 1, 0, 1, 'active', datetime('now'), datetime('now'));
-
-  ('ff-purchase_orders', 'purchase_orders', 'fgrp-operations', 'أوامر الشراء', 'Purchase orders module', 1, '{}', datetime('now'), datetime('now')),
-  ('ff-returns', 'returns', 'fgrp-operations', 'المرتجعات', 'Returns management module', 1, '{}', datetime('now'), datetime('now')),
-  ('ff-ai_assistant', 'ai_assistant', 'fgrp-ai', 'المساعد الذكي', 'AI assistant features', 0, '{}', datetime('now'), datetime('now'));
-
-VALUES
-  ('10000000-0000-0000-0000-000000000001', 'admin@soukelgomla.com', NULL, 'مدير النظام', '01012345678', 'owner', NULL, '00000000-0000-0000-0000-000000000001', 1, datetime('now'), datetime('now'));
-
-  ('employee', 'موظف', 'Read-only access plus limited order updates',
-   '["dashboard.read","orders.read","orders.update","products.read","categories.read","customers.read","delivery.read","reports.read","inventory.read","returns.read"]',
-   1, datetime('now'), datetime('now'));
