@@ -65,12 +65,31 @@ export function createTestDb(d1Binding: D1DatabaseLike): Db {
 let _db: Db | null = null
 
 /**
+ * Resolve the Cloudflare D1 binding.
+ *
+ * On `@opennextjs/cloudflare` the worker stores bindings on the Cloudflare
+ * request context (AsyncLocalStorage keyed by `Symbol.for("__cloudflare-context__")`)
+ * as `{ env, ctx, cf }`, where `env.DB` is the D1 binding. Bindings are NOT
+ * attached to `globalThis` directly, so we read them from that context, with a
+ * fallback to `globalThis.DB` for compatibility / local Node test setups.
+ */
+function resolveD1Binding(): D1DatabaseLike | undefined {
+  const symbol = Symbol.for('__cloudflare-context__')
+  const context = (globalThis as Record<symbol | string, unknown>)[symbol] as
+    | { env?: Record<string, unknown> }
+    | undefined
+  const fromContext = context?.env?.DB as D1DatabaseLike | undefined
+  if (fromContext) return fromContext
+  return (globalThis as Record<string, unknown>).DB as D1DatabaseLike | undefined
+}
+
+/**
  * Singleton accessor for the application DB.
- * Uses the DB binding from Cloudflare runtime.
+ * Uses the DB binding from the Cloudflare runtime context.
  */
 export function getDb(): Db {
   if (!_db) {
-    const dbBinding = (globalThis as Record<string, unknown>).DB as D1DatabaseLike | undefined
+    const dbBinding = resolveD1Binding()
     if (!dbBinding) {
       throw new Error('D1 database binding (DB) is not available. Ensure wrangler.jsonc is configured.')
     }

@@ -39,18 +39,28 @@ export type QueueMessage = OrderQueueMessage | NotificationQueueMessage
  * Safely get the ORDER_QUEUE binding.
  */
 function getOrderQueueBinding(): QueueBinding | null {
-  const q = (globalThis as Record<string, unknown>).ORDER_QUEUE
+  const context = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+    | { env?: Record<string, unknown> }
+    | undefined
+  const q = (context?.env?.ORDER_QUEUE ?? (globalThis as Record<string, unknown>).ORDER_QUEUE) as
+    | QueueBinding
+    | undefined
   if (!q) return null
-  return q as unknown as QueueBinding
+  return q
 }
 
 /**
  * Safely get the NOTIFICATION_QUEUE binding.
  */
 function getNotificationQueueBinding(): QueueBinding | null {
-  const q = (globalThis as Record<string, unknown>).NOTIFICATION_QUEUE
+  const context = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+    | { env?: Record<string, unknown> }
+    | undefined
+  const q = (context?.env?.NOTIFICATION_QUEUE ?? (globalThis as Record<string, unknown>).NOTIFICATION_QUEUE) as
+    | QueueBinding
+    | undefined
   if (!q) return null
-  return q as unknown as QueueBinding
+  return q
 }
 
 /**

@@ -47,12 +47,15 @@ export async function getSession(token: string) {
   const hashedToken = await hashToken(token)
   const session = await getDb().query.sessions.findFirst({
     where: eq(sessions.session_token, hashedToken),
-    with: { profile: true },
   })
   if (!session || new Date(session.expires_at) < new Date()) {
     return null
   }
-  return session
+  const profile = await getDb().query.profiles.findFirst({
+    where: eq(profiles.id, session.profile_id),
+  })
+  if (!profile) return null
+  return { ...session, profile }
 }
 
 export async function deleteSession(token: string) {

@@ -29,9 +29,12 @@ export interface KVEntryOptions {
  * Returns null in test environments where the binding is not set.
  */
 function getCache(): KvBinding | null {
-  const ns = (globalThis as Record<string, unknown>).CACHE
+  const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+    | { env?: Record<string, unknown> }
+    | undefined
+  const ns = (fromContext?.env?.CACHE ?? (globalThis as Record<string, unknown>).CACHE) as KvBinding | undefined
   if (!ns) return null
-  return ns as unknown as KvBinding
+  return ns
 }
 
 /**

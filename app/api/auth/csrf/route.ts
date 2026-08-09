@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { crypto } from '@cloudflare/workers-types'
 
 export async function GET() {
   const token = crypto.randomUUID()
