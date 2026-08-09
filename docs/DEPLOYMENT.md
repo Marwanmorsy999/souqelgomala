@@ -15,13 +15,6 @@ wrangler d1 create souk-el-gomla-prod
 # KV
 wrangler kv namespace create CACHE
 
-# R2 buckets (one per resource)
-wrangler r2 bucket create souk-el-gomla-products
-wrangler r2 bucket create souk-el-gomla-categories
-wrangler r2 bucket create souk-el-gomla-offers
-wrangler r2 bucket create souk-el-gomla-profiles
-wrangler r2 bucket create souk-el-gomla-branches
-
 # Queues
 wrangler queues create souk-el-gomla-order-queue
 wrangler queues create souk-el-gomla-notification-queue

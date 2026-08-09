@@ -11,7 +11,7 @@
  */
 
 import { z } from 'zod'
-import type { D1Binding, KvBinding, R2BucketBinding, QueueBinding } from '@/types/cloudflare-bindings'
+import type { D1Binding, KvBinding, QueueBinding } from '@/types/cloudflare-bindings'
 
 // ============================================
 // SCHEMA
@@ -155,23 +155,6 @@ export const env = {
     return v as unknown as KvBinding
   },
 
-  // Cloudflare R2 bucket bindings
-  get PRODUCTS_BUCKET(): R2BucketBinding {
-    return getR2BucketBinding('PRODUCTS_BUCKET')
-  },
-  get CATEGORIES_BUCKET(): R2BucketBinding {
-    return getR2BucketBinding('CATEGORIES_BUCKET')
-  },
-  get OFFERS_BUCKET(): R2BucketBinding {
-    return getR2BucketBinding('OFFERS_BUCKET')
-  },
-  get PROFILES_BUCKET(): R2BucketBinding {
-    return getR2BucketBinding('PROFILES_BUCKET')
-  },
-  get BRANCHES_BUCKET(): R2BucketBinding {
-    return getR2BucketBinding('BRANCHES_BUCKET')
-  },
-
   // Cloudflare QueueBinding bindings
   get ORDER_QUEUE(): QueueBinding {
     assertServerOnly()
@@ -205,16 +188,6 @@ export function assertServerOnly(): void {
       'Ensure it is called from a Server Action, Route Handler, or server component.'
     )
   }
-}
-
-/**
- * Get an R2 bucket binding, falling back to local stub in tests.
- */
-function getR2BucketBinding(name: string): R2BucketBinding {
-  assertServerOnly()
-  const v = (globalThis as Record<string, unknown>)[name]
-  if (!v) throw new Error(`${name} binding not available`)
-  return v as unknown as R2BucketBinding
 }
 
 

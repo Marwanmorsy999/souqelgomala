@@ -8,8 +8,6 @@
   // Bindings (env vars / secrets are set via `wrangler secret put`):
   //   DB              → Cloudflare D1 database
   //   CACHE           → Cloudflare KV namespace
-  //   PRODUCTS_BUCKET, CATEGORIES_BUCKET, OFFERS_BUCKET,
-  //   PROFILES_BUCKET, BRANCHES_BUCKET → Cloudflare R2 buckets
   //   ORDER_QUEUE, NOTIFICATION_QUEUE → Cloudflare Queues
   //   TURNSTILE_SECRET → Cloudflare Turnstile secret (set via `wrangler secret`)
   //   CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET → Cloudinary (set via `wrangler secret`)
@@ -43,15 +41,6 @@
       "database_name": "souk-el-gomla-prod",
       "preview_database_id": "local-dev-ref"
     }
-  ],
-
-  // --- R2 Object Storage ---
-  "r2_buckets": [
-    { "binding": "PRODUCTS_BUCKET", "bucket_name": "souk-el-gomla-products" },
-    { "binding": "CATEGORIES_BUCKET", "bucket_name": "souk-el-gomla-categories" },
-    { "binding": "OFFERS_BUCKET", "bucket_name": "souk-el-gomla-offers" },
-    { "binding": "PROFILES_BUCKET", "bucket_name": "souk-el-gomla-profiles" },
-    { "binding": "BRANCHES_BUCKET", "bucket_name": "souk-el-gomla-branches" }
   ],
 
   // --- KV Namespaces ---

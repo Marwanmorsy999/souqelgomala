@@ -12,15 +12,9 @@ and `src/services/`.
 | --------------------- | -------- | --------------------------------------------------- |
 | `DB`                  | D1       | Relational database (source of truth)               |
 | `CACHE`               | KV       | Feature flags, store settings, dashboard aggregates |
-| `PRODUCTS_BUCKET` …   | R2       | Image/file storage per resource                     |
 | `ORDER_QUEUE`         | Queue    | Post-order async processing                         |
 | `NOTIFICATION_QUEUE`  | Queue    | Email / SMS / push dispatch                         |
 | (secrets)             | —        | `TURNSTILE_SECRET_KEY`, `SESSION_SECRET`            |
-
-> R2 buckets are bound per resource (`PRODUCTS_BUCKET`, `CATEGORIES_BUCKET`,
-> `OFFERS_BUCKET`, `PROFILES_BUCKET`, `BRANCHES_BUCKET`) — the mapping lives
-> only in `src/lib/cloudflare/r2.ts`, so callers use a single `R2Resource`
-> token (`'product' | 'category' | …`).
 
 ## Secrets
 
@@ -39,7 +33,7 @@ Development copies live in local `.env.local`.
 
 The app is deployed with `@opennextjs/cloudflare`. Code paths:
 
-- **Server components / Route Handlers / Server Actions** may touch D1, R2,
+- **Server components / Route Handlers / Server Actions** may touch D1,
   KV, Queues and Turnstile.
 - **Client components** must never import `src/services/*` that touch
   bindings. Browser-only access is limited to `NEXT_PUBLIC_*` values.

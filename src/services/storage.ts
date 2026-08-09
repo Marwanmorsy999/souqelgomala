@@ -1,7 +1,9 @@
 /**
- * Storage Abstraction (replaces Supabase Storage)
+ * Storage Abstraction (stubbed)
  *
- * All binary data lives in R2. D1 stores only metadata/object keys.
+ * Image upload is now handled via Cloudinary. All functions throw a
+ * not-implemented error so that any accidental call fails loudly with
+ * "Image upload not configured. Use Cloudinary."
  */
 
 import {
@@ -28,25 +30,18 @@ export async function uploadFile(
     mimeType: string
   }
 ): Promise<R2UploadResult> {
-  try {
-    return await uploadToR2(resource, data, options)
-  } catch (err) {
-    logger.error('Storage: upload failed', { resource, error: err })
-    throw err
-  }
+  logger.warn('Storage: uploadFile called — R2 is removed, use Cloudinary')
+  throw new Error('Image upload not configured. Use Cloudinary.')
 }
 
 export async function deleteFile(resource: R2Resource, key: string): Promise<void> {
-  try {
-    await deleteFromR2(resource, key)
-  } catch (err) {
-    logger.error('Storage: delete failed', { resource, key, error: err })
-    throw err
-  }
+  logger.warn('Storage: deleteFile called — R2 is removed, use Cloudinary')
+  throw new Error('Image upload not configured. Use Cloudinary.')
 }
 
 export function getPublicUrl(resource: R2Resource, key: string): string {
-  return `https://${resource}-assets.soukelgomla.com/${key}`
+  logger.warn('Storage: getPublicUrl called — R2 is removed, use Cloudinary')
+  throw new Error('Image upload not configured. Use Cloudinary.')
 }
 
 export async function getSignedDownloadUrl(
@@ -54,15 +49,18 @@ export async function getSignedDownloadUrl(
   key: string,
   expiresIn: number = 3600
 ): Promise<string> {
-  return getSignedUrl(resource, key, expiresIn)
+  logger.warn('Storage: getSignedDownloadUrl called — R2 is removed, use Cloudinary')
+  throw new Error('Image upload not configured. Use Cloudinary.')
 }
 
 export async function fileExists(resource: R2Resource, key: string): Promise<boolean> {
-  return objectExists(resource, key)
+  logger.warn('Storage: fileExists called — R2 is removed, use Cloudinary')
+  throw new Error('Image upload not configured. Use Cloudinary.')
 }
 
 export async function getFileStream(resource: R2Resource, key: string): Promise<unknown | null> {
-  return getR2Object(resource, key)
+  logger.warn('Storage: getFileStream called — R2 is removed, use Cloudinary')
+  throw new Error('Image upload not configured. Use Cloudinary.')
 }
 
 export function validateUploadOptions(options: R2UploadOptions): void {
@@ -79,5 +77,3 @@ export function validateUploadOptions(options: R2UploadOptions): void {
     throw new R2ValidationError('File size must be greater than 0')
   }
 }
-
-
