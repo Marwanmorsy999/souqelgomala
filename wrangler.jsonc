@@ -15,7 +15,7 @@
   //   CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET → Cloudinary (set via `wrangler secret`)
   // ============================================================
 
-  "name": "souk-el-gomla",
+  "name": "souqelgomala",
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-11-09",
   "compatibility_flags": ["nodejs_compat"],
@@ -66,8 +66,8 @@
   // --- Queues ---
   "queues": {
     "producers": [
-      { "binding": "ORDER_QUEUE", "queue_name": "souk-el-gomla-order-queue" },
-      { "binding": "NOTIFICATION_QUEUE", "queue_name": "souk-el-gomla-notification-queue" }
+      { "binding": "ORDER_QUEUE", "queue": "souk-el-gomla-order-queue" },
+      { "binding": "NOTIFICATION_QUEUE", "queue": "souk-el-gomla-notification-queue" }
     ],
     "consumers": [
       {
