@@ -1,0 +1,12 @@
+{
+  "name": "سوق الجملة | Souk El Gomla",
+  "short_name": "سوق الجملة",
+  "description": "بقالة جملة وقطاعي في مصر",
+  "start_url": "/",
+  "display": "standalone",
+  "dir": "rtl",
+  "lang": "ar",
+  "background_color": "#f8faf6",
+  "theme_color": "#2d6a2d",
+  "icons": [{ "src": "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/ChatGPT%20Image%20Aug%206%2C%202026%2C%2001_59_41%20PM-XlqTPzN2O6W7ZSsRAbrdzcpshw4863.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }]
+}
