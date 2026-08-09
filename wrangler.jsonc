@@ -37,7 +37,8 @@
 		{
 			"binding": "DB",
 			"database_name": "souk-el-gomla-prod",
-			"preview_database_id": "a4b40f8e-1d8c-4719-8c10-e850bcd943f4"
+			"preview_database_id": "a4b40f8e-1d8c-4719-8c10-e850bcd943f4",
+			"migrations_dir": "drizzle/migrations"
 		}
 	],
 	// --- KV Namespaces ---
