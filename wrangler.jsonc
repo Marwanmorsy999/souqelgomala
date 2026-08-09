@@ -3,7 +3,7 @@
   // Souk El Gomla — Cloudflare Wrangler Configuration
   // ============================================================
   // This project deploys as a Next.js application on Cloudflare
-  // using @cloudflare/next-on-pages.
+  // using @opennextjs/cloudflare.
   //
   // Bindings (env vars / secrets are set via `wrangler secret put`):
   //   DB              → Cloudflare D1 database
@@ -16,8 +16,9 @@
   // ============================================================
 
   "name": "souk-el-gomla",
-  "compatibility_date": "2025-01-01",
-  "compatibility_flags": [],
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-11-09",
+  "compatibility_flags": ["nodejs_compat"],
 
   "vars": {
     "NEXT_PUBLIC_APP_URL": "http://localhost:3000",
@@ -28,6 +29,11 @@
     // The API key & secret are set via `wrangler secret put` (never in source).
     "NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME": "pg7nqahy",
     "NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY": ""
+  },
+
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
   },
 
   // --- D1 Database ---
@@ -86,8 +92,4 @@
     ]
   },
 
-  // --- Build ---
-  "build": {
-    "command": "pnpm run build"
-  }
 }

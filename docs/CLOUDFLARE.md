@@ -37,7 +37,7 @@ Development copies live in local `.env.local`.
 
 ## Runtime (Workers vs Node)
 
-The app is deployed with `@cloudflare/next-on-pages`. Code paths:
+The app is deployed with `@opennextjs/cloudflare`. Code paths:
 
 - **Server components / Route Handlers / Server Actions** may touch D1, R2,
   KV, Queues and Turnstile.

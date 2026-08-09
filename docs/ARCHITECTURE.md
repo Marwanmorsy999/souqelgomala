@@ -15,7 +15,7 @@ admin dashboard) built on **Next.js App Router** deployed to Cloudflare.
 Browser (RTL, Arabic-first)
         │
         ▼
-Next.js App Router (deployed on Cloudflare via @cloudflare/next-on-pages)
+Next.js App Router (deployed on Cloudflare via @opennextjs/cloudflare)
         │
         ▼
 Services layer
@@ -143,7 +143,7 @@ See `docs/REALTIME.md`.
 
 ## 7. Deployment
 
-Deployment target = **Cloudflare Workers** via `@cloudflare/next-on-pages`,
+Deployment target = **Cloudflare Workers** via `@opennextjs/cloudflare`,
 configured in `wrangler.jsonc` (D1 `DB`, KV `CACHE`, R2 buckets, Queues,
 cron triggers). See `docs/DEPLOYMENT.md` and `docs/CLOUDFLARE.md`.
 

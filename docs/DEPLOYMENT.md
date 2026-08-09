@@ -1,7 +1,7 @@
 # Deployment (Cloudflare)
 
 The app is built and deployed as a **Next.js application on Cloudflare Workers**
-using `@cloudflare/next-on-pages`. `wrangler.jsonc` is the source of truth for
+using `@opennextjs/cloudflare`. `wrangler.jsonc` is the source of truth for
 bindings.
 
 ---
@@ -48,11 +48,14 @@ wrangler d1 execute DB --remote --file=drizzle/seed-admin.sql
 ## 4. Build & deploy
 
 ```bash
-pnpm build                 # Next build (uses @cloudflare/next-on-pages)
-wrangler deploy            # or build via Cloudflare Pages/Workers CI
+pnpm build                 # Next.js build
+pnpm deploy                # OpenNext build + deploy to Cloudflare Workers
 ```
 
-`wrangler.jsonc` `build.command` already runs `pnpm run build`.
+Or for local preview:
+```bash
+pnpm preview               # OpenNext build + local preview
+```
 
 ## 5. Queue consumers
 

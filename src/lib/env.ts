@@ -141,7 +141,7 @@ export const env = {
     return v
   },
 
-  // Cloudflare D1 binding (set by next-on-pages / wrangler)
+  // Cloudflare D1 binding (set by OpenNext / wrangler)
   get DB(): D1Binding {
     assertServerOnly()
     return (globalThis as Record<string, unknown>).DB as unknown as D1Binding

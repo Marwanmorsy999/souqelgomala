@@ -1,7 +1,7 @@
 /**
  * Cloudflare Queue Consumer Adapter
  *
- * A Next.js app deployed with @cloudflare/next-on-pages cannot host a queue
+ * A Next.js app deployed with @opennextjs/cloudflare cannot host a queue
  * consumer in the same compiled worker as the web app. In production you deploy
  * a small **standalone Worker** that owns the Queue bindings and forwards each
  * message to the shared business handlers in `src/services/queues/`.
