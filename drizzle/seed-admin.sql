@@ -5,9 +5,9 @@
 
 -- 1) Insert the account if the email does not exist yet.
 INSERT OR IGNORE INTO profiles (id, email, password_hash, full_name, phone, role, avatar, branch_id, is_active, created_at, updated_at)
-VALUES ('624104a4-7b68-4a05-b3d4-5ab79903a34e', 'admin@soukelgomla.com', '87W3O7eBX2xKF5ZuxCneG6QgqwqC2wmeoNF46zFJad5clO4THumn471Ve9EDQJTe', 'System Owner', NULL, 'owner', NULL, '00000000-0000-0000-0000-000000000001', 1, '2026-08-09T12:17:47.179Z', '2026-08-09T12:17:47.179Z');
+VALUES ('937b11dd-e5b9-4765-8f7c-10fbe8e20353', 'marawan1@example.com', 'ZExzFbOOleWgmTWDm50yn7O7MYh+KKV+ITXZDu7AFC1pQIMY4E5aIGMQomh88oVq', 'System Owner', NULL, 'owner', NULL, '00000000-0000-0000-0000-000000000001', 1, '2026-08-09T13:32:26.125Z', '2026-08-09T13:32:26.125Z');
 
 -- 2) Refresh the password/role whenever the script is re-run.
 UPDATE profiles
-SET password_hash = '87W3O7eBX2xKF5ZuxCneG6QgqwqC2wmeoNF46zFJad5clO4THumn471Ve9EDQJTe', role = 'owner', is_active = 1, updated_at = '2026-08-09T12:17:47.179Z', full_name = 'System Owner'
-WHERE email = 'admin@soukelgomla.com';
+SET password_hash = 'ZExzFbOOleWgmTWDm50yn7O7MYh+KKV+ITXZDu7AFC1pQIMY4E5aIGMQomh88oVq', role = 'owner', is_active = 1, updated_at = '2026-08-09T13:32:26.125Z', full_name = 'System Owner'
+WHERE email = 'marawan1@example.com';
