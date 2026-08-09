@@ -1,5 +1,3 @@
-'use client'
-
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -12,6 +10,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [csrfToken, setCrsfToken] = useState('')
 
   useEffect(() => {
     if (user && !loading) {
@@ -19,16 +18,27 @@ export default function LoginPage() {
     }
   }, [user, loading, router])
 
+  useEffect(() => {
+    fetch('/api/auth/csrf', { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setCrsfToken(data.csrfToken))
+  }, [user, loading])
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setSubmitting(true)
     setError('')
 
+    const formData = new FormData()
+    formData.append('csrf_token', csrfToken)
+    formData.append('email', email)
+    formData.append('password', password)
+
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify(Object.fromEntries(formData)),
         credentials: 'include',
       })
 
@@ -97,7 +107,12 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="block w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              placeholder="Enter password"
             />
+          </div>
+
+          <div>
+            <input type="hidden" name="csrf_token" value={csrfToken} />
           </div>
 
           <button
