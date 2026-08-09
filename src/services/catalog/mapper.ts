@@ -6,7 +6,7 @@
  * between the D1 catalog model and the existing component contract.
  */
 
-import type { ProductRow, ProductMediaRow, CategoryRow, CategoryMediaRow } from '@/types/database'
+import type { ProductRow, ProductMediaRow, CategoryRow, CategoryMediaRow, OfferRow } from '@/types/database'
 import {
   productCardImageUrl,
   categoryImageUrl,
@@ -114,10 +114,46 @@ export function mapCategoryToStorefront(
       ? categoryImageUrl(primary.cloudinary_public_id)
       : raw || placeholderImage()
 
-  return {
+    return {
     id: category.id,
     name: category.name_ar,
     image,
   }
+}
+
+/** Storefront offer shape — maps the D1 offers table to the lib/types Offer. */
+export function mapOfferToStorefront(
+  offer: OfferRow,
+  products: StorefrontProduct[],
+): StorefrontOffer {
+  return {
+    id: offer.id,
+    title: offer.campaign_name,
+    banner: offer.banner ?? undefined,
+    discountType: offer.discount_type,
+    value: offer.value ?? undefined,
+    buyX: offer.buy_x ?? undefined,
+    getY: offer.get_y ?? undefined,
+    startDate: offer.start_date,
+    endDate: offer.end_date,
+    status: offer.status,
+    products,
+  }
+}
+
+/** Storefront offer shape — matches lib/types.ts Offer. */
+export interface StorefrontOffer {
+  id: string
+  title: string
+  description?: string
+  banner?: string
+  discountType: 'percentage' | 'fixed_price' | 'buy_x_get_y'
+  value?: number
+  buyX?: number
+  getY?: number
+  startDate: string
+  endDate: string
+  status: 'active' | 'inactive' | 'scheduled' | 'expired'
+  products: StorefrontProduct[]
 }
 

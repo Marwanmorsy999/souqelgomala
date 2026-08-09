@@ -14,8 +14,9 @@ import {
   productMedia,
   categoryMedia,
 } from '@/db/schema/catalog'
-import type { ProductRow, ProductMediaRow, CategoryRow, CategoryMediaRow } from '@/types/database'
-import { eq, and, gt, like, or, desc, asc, count, inArray, isNull } from 'drizzle-orm'
+import { offers } from '@/db/schema/offers'
+import type { ProductRow, ProductMediaRow, CategoryRow, CategoryMediaRow, OfferRow } from '@/types/database'
+import { eq, and, gt, like, or, desc, asc, count, inArray, isNull, lte, gte } from 'drizzle-orm'
 
 /** Active, visible, non-deleted product filter. */
 const ACTIVE = (t: typeof products) =>
@@ -224,4 +225,91 @@ export async function findFeaturedProducts(limit = 8): Promise<ProductWithRelati
 /** Best-seller active products. */
 export async function findBestSellerProducts(limit = 8): Promise<ProductWithRelations[]> {
   return findProductsByFlag('is_best_seller', limit)
+}
+
+// ============================================
+// OFFERS (campaign-level promotions)
+// ============================================
+
+/**
+ * Parse the `product_ids` JSON column from an offer row.
+ * The D1 schema stores it as TEXT (JSON array), so we parse defensively
+ * to handle both string and array shapes.
+ */
+function parseOfferProductIds(row: OfferRow): string[] {
+  const raw = row.product_ids
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return Array.isArray(raw) ? raw : []
+}
+
+/**
+ * Active campaign offers currently within their scheduled window.
+ * Returns raw D1 rows (product_ids still JSON-encoded).
+ */
+export async function findActiveOffers(): Promise<OfferRow[]> {
+  const now = new Date().toISOString()
+  const rows = await db
+    .select()
+    .from(offers)
+    .where(
+      and(
+        eq(offers.status, 'active'),
+        lte(offers.start_date, now),
+        gte(offers.end_date, now),
+        isNull(offers.deleted_at),
+      ),
+    )
+    .orderBy(desc(offers.start_date))
+  return rows
+}
+
+/**
+ * Resolve a set of product IDs to active storefront products (with
+ * category name + media), ordered by display_order.
+ */
+export async function findProductsByIdsWithRelations(
+  productIds: string[],
+): Promise<ProductWithRelations[]> {
+  if (productIds.length === 0) return []
+  const rows = await db
+    .select()
+    .from(products)
+    .where(and(ACTIVE(products), inArray(products.id, productIds)))
+    .orderBy(asc(products.display_order), desc(products.created_at))
+  const mediaMap = await loadProductMedia(rows.map((r) => r.id))
+  const categoryIds = [...new Set(rows.map((r) => r.category_id).filter(Boolean) as string[])]
+  const cats =
+    categoryIds.length
+      ? await db.select().from(categories).where(inArray(categories.id, categoryIds))
+      : []
+  const catMap = new Map(cats.map((c) => [c.id, c.name_ar]))
+  return rows.map((product) => ({
+    product,
+    categoryName: product.category_id ? (catMap.get(product.category_id) ?? null) : null,
+    media: mediaMap.get(product.id) ?? [],
+  }))
+}
+
+/**
+ * Active offers with their referenced products resolved to storefront rows.
+ * Each offer's product_ids JSON is parsed and the matching products are fetched.
+ */
+export async function findActiveOffersWithProducts(): Promise<
+  Array<{ offer: OfferRow; productIds: string[]; products: ProductWithRelations[] }>
+> {
+  const rows = await findActiveOffers()
+  const result: Array<{ offer: OfferRow; productIds: string[]; products: ProductWithRelations[] }> = []
+  for (const row of rows) {
+    const ids = parseOfferProductIds(row)
+    const resolved = ids.length > 0 ? await findProductsByIdsWithRelations(ids) : []
+    result.push({ offer: row, productIds: ids, products: resolved })
+  }
+  return result
 }

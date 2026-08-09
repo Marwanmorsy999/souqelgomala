@@ -12,6 +12,7 @@ import { WhatsAppButton } from "@/components/home/WhatsAppButton";
 import { CategoryProducts } from "@/components/home/CategoryProducts";
 import { Hero } from "@/components/home/sections/Hero";
 import { PromoBanner } from "@/components/home/sections/PromoBanner";
+import { DailyOffers } from "@/components/home/sections/DailyOffers";
 import { Categories } from "@/components/home/sections/Categories";
 import { TrustBanner } from "@/components/home/sections/TrustBanner";
 import { LatestProducts } from "@/components/home/sections/LatestProducts";
@@ -194,6 +195,7 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
                 onOffers={() => goToAnchor("offers")}
               />
               <PromoBanner />
+              <DailyOffers onOpen={setSelected} />
               <Categories onSelect={handleCategory} />
               <TrustBanner />
               <LatestProducts onOpen={setSelected} />

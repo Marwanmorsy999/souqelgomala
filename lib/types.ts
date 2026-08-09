@@ -63,6 +63,25 @@ export type Category = {
   image: string
 }
 
+/**
+ * A campaign-level promotion from the D1 `offers` table.
+ * Products referenced by the campaign are resolved at query time.
+ */
+export type Offer = {
+  id: string
+  title: string
+  description?: string
+  banner?: string
+  discountType: 'percentage' | 'fixed_price' | 'buy_x_get_y'
+  value?: number
+  buyX?: number
+  getY?: number
+  startDate: string
+  endDate: string
+  status: 'active' | 'inactive' | 'scheduled' | 'expired'
+  products: Product[]
+}
+
 export type Testimonial = {
   id: string
   name: string

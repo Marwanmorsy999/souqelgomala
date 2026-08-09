@@ -19,14 +19,17 @@ import {
   findProductBySlug,
   findFeaturedProducts,
   findBestSellerProducts,
+  findActiveOffersWithProducts,
   type ProductSearchWhere,
   type ListResult,
 } from '@/services/catalog/repository'
 import {
   mapProductToStorefront,
   mapCategoryToStorefront,
+  mapOfferToStorefront,
   type StorefrontProduct,
   type StorefrontCategory,
+  type StorefrontOffer,
 } from '@/services/catalog/mapper'
 import { kvGetOrSet, invalidateCache, CACHE_KEYS } from '@/lib/cloudflare/kv'
 import { logger } from '@/lib/logger'
@@ -42,9 +45,10 @@ export const CATALOG_KEYS = {
   PRODUCT_BY_SLUG: (slug: string) => `catalog:product:slug:${slug}`,
   CATEGORY_BY_ID: (id: string) => `catalog:category:id:${id}`,
   CATEGORY_BY_NAME: (name: string) => `catalog:category:name:${name}`,
-  FEATURED: 'catalog:featured',
+    FEATURED: 'catalog:featured',
   BEST_SELLERS: 'catalog:best-sellers',
   DISCOUNTED: 'catalog:discounted',
+  OFFERS: CACHE_KEYS.OFFERS,
 } as const
 
 /** Invalidate all catalog caches after a catalog mutation. */
@@ -54,13 +58,14 @@ export async function invalidateCatalogCache(): Promise<void> {
     CATALOG_KEYS.FEATURED,
     CATALOG_KEYS.BEST_SELLERS,
     CATALOG_KEYS.DISCOUNTED,
+    CATALOG_KEYS.OFFERS,
     CACHE_KEYS.PRODUCTS('*'),
   )
 }
 
 /** Invalidate caches for a specific product (by id + slug). */
 export async function invalidateProductCache(id?: string, slug?: string): Promise<void> {
-  const keys: string[] = [CACHE_KEYS.PRODUCTS('*'), CATALOG_KEYS.FEATURED, CATALOG_KEYS.BEST_SELLERS, CATALOG_KEYS.DISCOUNTED]
+  const keys: string[] = [CACHE_KEYS.PRODUCTS('*'), CATALOG_KEYS.FEATURED, CATALOG_KEYS.BEST_SELLERS, CATALOG_KEYS.DISCOUNTED, CATALOG_KEYS.OFFERS]
   if (id) keys.push(CATALOG_KEYS.PRODUCT_BY_ID(id))
   if (slug) keys.push(CATALOG_KEYS.PRODUCT_BY_SLUG(slug))
   await invalidateCache(...keys)
@@ -185,6 +190,63 @@ export async function getLatestProducts(limit = 6): Promise<StorefrontProduct[]>
       mapProductToStorefront(product, { categoryName, media })
     )
   }, CATALOG_TTL)
+}
+
+// ============================================
+// OFFERS (storefront-facing)
+// ============================================
+
+/**
+ * Active campaign offers from the D1 `offers` table, with their referenced
+ * products resolved to storefront shape. KV-cached. Returns an empty array
+ * when no campaign offers are currently active — the storefront falls back
+ * to featured + discounted products for the "daily offers" view.
+ */
+export async function getActiveOffers(): Promise<StorefrontOffer[]> {
+  return kvGetOrSet(CATALOG_KEYS.OFFERS, async () => {
+    const rows = await findActiveOffersWithProducts()
+    return rows.map(({ offer, products }) =>
+      mapOfferToStorefront(
+        offer,
+        products.map(({ product, categoryName, media }) =>
+          mapProductToStorefront(product, { categoryName, media })
+        )
+      )
+    )
+  }, CATALOG_TTL)
+}
+
+/**
+ * Combined "daily offers" payload for the homepage.
+ *
+ * Strategy (reuses existing admin-managed data — no fake offers):
+ *  1. Active campaign offers from the D1 `offers` table (campaign-level).
+ *  2. Discounted products (has offer_price) — real promotional pricing.
+ *  3. Featured products (is_featured flag) — admin-curated picks.
+ *
+ * If campaign offers exist, their products take priority. Otherwise the
+ * component falls back to discounted + featured products so the section
+ * always reflects real, admin-managed data.
+ */
+export interface DailyOffersResult {
+  offers: StorefrontOffer[]
+  discounted: StorefrontProduct[]
+  featured: StorefrontProduct[]
+  updatedAt: string
+}
+
+export async function getDailyOffers(limit = 12): Promise<DailyOffersResult> {
+  const [offers, discountedResult, featured] = await Promise.all([
+    getActiveOffers(),
+    getDiscountedProducts(1, limit),
+    getFeaturedProducts(limit),
+  ])
+  return {
+    offers,
+    discounted: discountedResult.data,
+    featured,
+    updatedAt: new Date().toISOString(),
+  }
 }
 
 /** Single active product by id (KV cached). */

@@ -11,7 +11,7 @@
  * dataset to D1 + Cloudinary.
  */
 
-import type { Product, Category } from "../types";
+import type { Product, Category, Offer } from "../types";
 
 const API_BASE = "/api/catalog";
 
@@ -104,4 +104,25 @@ export async function searchProducts(query: string): Promise<Product[]> {
 /** Fetch all active categories (for the homepage circular categories). */
 export async function getCategories(): Promise<Category[]> {
   return getJSON<Category[]>("/categories");
+}
+
+/** Campaign-level offers (from D1 offers table). Empty array when none active. */
+export async function getOffers(): Promise<Offer[]> {
+  return getJSON<Offer[]>("/offers");
+}
+
+/**
+ * Combined "daily offers" payload for the homepage.
+ * Returns campaign offers + discounted + featured products.
+ * All data comes from real D1-backed API — no fake offers.
+ */
+export interface DailyOffersPayload {
+  offers: Offer[];
+  discounted: Product[];
+  featured: Product[];
+  updatedAt: string;
+}
+
+export async function getDailyOffers(): Promise<DailyOffersPayload> {
+  return getJSON<DailyOffersPayload>("/offers");
 }

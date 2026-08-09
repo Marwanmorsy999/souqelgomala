@@ -266,7 +266,8 @@ export interface OfferRow {
   value: number | null
   buy_x: number | null
   get_y: number | null
-  product_ids: string[]
+  /** Stored as JSON TEXT in D1 — parse with `parseOfferProductIds()` */
+  product_ids: string
   start_date: string
   end_date: string
   status: OfferStatus
