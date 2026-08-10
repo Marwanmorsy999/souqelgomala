@@ -263,4 +263,89 @@ export const createFeatureFlagSchema = z.object({
 
 export type CreateFeatureFlagInput = z.infer<typeof createFeatureFlagSchema>
 
+// ============================================
+// OFFERS (admin-managed campaigns)
+// ============================================
+
+export const offerStatusSchema = z.enum(['active', 'inactive', 'scheduled', 'expired'])
+export const offerDiscountTypeSchema = z.enum(['percentage', 'fixed_price', 'buy_x_get_y'])
+
+/** Validates the raw JSON `product_ids` payload passed by the admin UI. */
+export const adminOfferSchema = z
+  .object({
+    campaignName: z.string().min(1, 'اسم العرض مطلوب'),
+    banner: z.string().optional(),
+    discountType: offerDiscountTypeSchema.default('percentage'),
+    value: z.coerce.number().positive('قيمة الخصم يجب أن تكون موجبة').optional(),
+    buyX: z.coerce.number().int().positive().optional(),
+    getY: z.coerce.number().int().positive().optional(),
+    productIds: z.array(z.string().min(1)).default([]),
+    startDate: z.string().min(1, 'تاريخ البداية مطلوب'),
+    endDate: z.string().min(1, 'تاريخ النهاية مطلوب'),
+    status: offerStatusSchema.default('scheduled'),
+  })
+  .refine((data) => {
+    // Every date must be a valid ISO instant.
+    return !Number.isNaN(new Date(data.startDate).getTime()) && !Number.isNaN(new Date(data.endDate).getTime())
+  }, 'التواريخ يجب أن تكون صحيحة')
+
+export type AdminOfferInput = z.infer<typeof adminOfferSchema>
+
+// ============================================
+// SOCIAL POSTS (admin-managed)
+// ============================================
+
+export const socialPlatformSchema = z.enum(['facebook', 'instagram', 'tiktok', 'whatsapp'])
+
+export const createSocialPostSchema = z.object({
+  platform: socialPlatformSchema,
+  url: z.string().min(1, 'رابط المنشور مطلوب'),
+  thumbnail: z.string().optional(),
+  title: z.string().min(1, 'عنوان المنشور مطلوب'),
+  caption: z.string().optional(),
+  postDate: z.string().min(1, 'تاريخ النشر مطلوب'),
+  featured: z.boolean().default(false),
+  linkedOfferId: z.string().optional().nullable(),
+  isVisible: z.boolean().default(true),
+  sortOrder: z.coerce.number().int().nonnegative().default(0),
+})
+
+export const updateSocialPostSchema = createSocialPostSchema.partial()
+export type CreateSocialPostInput = z.infer<typeof createSocialPostSchema>
+export type UpdateSocialPostInput = z.infer<typeof updateSocialPostSchema>
+
+// ============================================
+// SITE SETTINGS (admin-managed business info)
+// ============================================
+
+export const siteSettingsSchema = z.object({
+  name: z.string().min(1, 'اسم المتجر مطلوب').optional(),
+  nameEn: z.string().optional(),
+  tagline: z.string().optional(),
+  description: z.string().optional(),
+  location: z.string().optional(),
+  addressLines: z.array(z.string()).optional(),
+  phoneMain: z.string().optional(),
+  phoneAlt: z.string().optional(),
+  whatsapp: z.string().optional(),
+  social: z
+    .object({
+      facebook: z.string().optional(),
+      instagram: z.string().optional(),
+      tiktok: z.string().optional(),
+    })
+    .optional(),
+  hero: z
+    .object({
+      image: z.string().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      ctaLabel: z.string().optional(),
+      whatsappCtaLabel: z.string().optional(),
+      alt: z.string().optional(),
+    })
+    .optional(),
+})
+
+export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>
 

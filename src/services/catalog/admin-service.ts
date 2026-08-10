@@ -19,7 +19,7 @@ import type { User } from '@/services/auth'
 import { hasPermission, type Role } from '@/lib/permissions'
 import { createProductSchema, updateProductSchema, type CreateProductInput, type UpdateProductInput } from '@/lib/validations'
 import { nanoid } from 'nanoid'
-import { eq, inArray, isNull, and, desc } from 'drizzle-orm'
+import { eq, inArray, isNull, and, desc, asc, or, like, type SQL } from 'drizzle-orm'
 import { deleteCloudinaryAsset } from '@/lib/cloudinary/upload'
 import {
   invalidateCatalogCache,
@@ -152,6 +152,122 @@ export async function softDeleteProduct(user: User, id: string) {
   await invalidateProductCache(id, slug)
   logger.info('Admin catalog: product soft-deleted', { id })
   return { success: true }
+}
+
+// ============================================
+// PRODUCT LISTING (ADMIN — includes hidden/inactive)
+// ============================================
+
+export interface AdminProductListItem {
+  id: string
+  name_ar: string
+  name_en: string | null
+  brand: string | null
+  sku: string | null
+  barcode: string | null
+  category_id: string | null
+  category_name: string | null
+  price: number | null
+  offer_price: number | null
+  wholesale_price: number | null
+  compare_at_price: number | null
+  unit: string | null
+  stock: number | null
+  min_stock: number | null
+  is_featured: boolean
+  is_visible: boolean
+  status: string
+  description: string | null
+  slug: string | null
+  created_at: string
+  updated_at: string
+  image_url: string | null
+  media: Array<{
+    id: string
+    secure_url: string
+    cloudinary_public_id: string
+    is_primary: boolean
+    display_order: number
+  }>
+}
+
+/** Every non-deleted product (any status) with its primary image for the admin table. */
+export async function listProductsAdmin(opts: { search?: string; categoryId?: string } = {}) {
+  const conditions: SQL[] = [isNull(products.deleted_at)]
+  if (opts.categoryId) conditions.push(eq(products.category_id, opts.categoryId))
+  if (opts.search?.trim()) {
+    const q = `%${opts.search.trim()}%`
+    conditions.push(orLike(products.name_ar, q)!)
+  }
+
+  const rows = await getDb()
+    .select()
+    .from(products)
+    .where(and(...conditions))
+    .orderBy(desc(products.created_at))
+    .limit(500)
+
+  const ids = rows.map((r) => r.id)
+  const mediaRows = ids.length
+    ? await getDb()
+        .select()
+        .from(productMedia)
+        .where(and(inArray(productMedia.product_id, ids), isNull(productMedia.deleted_at)))
+        .orderBy(asc(productMedia.display_order))
+    : []
+  const mediaByProduct = new Map<string, NonNullable<AdminProductListItem['media']>>()
+  for (const m of mediaRows) {
+    const list = mediaByProduct.get(m.product_id) ?? []
+    list.push({
+      id: m.id,
+      secure_url: m.secure_url,
+      cloudinary_public_id: m.cloudinary_public_id,
+      is_primary: m.is_primary,
+      display_order: m.display_order,
+    })
+    mediaByProduct.set(m.product_id, list)
+  }
+
+  const categoryIds = [...new Set(rows.map((r) => r.category_id).filter(Boolean) as string[])]
+  const catRows = categoryIds.length
+    ? await getDb().select({ id: categories.id, name_ar: categories.name_ar }).from(categories).where(inArray(categories.id, categoryIds))
+    : []
+  const catMap = new Map(catRows.map((c) => [c.id, c.name_ar]))
+
+  return rows.map<AdminProductListItem>((r) => {
+    const media = mediaByProduct.get(r.id) ?? []
+    const primary = media.find((m) => m.is_primary) ?? media[0]
+    return {
+      id: r.id,
+      name_ar: r.name_ar,
+      name_en: r.name_en,
+      brand: r.brand,
+      sku: r.sku,
+      barcode: r.barcode,
+      category_id: r.category_id,
+      category_name: r.category_id ? (catMap.get(r.category_id) ?? null) : null,
+      price: r.price,
+      offer_price: r.offer_price,
+      wholesale_price: r.wholesale_price,
+      compare_at_price: r.compare_at_price,
+      unit: r.unit,
+      stock: r.stock,
+      min_stock: r.min_stock,
+      is_featured: r.is_featured,
+      is_visible: r.is_visible,
+      status: r.status,
+      description: r.description,
+      slug: r.slug,
+      created_at: r.created_at,
+      updated_at: r.updated_at,
+      image_url: primary?.secure_url ?? null,
+      media,
+    }
+  })
+}
+
+function orLike(column: typeof products.name_ar, query: string) {
+  return or(like(column, query), like(products.name_en ?? '', query))
 }
 
 // ============================================

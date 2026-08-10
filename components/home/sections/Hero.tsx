@@ -1,7 +1,6 @@
 "use client";
 
-import { SITE, heroConfig, waLink } from "@/lib/site";
-import { heroImageUrl } from "@/lib/cloudinary/urls";
+import { useSiteSettings, useWhatsappLink } from "@/components/shared/site-settings";
 
 type Props = {
   onOffers: () => void;
@@ -10,20 +9,17 @@ type Props = {
 /**
  * Hero — the سوق الجملة identity block.
  *
- * Photo handling (replaceable through the existing asset/content system):
- *   - `heroConfig.publicId` (Cloudinary public_id) → rendered via `heroImageUrl()`
- *   - `heroConfig.image` (direct file URL, e.g. `/photos/shop.jpg`)
- * Until the business supplies a real photo of the shop, BOTH are empty and the
- * section renders an intentional branded deep-green fallback — never generic
- * supermarket/mall stock photography.
- *
- * Kept deliberately plain: name, tagline, one sentence, two actions. The real
- * shop photo (when available) is the section's main visual.
+ * Every piece of text (business name, tagline, description, CTA labels) and
+ * the photo are admin-managed via the settings dashboard (D1-backed with the
+ * existing lib/site.ts values as defaults). Until a real shop photo is set the
+ * section renders the same branded deep-green fallback — never generic stock.
  */
 export function Hero({ onOffers }: Props) {
-  const photo = heroConfig.publicId
-    ? heroImageUrl(heroConfig.publicId)
-    : heroConfig.image;
+  const settings = useSiteSettings();
+  const waLink = useWhatsappLink();
+  const heroImage = settings.hero.image?.trim();
+  const photo = heroImage ? heroImage : undefined;
+  const headline = settings.hero.title?.trim() || settings.tagline;
 
   return (
     <section id="home" className="relative overflow-hidden">
@@ -32,7 +28,7 @@ export function Hero({ onOffers }: Props) {
         <div className="absolute inset-0">
           <img
             src={photo}
-            alt={heroConfig.alt ?? SITE.name}
+            alt={settings.hero.alt || settings.name}
             className="size-full object-cover object-center"
             loading="eager"
             fetchPriority="high"
@@ -46,12 +42,12 @@ export function Hero({ onOffers }: Props) {
       <div className="site-section relative pb-16 pt-14 sm:pb-20 sm:pt-20 md:pb-24 md:pt-28">
         <h1 className="max-w-2xl text-3xl font-black leading-[1.2] text-white sm:text-4xl md:text-5xl">
           <span className="mb-3 block text-lg font-black tracking-wide text-accent sm:text-xl">
-            {SITE.name}
+            {settings.name}
           </span>
-          {SITE.tagline}
+          {headline}
         </h1>
         <p className="mt-4 max-w-xl text-base leading-7 text-white/90 sm:text-lg">
-          بقالة جملة وقطاعي في كفر شكر — بنبيع كل يوم بأسعار الجملة للبيت والمحل.
+          {settings.hero.description || settings.description}
         </p>
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
@@ -59,7 +55,7 @@ export function Hero({ onOffers }: Props) {
             onClick={onOffers}
             className="flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-base font-black text-accent-foreground transition-colors hover:bg-accent/90"
           >
-            شوف عروض النهارده
+            {settings.hero.ctaLabel || "شوف عروض النهارده"}
           </button>
           <a
             href={waLink}
@@ -67,7 +63,7 @@ export function Hero({ onOffers }: Props) {
             rel="noopener noreferrer"
             className="flex h-12 items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20"
           >
-            اطلب على واتساب
+            {settings.hero.whatsappCtaLabel || "اطلب على واتساب"}
           </a>
         </div>
       </div>

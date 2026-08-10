@@ -32,6 +32,8 @@ export * from './suppliers'
 export * from './returns'
 // --- Reviews (social proof) ---
 export * from './reviews'
+// --- Social Posts (admin-managed daily offers content) ---
+export * from './social'
 // --- Feature Flags ---
 export * from './featureFlags'
 

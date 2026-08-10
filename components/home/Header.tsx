@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Menu, Phone, Search, ShoppingCart, UserRound } from "lucide-react";
 import { logoUrl } from "@/lib/data";
-import { SITE, telMain } from "@/lib/site";
+import { useSiteSettings } from "@/components/shared/site-settings";
 
 type Props = {
   cartCount: number;
@@ -20,6 +20,7 @@ export function Header({
   onAccount,
   onCart,
 }: Props) {
+  const settings = useSiteSettings();
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export function Header({
               className="size-9 rounded-lg object-contain"
             />
             <span className="hidden text-lg font-black lg:block">
-              {SITE.name}
+              {settings.name}
             </span>
           </button>
         </div>
@@ -118,11 +119,11 @@ export function Header({
         <div className="flex items-center gap-1">
           {/* Desktop phone CTA */}
           <a
-            href={telMain}
+            href={`tel:${settings.phoneMain}`}
             className="hidden h-10 items-center gap-2 rounded-xl bg-primary px-3 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 lg:flex"
           >
             <Phone className="size-4" />
-            <span dir="ltr">{SITE.phoneMain}</span>
+            <span dir="ltr">{settings.phoneMain}</span>
           </a>
 
           {/* Search (mobile) */}

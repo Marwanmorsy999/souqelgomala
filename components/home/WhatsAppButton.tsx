@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { waLink } from "@/lib/site";
+import { useWhatsappLink } from "@/components/shared/site-settings";
 
 export function WhatsAppButton() {
+  const waLink = useWhatsappLink();
   const [hidden, setHidden] = useState(false);
 
   useEffect(() => {

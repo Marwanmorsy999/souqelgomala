@@ -157,6 +157,7 @@ export const CACHE_KEYS = {
   ORDERS: (scope: string) => `orders:${scope}`,
   CATEGORIES: 'categories',
   OFFERS: 'offers',
+  SOCIAL: 'catalog:social',
 } as const
 
 /**

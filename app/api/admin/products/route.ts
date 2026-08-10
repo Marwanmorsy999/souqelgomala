@@ -1,33 +1,34 @@
 import { NextRequest } from 'next/server'
 import { requireAdminUser } from '@/services/catalog/admin-auth'
-import { createProduct, softDeleteProduct } from '@/services/catalog/admin-service'
+import { createProduct, softDeleteProduct, listProductsAdmin } from '@/services/catalog/admin-service'
 import { hasPermission, type Role } from '@/lib/permissions'
 import { ok, forbidden, validationError, serverError } from '@/services/api-response'
 import { createProductSchema } from '@/lib/validations'
-import { getProducts } from '@/services/catalog/service'
 
 export const dynamic = 'force-dynamic'
 
 /**
  * Admin products endpoint.
  *
- * GET  /api/admin/products — paginated product list (RBAC: products.read).
- * POST /api/admin/products — create a product (RBAC: products.write).
- * DELETE /api/admin/products?id=... — soft-delete a product (RBAC: products.write).
+ * GET    /api/admin/products — product list incl. hidden/inactive (RBAC: products.read)
+ * POST   /api/admin/products — create a product (RBAC: products.write)
+ * DELETE /api/admin/products?id=... — soft-delete a product (RBAC: products.write)
  *
  * Authorization is enforced server-side. Input is Zod-validated before write.
  */
 
 /** GET /api/admin/products — list products for the admin table. */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const auth = await requireAdminUser()
   if (auth instanceof Response) return auth
   if (!hasPermission(auth.user.role as Role, 'products.read')) {
     return forbidden('ليس لديك صلاحية لعرض المنتجات')
   }
   try {
-    const result = await getProducts({}, 1, 200)
-    return ok(result.data)
+    const search = request.nextUrl.searchParams.get('search') ?? undefined
+    const categoryId = request.nextUrl.searchParams.get('categoryId') ?? undefined
+    const result = await listProductsAdmin({ search, categoryId })
+    return ok(result)
   } catch (err) {
     return serverError((err as Error).message ?? 'فشل تحميل المنتجات')
   }

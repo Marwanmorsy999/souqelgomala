@@ -1,8 +1,11 @@
+"use client";
+
 import { Phone } from "lucide-react";
 import { logoUrl } from "@/lib/data";
-import { SITE, telAlt, telMain } from "@/lib/site";
+import { useSiteSettings } from "@/components/shared/site-settings";
 
 export function Footer() {
+  const settings = useSiteSettings();
   const links = [
     ["الرئيسية", "home"],
     ["الأقسام", "categories"],
@@ -20,33 +23,33 @@ export function Footer() {
             <div className="flex items-center gap-3">
               <img
                 src={logoUrl}
-                alt="سوق الجملة"
+                alt={settings.name}
                 className="size-10 rounded-lg object-contain"
               />
               <div>
-                <p className="text-lg font-black">{SITE.name}</p>
+                <p className="text-lg font-black">{settings.name}</p>
                 <p dir="ltr" className="text-xs text-muted-foreground">
-                  {SITE.nameEn}
+                  {settings.nameEn}
                 </p>
               </div>
             </div>
             <p className="mt-3 text-sm leading-7 text-muted-foreground">
-              {SITE.location}
+              {settings.location}
             </p>
             <div className="mt-4 flex flex-col gap-2 text-sm">
               <a
-                href={telMain}
+                href={`tel:${settings.phoneMain}`}
                 className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
               >
                 <Phone className="size-4 text-primary" />
-                <span dir="ltr">{SITE.phoneMain}</span>
+                <span dir="ltr">{settings.phoneMain}</span>
               </a>
               <a
-                href={telAlt}
+                href={`tel:${settings.phoneAlt}`}
                 className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
               >
                 <Phone className="size-4 text-primary" />
-                <span dir="ltr">{SITE.phoneAlt}</span>
+                <span dir="ltr">{settings.phoneAlt}</span>
               </a>
             </div>
           </div>
@@ -74,7 +77,7 @@ export function Footer() {
             <ul className="flex flex-col gap-2 text-sm">
               <li>
                 <a
-                  href={SITE.social.facebook}
+                  href={settings.social.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground transition-colors hover:text-primary"
@@ -84,7 +87,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href={SITE.social.instagram}
+                  href={settings.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground transition-colors hover:text-primary"
@@ -94,7 +97,7 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href={SITE.social.tiktok}
+                  href={settings.social.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-muted-foreground transition-colors hover:text-primary"
@@ -104,7 +107,9 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href={telMain}
+                  href={`https://wa.me/${settings.whatsapp.replace(/[^\d]/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-muted-foreground transition-colors hover:text-primary"
                 >
                   واتساب
@@ -116,9 +121,9 @@ export function Footer() {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t pt-5 text-xs text-muted-foreground md:flex-row">
           <p>
-            © {new Date().getFullYear()} {SITE.name} — جميع الحقوق محفوظة.
+            © {new Date().getFullYear()} {settings.name} — جميع الحقوق محفوظة.
           </p>
-          <p>{SITE.location}</p>
+          <p>{settings.location}</p>
         </div>
       </div>
     </footer>

@@ -1,0 +1,15 @@
+Debugger listening on ws://127.0.0.1:49155/c460a6c2-e29b-4cc7-82c1-a8302e5c04d5
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+Debugger listening on ws://127.0.0.1:49158/ce016125-f07f-40c2-80cb-2e77acd3d14d
+For help, see: https://nodejs.org/learn/getting-started/debugging
+Debugger attached.
+app/api/admin/settings/route.ts(52,55): error TS2345: Argument of type '{ name?: string | undefined; nameEn?: string | undefined; tagline?: string | undefined; description?: string | undefined; location?: string | undefined; addressLines?: string[] | undefined; ... 4 more ...; hero?: { ...; } | undefined; }' is not assignable to parameter of type 'Partial<SiteSettings>'.
+  Types of property 'social' are incompatible.
+    Type '{ facebook?: string | undefined; instagram?: string | undefined; tiktok?: string | undefined; } | undefined' is not assignable to type 'SiteSocialLinks | undefined'.
+      Type '{ facebook?: string | undefined; instagram?: string | undefined; tiktok?: string | undefined; }' is not assignable to type 'SiteSocialLinks'.
+        Types of property 'facebook' are incompatible.
+          Type 'string | undefined' is not assignable to type 'string'.
+            Type 'undefined' is not assignable to type 'string'.
+Waiting for the debugger to disconnect...
+Waiting for the debugger to disconnect...

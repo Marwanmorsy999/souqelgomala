@@ -55,6 +55,16 @@ export function pickPrimaryMedia(media: ProductMediaRow[] | undefined): ProductM
   )
 }
 
+/**
+ * A `cloudinary_public_id` may hold a plain CDN/direct URL when the admin
+ * pasted an external image URL (Cloudinary-less environment). In that case the
+ * media row's `secure_url` IS the final image — never feed it into the
+ * Cloudinary transformation builder.
+ */
+function isDirectUrl(value: string | null | undefined): boolean {
+  return typeof value === 'string' && /^https?:\/\//.test(value)
+}
+
 function formatUnit(unit: string): string {
   return unit && unit !== 'piece' ? unit : ''
 }
@@ -67,7 +77,7 @@ export function mapProductToStorefront(
   const primary = pickPrimaryMedia(opts.media)
   const rawImage = primary?.secure_url
   const image =
-    rawImage && primary?.cloudinary_public_id
+    rawImage && primary?.cloudinary_public_id && !isDirectUrl(primary.cloudinary_public_id)
       ? productCardImageUrl(primary.cloudinary_public_id)
       : rawImage || placeholderImage()
 
@@ -110,7 +120,7 @@ export function mapCategoryToStorefront(
   const primary = (opts.media ?? []).find((m) => m.is_primary && !m.deleted_at)
   const raw = primary?.secure_url
   const image =
-    raw && primary?.cloudinary_public_id
+    raw && primary?.cloudinary_public_id && !isDirectUrl(primary.cloudinary_public_id)
       ? categoryImageUrl(primary.cloudinary_public_id)
       : raw || placeholderImage()
 

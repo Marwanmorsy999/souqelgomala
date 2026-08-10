@@ -1,7 +1,8 @@
 "use client";
 
-import { SITE, waLink } from "@/lib/site";
-import { socialPosts } from "@/lib/site";
+import { useEffect, useState } from "react";
+import { useSiteSettings } from "@/components/shared/site-settings";
+import { getSocialPosts } from "@/lib/services/catalog";
 import { isPlaceholderImage } from "@/lib/utils";
 import type { SocialPlatform, SocialPost } from "@/lib/types";
 
@@ -12,25 +13,38 @@ const PLATFORM_LABEL: Record<SocialPlatform, string> = {
   whatsapp: "واتساب",
 };
 
-const PLATFORM_HREF: Record<string, string> = {
-  facebook: SITE.social.facebook,
-  instagram: SITE.social.instagram,
-  tiktok: SITE.social.tiktok,
-};
-
 /**
- * "تابع عروضنا أول بأول" — honest follow section.
+ * "تابع عروضنا أول بأول" — real admin-managed social content.
  *
- * No fake live feed and no decorative platform tiles. Only posts that carry a
- * REAL thumbnail are rendered as feed cards (prepared for the future
- * admin-managed `GET /api/social` content, type `SocialPost`). Until then the
- * section shows the real business profiles as plain links.
+ * The feed renders ONLY posts the admin added in the dashboard (real post URLs
+ * + thumbnails). No scraping, no fake live feed. When there are no posts yet
+ * the section shows the business profiles as plain links — an honest state.
+ * Featured posts ("عرض النهارده") surface first.
  */
 export function SocialFeed() {
-  const realPosts = [...socialPosts]
+  const settings = useSiteSettings();
+  const [posts, setPosts] = useState<SocialPost[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    getSocialPosts()
+      .then((list) => active && setPosts(list))
+      .catch(() => active && setPosts([]));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const realPosts = posts
     .filter((p) => p.thumbnail && !isPlaceholderImage(p.thumbnail))
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0))
     .slice(0, 4);
+
+  const platformHref: Record<string, string> = {
+    facebook: settings.social.facebook,
+    instagram: settings.social.instagram,
+    tiktok: settings.social.tiktok,
+  };
 
   return (
     <section id="social" className="site-section scroll-mt-20">
@@ -47,8 +61,8 @@ export function SocialFeed() {
             {(["facebook", "instagram", "tiktok"] as const).map((p) => (
               <a
                 key={p}
-                href={PLATFORM_HREF[p]}
-                target="_blank"
+                href={platformHref[p] || "#"}
+                target={platformHref[p] ? "_blank" : undefined}
                 rel="noopener noreferrer"
                 className="underline-offset-2 hover:underline"
               >
@@ -56,7 +70,7 @@ export function SocialFeed() {
               </a>
             ))}
             <a
-              href={waLink}
+              href={`https://wa.me/${settings.whatsapp.replace(/[^\d]/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="text-foreground underline-offset-2 hover:underline"

@@ -41,6 +41,8 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     'delivery.read', 'delivery.write',
     'branches.read',
     'reports.read',
+    'reviews.read', 'reviews.write',
+    'social.read', 'social.write',
     'settings.read', 'settings.write',
     'suppliers.read', 'suppliers.write',
     'inventory.read', 'inventory.write',

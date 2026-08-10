@@ -11,7 +11,8 @@
  * dataset to D1 + Cloudinary.
  */
 
-import type { Product, Category, Offer } from "../types";
+import type { Product, Category, Offer, SocialPost } from "../types";
+import type { SiteSettings } from "../../src/lib/site-settings";
 
 const API_BASE = "/api/catalog";
 
@@ -125,4 +126,20 @@ export interface DailyOffersPayload {
 
 export async function getDailyOffers(): Promise<DailyOffersPayload> {
   return getJSON<DailyOffersPayload>("/offers");
+}
+
+/**
+ * Admin-managed social posts for the storefront SocialFeed.
+ * Real post URLs/thumbnails only — empty array when none are published.
+ */
+export async function getSocialPosts(): Promise<SocialPost[]> {
+  return getJSON<SocialPost[]>("/social");
+}
+
+/** Merged site settings (D1 over lib/site.ts defaults) for the storefront. */
+export async function getSiteInfo(): Promise<SiteSettings> {
+  const res = await fetch("/api/site", { cache: "no-store" });
+  const body = await res.json();
+  if (body?.success && body.data) return body.data as SiteSettings;
+  throw new Error("Site settings unavailable");
 }
