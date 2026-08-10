@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Settings, Loader2 } from "lucide-react"
+import { Loader2, Save } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,11 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { runAfterRender } from "@/components/admin/use-deferred-load"
-
-const toast = {
-  success: (msg: string) => { console.log(msg); alert(msg) },
-  error: (msg: string) => { console.error(msg); alert(msg) }
-}
+import { useToast } from "@/components/ui/toast"
 
 type SiteSettings = {
   name: string
@@ -26,10 +22,11 @@ type SiteSettings = {
   phoneAlt: string
   whatsapp: string
   social: { facebook: string; instagram: string; tiktok: string }
-  hero: { image?: string; title?: string; description?: string }
+  hero: { image?: string; title?: string; description?: string; ctaLabel?: string; whatsappCtaLabel?: string; alt?: string }
 }
 
 export default function AdminSettingsPage() {
+  const toast = useToast()
   const [settings, setSettings] = useState<SiteSettings | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -58,6 +55,29 @@ export default function AdminSettingsPage() {
     setSettings({ ...settings, [key]: value })
   }
 
+  async function save() {
+    if (!settings) return
+    setSaving(true)
+    try {
+      const res = await fetch("/api/admin/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+      })
+      const body = await res.json()
+      if (body?.success) {
+        setSettings(body.data)
+        toast.success("تم حفظ الإعدادات")
+      } else {
+        toast.error(body?.error ?? "تعذر حفظ الإعدادات")
+      }
+    } catch {
+      toast.error("تعذر حفظ الإعدادات")
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center gap-2 p-6 text-muted-foreground">
@@ -77,7 +97,16 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader title="الإعدادات" description="إعدادات المتجر" />
+      <PageHeader
+        title="الإعدادات"
+        description="إعدادات المتجر (تُحفظ في قاعدة البيانات وتظهر في المتجر)"
+        actions={
+          <Button onClick={save} disabled={saving}>
+            {saving ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            <span className="mr-2">حفظ</span>
+          </Button>
+        }
+      />
 
       <div className="flex flex-col gap-4">
         <div className="flex gap-2 border-b">
@@ -131,25 +160,6 @@ export default function AdminSettingsPage() {
               <div>
                 <Label htmlFor="whatsapp">واتساب</Label>
                 <Input id="whatsapp" value={settings.whatsapp} onChange={(e) => update("whatsapp", e.target.value)} />
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {tab === "social" && (
-          <Card>
-            <CardContent className="grid gap-4 p-6">
-              <div>
-                <Label htmlFor="facebook">فيسبوك</Label>
-                <Input id="facebook" value={settings.social.facebook} onChange={(e) => update("social", { ...settings.social, facebook: e.target.value })} />
-              </div>
-              <div>
-                <Label htmlFor="instagram">انستغرام</Label>
-                <Input id="instagram" value={settings.social.instagram} onChange={(e) => update("social", { ...settings.social, instagram: e.target.value })} />
-              </div>
-              <div>
-                <Label htmlFor="tiktok">تيك توك</Label>
-                <Input id="tiktok" value={settings.social.tiktok} onChange={(e) => update("social", { ...settings.social, tiktok: e.target.value })} />
               </div>
             </CardContent>
           </Card>

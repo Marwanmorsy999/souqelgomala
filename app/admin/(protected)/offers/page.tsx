@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Loader2, X } from "lucide-react"
+import { Plus, Pencil, Trash2, Loader2, X, Star } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { runAfterRender } from "@/components/admin/use-deferred-load"
+import { useToast } from "@/components/ui/toast"
 
 type Offer = {
   id: string
@@ -23,46 +24,38 @@ type Offer = {
   start_date: string
   end_date: string
   status: string
+  is_featured?: boolean
 }
 
-const toast = {
-  success: (msg: string) => { console.log(msg); alert(msg) },
-  error: (msg: string) => { console.error(msg); alert(msg) }
+type ProductOption = { id: string; name_ar?: string }
+
+const EMPTY_FORM = {
+  campaign_name: "",
+  banner: "",
+  discount_type: "percentage" as Offer["discount_type"],
+  value: "",
+  buy_x: "",
+  get_y: "",
+  product_ids: [] as string[],
+  start_date: "",
+  end_date: "",
+  status: "active",
+  is_featured: false,
 }
 
 export default function AdminOffersPage() {
+  const toast = useToast()
   const [offers, setOffers] = useState<Offer[]>([])
+  const [products, setProducts] = useState<ProductOption[]>([])
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
-  const [form, setForm] = useState({
-    campaign_name: "",
-    banner: "",
-    discount_type: "percentage" as Offer["discount_type"],
-    value: "",
-    buy_x: "",
-    get_y: "",
-    product_ids: "",
-    start_date: "",
-    end_date: "",
-    status: "active",
-  })
+  const [form, setForm] = useState(EMPTY_FORM)
 
   function openCreate() {
     setEditingId(null)
-    setForm({
-      campaign_name: "",
-      banner: "",
-      discount_type: "percentage",
-      value: "",
-      buy_x: "",
-      get_y: "",
-      product_ids: "",
-      start_date: "",
-      end_date: "",
-      status: "active",
-    })
+    setForm(EMPTY_FORM)
     setShowForm(true)
   }
 
@@ -75,10 +68,11 @@ export default function AdminOffersPage() {
       value: offer.value?.toString() ?? "",
       buy_x: offer.buy_x?.toString() ?? "",
       get_y: offer.get_y?.toString() ?? "",
-      product_ids: (offer.product_ids ?? []).join(", "),
+      product_ids: (offer.product_ids ?? []).slice(),
       start_date: offer.start_date.slice(0, 16),
       end_date: offer.end_date.slice(0, 16),
       status: offer.status,
+      is_featured: offer.is_featured ?? false,
     })
     setShowForm(true)
   }
@@ -104,25 +98,26 @@ export default function AdminOffersPage() {
     setSaving(true)
     try {
       const payload: Record<string, unknown> = {
-        campaign_name: form.campaign_name,
+        campaignName: form.campaign_name,
         banner: form.banner || undefined,
-        discount_type: form.discount_type,
-        product_ids: form.product_ids.split(",").map((s) => s.trim()).filter(Boolean),
-        start_date: new Date(form.start_date).toISOString(),
-        end_date: new Date(form.end_date).toISOString(),
+        discountType: form.discount_type,
+        productIds: form.product_ids,
+        startDate: new Date(form.start_date).toISOString(),
+        endDate: new Date(form.end_date).toISOString(),
         status: form.status,
+        isFeatured: form.is_featured,
       }
       if (form.discount_type === "percentage" || form.discount_type === "fixed_price") {
         payload.value = form.value ? Number(form.value) : undefined
       }
       if (form.discount_type === "buy_x_get_y") {
-        payload.buy_x = form.buy_x ? Number(form.buy_x) : undefined
-        payload.get_y = form.get_y ? Number(form.get_y) : undefined
+        payload.buyX = form.buy_x ? Number(form.buy_x) : undefined
+        payload.getY = form.get_y ? Number(form.get_y) : undefined
       }
 
       const url = editingId ? `/api/admin/offers/${editingId}` : "/api/admin/offers"
       const res = await fetch(url, {
-        method: editingId ? "PUT" : "POST",
+        method: editingId ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       })
@@ -141,6 +136,15 @@ export default function AdminOffersPage() {
     }
   }
 
+  function toggleProduct(id: string) {
+    setForm((f) => ({
+      ...f,
+      product_ids: f.product_ids.includes(id)
+        ? f.product_ids.filter((p) => p !== id)
+        : [...f.product_ids, id],
+    }))
+  }
+
   function discountLabel(o: Offer): string {
     if (o.discount_type === "percentage" && o.value != null) return `-${o.value}%`
     if (o.discount_type === "fixed_price" && o.value != null) return `خصم ${o.value} ج.م`
@@ -152,12 +156,16 @@ export default function AdminOffersPage() {
   async function load() {
     setLoading(true)
     try {
-      const res = await fetch("/api/admin/offers", { cache: "no-store" })
-      const body = await res.json()
-      if (body?.success) setOffers(body.data ?? [])
-      else toast.error(body?.error ?? "تعذر تحميل العروض")
+      const [offersRes, productsRes] = await Promise.all([
+        fetch("/api/admin/offers", { cache: "no-store" }),
+        fetch("/api/admin/products", { cache: "no-store" }),
+      ])
+      const offersBody = await offersRes.json()
+      const productsBody = await productsRes.json()
+      setOffers(Array.isArray(offersBody?.data) ? offersBody.data : [])
+      setProducts(Array.isArray(productsBody?.data) ? productsBody.data : [])
     } catch {
-      toast.error("تعذر تحميل العروض")
+      toast.error("تعذر تحميل البيانات")
     } finally {
       setLoading(false)
     }
@@ -171,7 +179,7 @@ export default function AdminOffersPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         title="العروض"
-        description="إدارة العروض والتخفيضات"
+        description="إدارة العروض والتخفيضات اليومية"
         actions={
           <Button onClick={openCreate} disabled={showForm}>
             <Plus className="size-4" />
@@ -253,13 +261,22 @@ export default function AdminOffersPage() {
               )}
 
               <div className="sm:col-span-2">
-                <Label htmlFor="product_ids">معرّفات المنتجات (مفصولة بفاصلة)</Label>
-                <Input
-                  id="product_ids"
-                  value={form.product_ids}
-                  onChange={(e) => setForm({ ...form, product_ids: e.target.value })}
-                  placeholder="uuid1, uuid2, uuid3"
-                />
+                <Label>المنتجات المشمولة ({form.product_ids.length})</Label>
+                <div className="mt-1 flex max-h-40 flex-col gap-1 overflow-y-auto rounded-md border border-input p-2">
+                  {products.length === 0 && (
+                    <p className="text-xs text-muted-foreground">لا توجد منتجات بعد.</p>
+                  )}
+                  {products.map((p) => (
+                    <label key={p.id} className="flex items-center gap-2 text-sm">
+                      <input
+                        type="checkbox"
+                        checked={form.product_ids.includes(p.id)}
+                        onChange={() => toggleProduct(p.id)}
+                      />
+                      {p.name_ar ?? p.id}
+                    </label>
+                  ))}
+                </div>
               </div>
 
               <div>
@@ -298,8 +315,19 @@ export default function AdminOffersPage() {
                 </select>
               </div>
 
+              <div className="flex items-end">
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.is_featured}
+                    onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
+                  />
+                  <Star className="size-4 text-accent" /> عرض مميز (يُظهر في الواجهة)
+                </label>
+              </div>
+
               <div className="sm:col-span-2">
-                <Label htmlFor="banner">رابط الصورة</Label>
+                <Label htmlFor="banner">رابط الصورة (البانر)</Label>
                 <Input
                   id="banner"
                   value={form.banner}
@@ -339,6 +367,11 @@ export default function AdminOffersPage() {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold">{offer.campaign_name}</h4>
+                    {offer.is_featured && (
+                      <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-semibold text-accent">
+                        <Star className="mr-1 inline size-3" /> مميز
+                      </span>
+                    )}
                     <span
                       className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                         offer.status === "active"
@@ -352,6 +385,9 @@ export default function AdminOffersPage() {
                   {offer.product_ids.length > 0 && (
                     <p className="mt-1 text-xs text-muted-foreground">
                       {offer.product_ids.length} منتج
+                      {offer.productNames.filter(Boolean).length > 0 && (
+                        <>: {offer.productNames.filter(Boolean).join("، ")}</>
+                      )}
                     </p>
                   )}
                   <p className="mt-1 text-xs text-muted-foreground">

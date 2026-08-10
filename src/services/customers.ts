@@ -64,7 +64,7 @@ export async function listCustomersAdmin(opts: { search?: string; limit?: number
   // Last order date per customer (id OR phone match) in one pass.
   const ids = rows.map((r) => r.id)
   const phones = rows.map((r) => r.phone).filter(Boolean)
-  let lastOrders = new Map<string, string>()
+  const lastOrders = new Map<string, string>()
   if (ids.length) {
     const rowsOrdered = await getDb()
       .select({ customer_id: orders.customer_id, customer_phone: orders.customer_phone, created_at: orders.created_at })

@@ -21,6 +21,7 @@ export const offers = sqliteTable(
     start_date: text('start_date').notNull(),
     end_date: text('end_date').notNull(),
     status: text('status').$type<OfferStatus>().notNull().default('scheduled'),
+    is_featured: integer('is_featured', { mode: 'boolean' }).notNull().default(false),
     created_at: text('created_at').notNull(),
     updated_at: text('updated_at').notNull(),
     deleted_at: text('deleted_at'),

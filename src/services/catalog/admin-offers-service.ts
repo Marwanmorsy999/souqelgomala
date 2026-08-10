@@ -15,7 +15,7 @@ import { offers } from '@/db/schema/offers'
 import { products } from '@/db/schema/catalog'
 import type { User } from '@/services/auth'
 import { hasPermission, type Role } from '@/lib/permissions'
-import { eq, desc, isNull, inArray } from 'drizzle-orm'
+import { eq, desc, isNull, inArray, sql } from 'drizzle-orm'
 import { invalidateCache, CACHE_KEYS } from '@/lib/cloudflare/kv'
 import { logger } from '@/lib/logger'
 import type { AdminOfferInput } from '@/lib/validations'
@@ -57,8 +57,32 @@ async function invalidateOffersCache(): Promise<void> {
   )
 }
 
+/**
+ * Ensure the `is_featured` column exists on the `offers` table.
+ *
+ * This column was added after the initial schema (migration 0004). To keep the
+ * admin "mark as featured" control working even if the migration hasn't been
+ * applied through the journal yet, we attempt the additive ALTER once per
+ * process. The statement is idempotent — a duplicate-column error is ignored.
+ */
+let ensuredFeatured = false
+async function ensureFeaturedColumn(): Promise<void> {
+  if (ensuredFeatured) return
+  try {
+    await getDb().run(
+      sql.raw(
+        `ALTER TABLE offers ADD COLUMN is_featured integer DEFAULT false NOT NULL`,
+      ),
+    )
+  } catch {
+    // Column already exists (or migration 0004 already applied) — safe to ignore.
+  }
+  ensuredFeatured = true
+}
+
 /** Every non-deleted offer for the admin table (products resolved). */
 export async function listOffersAdmin() {
+  await ensureFeaturedColumn()
   const rows = await getDb()
     .select()
     .from(offers)
@@ -91,6 +115,7 @@ export async function listOffersAdmin() {
       start_date: r.start_date,
       end_date: r.end_date,
       status: r.status,
+      is_featured: r.is_featured,
       created_at: r.created_at,
       updated_at: r.updated_at,
     }
@@ -100,6 +125,7 @@ export async function listOffersAdmin() {
 /** Create a daily-offer campaign. */
 export async function createOffer(user: User, input: AdminOfferInput) {
   assertCanWriteOffers(user)
+  await ensureFeaturedColumn()
   const ts = now()
   try {
     const [row] = await getDb()
@@ -116,6 +142,7 @@ export async function createOffer(user: User, input: AdminOfferInput) {
         start_date: input.startDate,
         end_date: input.endDate,
         status: input.status,
+        is_featured: input.isFeatured ?? false,
         created_at: ts,
         updated_at: ts,
       })
@@ -132,6 +159,7 @@ export async function createOffer(user: User, input: AdminOfferInput) {
 /** Update a daily-offer campaign (partial). */
 export async function updateOffer(user: User, id: string, input: Partial<AdminOfferInput>) {
   assertCanWriteOffers(user)
+  await ensureFeaturedColumn()
   const existing = await getDb().select().from(offers).where(eq(offers.id, id)).limit(1)
   if (!existing[0]) throw new AdminOfferError('العرض غير موجود', 404)
 
@@ -150,6 +178,7 @@ export async function updateOffer(user: User, id: string, input: Partial<AdminOf
         ...(input.startDate !== undefined ? { start_date: input.startDate } : {}),
         ...(input.endDate !== undefined ? { end_date: input.endDate } : {}),
         ...(input.status !== undefined ? { status: input.status } : {}),
+        ...(input.isFeatured !== undefined ? { is_featured: input.isFeatured } : {}),
         updated_at: now(),
       })
       .where(eq(offers.id, id))

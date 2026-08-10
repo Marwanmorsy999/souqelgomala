@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { ShellProvider } from '@/components/layout/shell-context'
 import { AppShell } from '@/components/layout/app-shell'
+import { ToastProvider } from '@/components/ui/toast'
 import { requireAuth } from '@/services/auth'
 
 export const metadata: Metadata = {
@@ -14,7 +15,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
   return (
     <ShellProvider>
-      <AppShell 
+      <AppShell
         user={{
           id: user.id,
           email: user.email || '',
@@ -23,7 +24,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           avatar: user.avatar,
         }}
       >
-        {children}
+        <ToastProvider>{children}</ToastProvider>
       </AppShell>
     </ShellProvider>
   )

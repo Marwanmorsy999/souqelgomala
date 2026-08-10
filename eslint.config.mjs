@@ -5,7 +5,23 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: ['node_modules/**', '.next/**', 'out/**', 'coverage/**', 'supabase/functions/_shared/**'],
+    // Build artifacts and generated output must never be linted: they are
+    // minified bundles that produced ~39k spurious problems and masked the
+    // handful of real source findings.
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      '.open-next/**',
+      '.wrangler/**',
+      '.wrangler-test/**',
+      'out/**',
+      'coverage/**',
+      'artifacts/**',
+      'legacy/**',
+      'playwright-report/**',
+      'test-results/**',
+      'supabase/functions/_shared/**',
+    ],
   },
 ]
 

@@ -283,6 +283,7 @@ export const adminOfferSchema = z
     startDate: z.string().min(1, 'تاريخ البداية مطلوب'),
     endDate: z.string().min(1, 'تاريخ النهاية مطلوب'),
     status: offerStatusSchema.default('scheduled'),
+    isFeatured: z.boolean().default(false),
   })
   .refine((data) => {
     // Every date must be a valid ISO instant.

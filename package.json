@@ -17,6 +17,10 @@
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "seed:admin": "node --experimental-strip-types scripts/seed-admin.ts",
+    "verify:shim": "tsx scripts/verify-shim.ts",
+    "verify:crud": "tsx scripts/verify-crud.ts",
+    "verify:auth": "tsx scripts/verify-auth-api.ts",
+    "verify": "pnpm verify:shim && pnpm verify:crud && pnpm verify:auth",
     "db:migrate": "wrangler d1 migrations apply DB",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
