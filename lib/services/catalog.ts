@@ -46,10 +46,39 @@ export interface CatalogListResult {
   pageSize: number;
 }
 
+export type ProductSort =
+  | "default"
+  | "price_asc"
+  | "price_desc"
+  | "newest"
+  | "best_seller"
+  | "featured";
+
+/** Filter/sort params shared by the shop page and category listings. */
+export interface ProductFilters {
+  categoryId?: string;
+  search?: string;
+  discountedOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  unit?: string;
+  inStockOnly?: boolean;
+  sort?: ProductSort;
+}
+
+/** Facet values for the filter UI (from GET /api/catalog/facets). */
+export interface CatalogFacets {
+  units: string[];
+  priceMin: number;
+  priceMax: number;
+  categories: Array<{ id: string; name: string; parentId: string | null }>;
+}
+
 /**
  * Fetch one page of products (optionally filtered by category / search /
- * discounted). Returns the unwrapped page shape the rest of this module expects
- * ({ data, total, ... }) — pull `total` out of the API's `meta` envelope.
+ * discounted / price / unit / stock / sort). Returns the unwrapped page shape
+ * the rest of this module expects ({ data, total, ... }) — pull `total` out of
+ * the API's `meta` envelope.
  */
 export async function fetchProducts(opts?: {
   page?: number;
@@ -57,6 +86,11 @@ export async function fetchProducts(opts?: {
   categoryId?: string;
   search?: string;
   discounted?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  unit?: string;
+  inStockOnly?: boolean;
+  sort?: ProductSort;
 }): Promise<CatalogListResult> {
   const q = new URLSearchParams();
   if (opts?.page) q.set("page", String(opts.page));
@@ -64,6 +98,11 @@ export async function fetchProducts(opts?: {
   if (opts?.categoryId) q.set("categoryId", opts.categoryId);
   if (opts?.search) q.set("search", opts.search);
   if (opts?.discounted) q.set("discounted", "true");
+  if (opts?.minPrice != null && Number.isFinite(opts.minPrice)) q.set("minPrice", String(opts.minPrice));
+  if (opts?.maxPrice != null && Number.isFinite(opts.maxPrice)) q.set("maxPrice", String(opts.maxPrice));
+  if (opts?.unit) q.set("unit", opts.unit);
+  if (opts?.inStockOnly) q.set("inStock", "true");
+  if (opts?.sort && opts.sort !== "default") q.set("sort", opts.sort);
   const suffix = q.toString();
   const path = `/products${suffix ? `?${suffix}` : ""}`;
   const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
@@ -80,6 +119,11 @@ export async function fetchProducts(opts?: {
     page: body.meta?.page ?? opts?.page ?? 1,
     pageSize: body.meta?.pageSize ?? opts?.pageSize ?? 100,
   };
+}
+
+/** Fetch the facet values used to build the storefront filter controls. */
+export async function getFacets(): Promise<CatalogFacets> {
+  return getJSON<CatalogFacets>("/facets");
 }
 
 /**

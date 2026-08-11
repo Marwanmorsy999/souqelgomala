@@ -55,7 +55,7 @@ export type Order = {
 }
 
 export type UserType = 'customer' | 'wholesale'
-export type View = 'home' | 'category' | 'cart' | 'orders' | 'checkout'
+export type View = 'home' | 'category' | 'cart' | 'orders' | 'checkout' | 'shop'
 
 export type Category = {
   id: string

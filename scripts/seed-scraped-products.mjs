@@ -52,7 +52,17 @@ const CATEGORY_MAP = {
   'شاي وقهوة': '10000000-0000-0000-0000-000000000030',
   عصائر: '10000000-0000-0000-0000-000000000031',
   مياه: '10000000-0000-0000-0000-000000000032',
+  // Catch-all leaf under بقالة (only used when nothing else matches).
+  متفرقات: '10000000-0000-0000-0000-000000000050',
 }
+
+// New leaf categories added by the taxonomy restructure (A1). They must be
+// inserted into D1 before reclassify runs (see `seed-categories` mode).
+const EXTRA_CATEGORY_SEED = [
+  { id: CATEGORY_MAP['متفرقات'], name_ar: 'متفرقات', name_en: 'Misc', parent_id: CATEGORY_MAP['بقالة'], sort_order: 99 },
+  { id: '10000000-0000-0000-0000-000000000040', name_ar: 'منظفات', name_en: 'Detergents', parent_id: CATEGORY_MAP['تنظيف'], sort_order: 4 },
+  { id: '10000000-0000-0000-0000-000000000041', name_ar: 'حفاضات', name_en: 'Diapers', parent_id: CATEGORY_MAP['أطفال'], sort_order: 4 },
+]
 
 // ---------------------------------------------------------------------------
 // Env
@@ -166,7 +176,8 @@ function classifyCategory(nameEn) {
   for (const [re, cat] of CLASSIFY_RULES) {
     if (re.test(s)) return CATEGORY_MAP[cat]
   }
-  return CATEGORY_MAP['بقالة']
+  // Fall back to the catch-all LEAF (never a bare parent) so the tree stays strict.
+  return CATEGORY_MAP['متفرقات']
 }
 
 // Build a per-id override map from the OLD export_site files (kept for diff/
@@ -216,14 +227,38 @@ const SOURCE_CATEGORY_MAP = {
 }
 
 function categoryIdFor(productId, nameEn, sourceCategory) {
-  // 1) name classifier (precise), 2) old map, 3) source label gap-fill, 4) grocery.
+  // 1) name classifier (precise), 2) old map, 3) source label gap-fill, 4) catch-all leaf.
   const classified = classifyCategory(nameEn)
-  if (classified !== CATEGORY_MAP['بقالة']) return classified
+  if (classified !== CATEGORY_MAP['متفرقات']) return classified
   if (OLD_CATEGORY_MAP.get(Number(productId))) return OLD_CATEGORY_MAP.get(Number(productId))
   if (sourceCategory && SOURCE_CATEGORY_MAP[sourceCategory]) {
     return SOURCE_CATEGORY_MAP[sourceCategory]
   }
-  return CATEGORY_MAP['بقالة']
+  return CATEGORY_MAP['متفرقات']
+}
+
+// ---------------------------------------------------------------------------
+// Unit normalization (B2) — collapse free-text unit strings into a small set of
+// facetable values. The human-readable `size` is derived separately in the
+// storefront mapper, so overwriting `unit` here is safe.
+// ---------------------------------------------------------------------------
+const UNIT_NORMALIZE = [
+  [/(كيلو|kg|كلغ|كيلوجرام|kilo)/i, 'كيلو'],
+  [/(جرام|جم|g|gram|غرام)/i, 'جرام'],
+  [/(علبة|عبوة|زجاجة|باكت|باكيت|packet|box|bottle|can|علب)/i, 'علبة'],
+  [/(كرتونة|كرتون|carton)/i, 'كرتونة'],
+  [/(حبة|قطعة|piece|حبات|قطع)/i, 'حبة'],
+  [/(رول|لفة|roll)/i, 'رول'],
+]
+
+function normalizeUnit(raw) {
+  const s = (raw || '').toString().trim()
+  if (!s || s === 'piece') return 'حبة'
+  for (const [re, norm] of UNIT_NORMALIZE) {
+    if (re.test(s)) return norm
+  }
+  // Default unknown packaging to a generic piece/"حبة" so the facet is clean.
+  return 'حبة'
 }
 
 // ---------------------------------------------------------------------------
@@ -410,7 +445,7 @@ async function main() {
             name_ar: nameAr,
             name_en: p.name_en || '',
             price,
-            unit: p.unit || 'piece',
+            unit: normalizeUnit(p.unit),
             image_path: imgPath ? `product-${p.id}` : null,
             secure_url: media ? media.secureUrl : null,
             format: media ? media.format : 'jpg',
@@ -526,6 +561,107 @@ async function fixTranslate() {
   console.log(`[fix-translate] DONE updated=${updated} failed=${failed}`)
 }
 
+// seed-categories: insert the extra leaf categories (catch-all + children) so
+// the taxonomy restructure (A1) exists before reclassify runs. Idempotent.
+async function seedCategories() {
+  console.log(`[seed-cat] target=${TARGET} — inserting ${EXTRA_CATEGORY_SEED.length} extra categories`)
+  const nowTs = now()
+  for (const c of EXTRA_CATEGORY_SEED) {
+    const sql = `INSERT OR IGNORE INTO categories (id, name_ar, name_en, parent_id, sort_order, is_visible, created_at, updated_at) VALUES (${sqlStr(c.id)}, ${sqlStr(c.name_ar)}, ${sqlStr(c.name_en)}, ${sqlStr(c.parent_id)}, ${c.sort_order}, 1, ${sqlStr(nowTs)}, ${sqlStr(nowTs)});`
+    try {
+      await d1Exec(sql)
+      console.log(`[seed-cat] ensured ${c.name_ar} (${c.id})`)
+    } catch (e) {
+      console.error(`[seed-cat] failed ${c.name_ar}: ${e.message}`)
+    }
+  }
+  console.log('[seed-cat] DONE')
+}
+
+// reclassify: re-assign category_id + normalized unit for all kz-% products.
+async function reclassify() {
+  console.log(`[reclassify] target=${TARGET} — re-classifying + normalizing kz-% products`)
+  const products = JSON.parse(readFileSync(SOURCE_JSON, 'utf8'))
+  const BATCH = 200
+  let updated = 0
+  let failed = 0
+  for (let i = 0; i < products.length; i += BATCH) {
+    const slice = products.slice(i, i + BATCH)
+    const catCases = slice
+      .map((p) => `WHEN 'kz-${p.id}' THEN '${categoryIdFor(p.id, p.name_en, p.category)}'`)
+      .join(' ')
+    const unitCases = slice
+      .map((p) => `WHEN 'kz-${p.id}' THEN ${sqlStr(normalizeUnit(p.unit))}`)
+      .join(' ')
+    const idList = slice.map((p) => `'kz-${p.id}'`).join(',')
+    const sql = `UPDATE products SET category_id = CASE id ${catCases} END, unit = CASE id ${unitCases} END WHERE id IN (${idList});`
+    try {
+      await d1Exec(sql)
+      updated += slice.length
+    } catch (e) {
+      console.error(`[reclassify] batch failed: ${e.message}`)
+      failed += slice.length
+    }
+    if (i % (BATCH * 10) === 0 || i + BATCH >= products.length) {
+      console.log(`[reclassify] progress ${updated + failed}/${products.length} updated=${updated} failed=${failed}`)
+    }
+    await sleep(TARGET === 'prod' ? 150 : 20)
+  }
+  console.log(`[reclassify] DONE updated=${updated} failed=${failed}`)
+}
+
+// audit-categories: print CURRENT category distribution (joined to names) AND
+// the distribution the improved classifier WOULD produce, so divergence is visible.
+async function auditCategories() {
+  console.log(`[audit] target=${TARGET} — current vs proposed category distribution`)
+  // Current distribution from D1.
+  let currentCounts = {}
+  try {
+    const rows = await d1Exec(TARGET === 'local'
+      ? `SELECT c.name_ar AS name, COUNT(*) AS cnt FROM products p JOIN categories c ON c.id = p.category_id GROUP BY c.name_ar;`
+      : `SELECT c.name_ar AS name, COUNT(*) AS cnt FROM products p JOIN categories c ON c.id = p.category_id GROUP BY c.name_ar;`)
+    // For prod the HTTP API returns result[0].results; for local, raw text. Parse defensively.
+    const parsed = parseD1Results(rows)
+    currentCounts = {}
+    for (const r of parsed) currentCounts[r.name] = Number(r.cnt)
+  } catch (e) {
+    console.warn(`[audit] could not read current distribution: ${e.message}`)
+  }
+
+  // Proposed distribution from the classifier.
+  const products = JSON.parse(readFileSync(SOURCE_JSON, 'utf8'))
+  const proposed = {}
+  for (const p of products) {
+    const id = categoryIdFor(p.id, p.name_en, p.category)
+    const name = Object.keys(CATEGORY_MAP).find((k) => CATEGORY_MAP[k] === id) || '???'
+    proposed[name] = (proposed[name] || 0) + 1
+  }
+
+  const allNames = new Set([...Object.keys(currentCounts), ...Object.keys(proposed)])
+  console.log('\n  category\tcurrent\tproposed\tΔ')
+  for (const name of [...allNames].sort()) {
+    const cur = currentCounts[name] || 0
+    const prop = proposed[name] || 0
+    const diff = prop - cur
+    console.log(`  ${name}\t${cur}\t${prop}\t${diff >= 0 ? '+' : ''}${diff}`)
+  }
+  const curTotal = Object.values(currentCounts).reduce((a, b) => a + b, 0)
+  const propTotal = Object.values(proposed).reduce((a, b) => a + b, 0)
+  console.log(`  TOTAL\t${curTotal}\t${propTotal}`)
+  console.log(`  "متفرقات" (catch-all) proposed: ${proposed['متفرقات'] || 0}`)
+}
+
+// Parse D1 query results across local (raw SQL text) and prod (JSON) paths.
+function parseD1Results(rows) {
+  if (Array.isArray(rows)) {
+    // prod HTTP: array of statement result objects
+    const stmt = rows.find((r) => Array.isArray(r.results)) || rows[0]
+    const results = stmt?.results || stmt || []
+    return results.map((r) => (Array.isArray(r) ? r[0] : r))
+  }
+  return []
+}
+
 // preview-classify: print the proposed category distribution WITHOUT writing.
 function previewClassify() {
   const products = JSON.parse(readFileSync(SOURCE_JSON, 'utf8'))
@@ -549,6 +685,12 @@ if (MODE === 'fix-categories-v2') {
   fixTranslate().catch((e) => { console.error('FATAL', e); process.exit(1) })
 } else if (MODE === 'preview-classify') {
   previewClassify()
+} else if (MODE === 'audit-categories') {
+  auditCategories().catch((e) => { console.error('FATAL', e); process.exit(1) })
+} else if (MODE === 'reclassify') {
+  reclassify().catch((e) => { console.error('FATAL', e); process.exit(1) })
+} else if (MODE === 'seed-categories') {
+  seedCategories().catch((e) => { console.error('FATAL', e); process.exit(1) })
 } else {
   main().catch((e) => {
     console.error('FATAL', e)

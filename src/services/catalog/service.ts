@@ -20,8 +20,10 @@ import {
   findFeaturedProducts,
   findBestSellerProducts,
   findActiveOffersWithProducts,
+  findFacets,
   type ProductSearchWhere,
   type ListResult,
+  type CatalogFacets,
 } from '@/services/catalog/repository'
 import {
   mapProductToStorefront,
@@ -49,6 +51,7 @@ export const CATALOG_KEYS = {
   BEST_SELLERS: 'catalog:best-sellers',
   DISCOUNTED: 'catalog:discounted',
   OFFERS: CACHE_KEYS.OFFERS,
+  FACETS: 'catalog:facets',
 } as const
 
 /** Invalidate all catalog caches after a catalog mutation. */
@@ -58,8 +61,9 @@ export async function invalidateCatalogCache(): Promise<void> {
     CATALOG_KEYS.FEATURED,
     CATALOG_KEYS.BEST_SELLERS,
     CATALOG_KEYS.DISCOUNTED,
-    CATALOG_KEYS.OFFERS,
-    CACHE_KEYS.PRODUCTS('*'),
+  CATALOG_KEYS.OFFERS,
+  CATALOG_KEYS.FACETS,
+  CACHE_KEYS.PRODUCTS('*'),
   )
 }
 
@@ -109,13 +113,18 @@ export async function getCategoryByName(name: string): Promise<StorefrontCategor
   }, CATALOG_TTL)
 }
 
+/** Facet values for the storefront filter UI (units, price bounds, category tree). */
+export async function getFacets(): Promise<CatalogFacets> {
+  return kvGetOrSet(CATALOG_KEYS.FACETS, async () => findFacets(), CATALOG_TTL)
+}
+
 /** Paginated, active-only products mapped to storefront shape (KV cached per scope). */
 export async function getProducts(
   where: ProductSearchWhere = {},
   page = 1,
   pageSize = 20
 ): Promise<ListResult<StorefrontProduct>> {
-  const scope = `${where.categoryId ?? 'all'}:${where.search ?? ''}:${where.discountedOnly ? 'disc' : 'all'}:${page}:${pageSize}`
+  const scope = `${where.categoryId ?? 'all'}:${where.search ?? ''}:${where.discountedOnly ? 'disc' : 'all'}:${where.minPrice ?? ''}:${where.maxPrice ?? ''}:${where.unit ?? ''}:${where.inStockOnly ? 'in' : 'all'}:${where.sort ?? 'default'}:${page}:${pageSize}`
   return kvGetOrSet(CATALOG_KEYS.PRODUCTS(scope), async () => {
     const { data, total, page: p, pageSize: ps } = await findProductsWithRelations(where, page, pageSize)
     return {

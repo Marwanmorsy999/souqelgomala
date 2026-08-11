@@ -20,10 +20,13 @@ type CategoryRow = {
   id: string;
   name_ar: string;
   name_en?: string | null;
+  parent_id?: string | null;
   image?: string | null;
   is_visible?: boolean;
   sort_order?: number;
 };
+
+const TOP_LEVEL_ID = "";
 
 export function CategoriesManagement() {
   const [rows, setRows] = useState<CategoryRow[]>([]);
@@ -161,10 +164,41 @@ function CategoryDialog({
 }) {
   const [nameAr, setNameAr] = useState(row?.name_ar ?? "");
   const [nameEn, setNameEn] = useState(row?.name_en ?? "");
+  const [parentId, setParentId] = useState(row?.parent_id ?? "");
   const [image, setImage] = useState(row?.image ?? "");
   const [visible, setVisible] = useState(row?.is_visible !== false);
+  const [parents, setParents] = useState<CategoryRow[]>([]);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const t = window.setTimeout(() => {
+      setNameAr(row?.name_ar ?? "");
+      setNameEn(row?.name_en ?? "");
+      setParentId(row?.parent_id ?? "");
+      setImage(row?.image ?? "");
+      setVisible(row?.is_visible !== false);
+    }, 0);
+    return () => window.clearTimeout(t);
+  }, [open, row]);
+
+  useEffect(() => {
+    if (!open) return;
+    let active = true;
+    fetch("/api/admin/categories", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((b) => {
+        if (!active) return;
+        const list = Array.isArray(b?.data) ? b.data : [];
+        // Only top-level categories can be parents; exclude self.
+        setParents(list.filter((c: CategoryRow) => !c.parent_id && c.id !== row?.id));
+      })
+      .catch(() => active && setParents([]));
+    return () => {
+      active = false;
+    };
+  }, [open, row?.id]);
 
   async function save() {
     setSaving(true);
@@ -172,6 +206,7 @@ function CategoryDialog({
     const payload = {
       nameAr: nameAr || "بدون اسم",
       nameEn: nameEn || undefined,
+      parentId: parentId || null,
       image: image || undefined,
       isVisible: visible,
     };
@@ -217,6 +252,23 @@ function CategoryDialog({
               <Label htmlFor="cNameEn">الاسم (إنجليزي)</Label>
               <Input id="cNameEn" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
             </div>
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="cParent">القسم الأب</Label>
+            <select
+              id="cParent"
+              value={parentId}
+              onChange={(e) => setParentId(e.target.value)}
+              className="h-9 rounded-lg border border-input bg-muted/60 px-2 text-sm outline-none focus:border-primary"
+            >
+              <option value={TOP_LEVEL_ID}>— قسم رئيسي —</option>
+              {parents.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name_ar}
+                </option>
+              ))}
+            </select>
           </div>
 
           <ImageUploader value={image} onChange={setImage} label="أيقونة القسم" />
