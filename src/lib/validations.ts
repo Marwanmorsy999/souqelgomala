@@ -67,7 +67,7 @@ export const createCategorySchema = z.object({
   nameAr: z.string().min(1, 'Arabic name is required'),
   nameEn: z.string().optional(),
   parentId: catalogIdSchema.optional(),
-  image: z.string().url().optional(),
+  image: z.string().optional(),
   sortOrder: z.coerce.number().int().nonnegative().default(0),
   isVisible: z.boolean().default(true),
 })
@@ -295,7 +295,7 @@ export const adminOfferSchema = z
     value: z.coerce.number().positive('قيمة الخصم يجب أن تكون موجبة').optional(),
     buyX: z.coerce.number().int().positive().optional(),
     getY: z.coerce.number().int().positive().optional(),
-    productIds: z.array(z.string().min(1)).default([]),
+    productIds: z.array(z.string().min(1)).min(1, 'اختر منتجاً واحداً على الأقل'),
     startDate: z.string().min(1, 'تاريخ البداية مطلوب'),
     endDate: z.string().min(1, 'تاريخ النهاية مطلوب'),
     status: offerStatusSchema.default('scheduled'),
@@ -305,6 +305,13 @@ export const adminOfferSchema = z
     // Every date must be a valid ISO instant.
     return !Number.isNaN(new Date(data.startDate).getTime()) && !Number.isNaN(new Date(data.endDate).getTime())
   }, 'التواريخ يجب أن تكون صحيحة')
+  .refine((data) => {
+    // percentage and fixed_price require a value
+    if (data.discountType === 'percentage' || data.discountType === 'fixed_price') {
+      return data.value != null && data.value > 0
+    }
+    return true
+  }, 'قيمة الخصم مطلوبة للنسبة المئوية والسعر الثابت')
 
 export type AdminOfferInput = z.infer<typeof adminOfferSchema>
 

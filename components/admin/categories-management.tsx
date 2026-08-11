@@ -13,8 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ImageUploader } from "@/components/admin/image-uploader";
+import {
+  ImageUploader,
+  type CloudinaryUploadData,
+} from "@/components/admin/image-uploader";
+import { ClientImage } from "@/components/ui/client-image";
 import { runAfterRender } from "@/components/admin/use-deferred-load";
+import { useToast } from "@/components/ui/toast";
 
 type CategoryRow = {
   id: string;
@@ -29,6 +34,7 @@ type CategoryRow = {
 const TOP_LEVEL_ID = "";
 
 export function CategoriesManagement() {
+  const toast = useToast();
   const [rows, setRows] = useState<CategoryRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
@@ -55,14 +61,26 @@ export function CategoriesManagement() {
   }, []);
 
   const filtered = query.trim()
-    ? rows.filter((r) => r.name_ar.includes(query.trim()))
+    ? rows.filter((r) =>
+        r.name_ar.toLowerCase().includes(query.trim().toLowerCase())
+      )
     : rows;
 
   async function remove(row: CategoryRow) {
     if (!confirm(`حذف "${row.name_ar}"؟`)) return;
-    const res = await fetch(`/api/admin/categories/${row.id}`, { method: "DELETE" });
-    if (res.ok) load();
-    else setError("تعذر حذف القسم");
+    try {
+      const res = await fetch(`/api/admin/categories/${row.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("تم حذف القسم");
+        load();
+      } else {
+        toast.error("تعذر حذف القسم");
+      }
+    } catch {
+      toast.error("تعذر حذف القسم");
+    }
   }
 
   return (
@@ -70,9 +88,20 @@ export function CategoriesManagement() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="relative w-full max-w-xs">
           <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="بحث عن قسم…" className="pr-9" />
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="بحث عن قسم…"
+            className="pr-9"
+          />
         </div>
-        <Button onClick={() => { setEditing(null); setOpen(true); }} className="gap-1.5">
+        <Button
+          onClick={() => {
+            setEditing(null);
+            setOpen(true);
+          }}
+          className="gap-1.5"
+        >
           <Plus className="size-4" /> قسم جديد
         </Button>
       </div>
@@ -86,14 +115,17 @@ export function CategoriesManagement() {
               <Loader2 className="size-5 animate-spin" /> جارٍ التحميل…
             </div>
           ) : filtered.length === 0 ? (
-            <p className="p-10 text-center text-muted-foreground">لا توجد أقسام.</p>
+            <p className="p-10 text-center text-muted-foreground">
+              لا توجد أقسام. اضغط &quot;قسم جديد&quot; لإضافة أول قسم.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-right text-sm">
                 <thead className="border-b bg-muted/40 text-xs text-muted-foreground">
                   <tr>
-                    <th className="p-3 font-semibold">الأيقونة</th>
+                    <th className="p-3 font-semibold">الصورة</th>
                     <th className="p-3 font-semibold">الاسم</th>
+                    <th className="p-3 font-semibold">الاسم (EN)</th>
                     <th className="p-3 font-semibold">الحالة</th>
                     <th className="p-3 font-semibold">إجراءات</th>
                   </tr>
@@ -102,17 +134,23 @@ export function CategoriesManagement() {
                   {filtered.map((r) => (
                     <tr key={r.id} className="border-b last:border-0">
                       <td className="p-3">
-                        <img
+                        <ClientImage
                           src={r.image || ""}
                           alt={r.name_ar}
-                          className="size-12 rounded-full object-contain bg-muted p-1"
+                          className="size-12 rounded-full"
+                          imgClassName="size-full object-cover"
                         />
                       </td>
                       <td className="p-3 font-bold">{r.name_ar}</td>
+                      <td className="p-3 text-muted-foreground" dir="ltr">
+                        {r.name_en || "—"}
+                      </td>
                       <td className="p-3">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            r.is_visible === false ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"
+                            r.is_visible === false
+                              ? "bg-destructive/10 text-destructive"
+                              : "bg-primary/10 text-primary"
                           }`}
                         >
                           {r.is_visible === false ? "مخفي" : "ظاهر"}
@@ -120,10 +158,23 @@ export function CategoriesManagement() {
                       </td>
                       <td className="p-3">
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => { setEditing(r); setOpen(true); }} aria-label="تعديل">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => {
+                              setEditing(r);
+                              setOpen(true);
+                            }}
+                            aria-label="تعديل"
+                          >
                             <Edit3 className="size-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => remove(r)} aria-label="حذف">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => remove(r)}
+                            aria-label="حذف"
+                          >
                             <Trash2 className="size-4 text-destructive" />
                           </Button>
                         </div>
@@ -162,10 +213,13 @@ function CategoryDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const toast = useToast();
   const [nameAr, setNameAr] = useState(row?.name_ar ?? "");
   const [nameEn, setNameEn] = useState(row?.name_en ?? "");
+  const [imageUrl, setImageUrl] = useState(row?.image ?? "");
+  const [cloudinaryData, setCloudinaryData] =
+    useState<CloudinaryUploadData | null>(null);
   const [parentId, setParentId] = useState(row?.parent_id ?? "");
-  const [image, setImage] = useState(row?.image ?? "");
   const [visible, setVisible] = useState(row?.is_visible !== false);
   const [parents, setParents] = useState<CategoryRow[]>([]);
   const [saving, setSaving] = useState(false);
@@ -177,7 +231,8 @@ function CategoryDialog({
       setNameAr(row?.name_ar ?? "");
       setNameEn(row?.name_en ?? "");
       setParentId(row?.parent_id ?? "");
-      setImage(row?.image ?? "");
+      setImageUrl(row?.image ?? "");
+      setCloudinaryData(null);
       setVisible(row?.is_visible !== false);
     }, 0);
     return () => window.clearTimeout(t);
@@ -201,15 +256,22 @@ function CategoryDialog({
   }, [open, row?.id]);
 
   async function save() {
+    if (!nameAr.trim()) {
+      setError("اسم القسم مطلوب");
+      return;
+    }
+
     setSaving(true);
     setError(null);
+
     const payload = {
-      nameAr: nameAr || "بدون اسم",
-      nameEn: nameEn || undefined,
+      nameAr: nameAr.trim(),
+      nameEn: nameEn.trim() || undefined,
       parentId: parentId || null,
-      image: image || undefined,
+      image: imageUrl || undefined,
       isVisible: visible,
     };
+
     try {
       const res = row
         ? await fetch(`/api/admin/categories/${row.id}`, {
@@ -222,14 +284,54 @@ function CategoryDialog({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
+
       const body = await res.json();
       if (!res.ok || !body?.success) {
         setError(body?.error ?? "تعذر الحفظ");
         return;
       }
+
+      // Get the category ID
+      const categoryId = row?.id ?? body?.data?.id;
+      if (!categoryId) {
+        setError("تم حفظ القسم ولكن تعذر تحديد المعرف");
+        return;
+      }
+
+      // Attach category media if we have Cloudinary upload data
+      if (cloudinaryData?.cloudinaryPublicId) {
+        const mediaRes = await fetch("/api/admin/categories/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            categoryId,
+            media: {
+              cloudinaryPublicId: cloudinaryData.cloudinaryPublicId,
+              secureUrl: cloudinaryData.secureUrl,
+              width: cloudinaryData.width,
+              height: cloudinaryData.height,
+              format: cloudinaryData.format,
+              isPrimary: true,
+              displayOrder: 0,
+            },
+          }),
+        });
+
+        if (!mediaRes.ok) {
+          const mediaBody = await mediaRes.json().catch(() => ({}));
+          toast.error(
+            "تم حفظ القسم ولكن فشل حفظ الصورة: " +
+              (mediaBody?.error ?? "خطأ غير معروف")
+          );
+          onSaved();
+          return;
+        }
+      }
+
+      toast.success(row ? "تم تحديث القسم" : "تم إنشاء القسم");
       onSaved();
     } catch {
-      setError("تعذر الحفظ");
+      setError("تعذر الحفظ — تحقق من الاتصال");
     } finally {
       setSaving(false);
     }
@@ -237,20 +339,34 @@ function CategoryDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{row ? "تعديل قسم" : "قسم جديد"}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="cNameAr">الاسم (عربي) *</Label>
-              <Input id="cNameAr" value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
+              <Label htmlFor="cNameAr">
+                اسم القسم (عربي){" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="cNameAr"
+                value={nameAr}
+                onChange={(e) => setNameAr(e.target.value)}
+                placeholder="مثال: الأرز والسكر"
+              />
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="cNameEn">الاسم (إنجليزي)</Label>
-              <Input id="cNameEn" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
+              <Input
+                id="cNameEn"
+                value={nameEn}
+                onChange={(e) => setNameEn(e.target.value)}
+                placeholder="Rice & Sugar"
+                dir="ltr"
+              />
             </div>
           </div>
 
@@ -271,14 +387,28 @@ function CategoryDialog({
             </select>
           </div>
 
-          <ImageUploader value={image} onChange={setImage} label="أيقونة القسم" />
+          <ImageUploader
+            value={imageUrl}
+            onChange={setImageUrl}
+            onCloudinaryData={setCloudinaryData}
+            label="صورة القسم"
+          />
 
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={visible}
+              onChange={(e) => setVisible(e.target.checked)}
+              className="size-4 rounded"
+            />
             ظاهر في المتجر
           </label>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-lg">
+              {error}
+            </p>
+          )}
         </div>
 
         <DialogFooter>

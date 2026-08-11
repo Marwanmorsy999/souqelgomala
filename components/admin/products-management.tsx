@@ -1,7 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Edit3, Plus, Search, Trash2, X, Loader2 } from "lucide-react";
+import {
+  Edit3,
+  Plus,
+  Search,
+  Trash2,
+  X,
+  Loader2,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,52 +22,88 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ImageUploader } from "@/components/admin/image-uploader";
+import {
+  ImageUploader,
+  type CloudinaryUploadData,
+} from "@/components/admin/image-uploader";
 import { ClientImage } from "@/components/ui/client-image";
 import { runAfterRender } from "@/components/admin/use-deferred-load";
+import { useToast } from "@/components/ui/toast";
+
+type ProductMedia = {
+  id: string;
+  secure_url: string;
+  cloudinary_public_id: string;
+  is_primary: boolean;
+  display_order: number;
+};
 
 type ProductRow = {
   id: string;
   name_ar?: string;
   name_en?: string;
+  description?: string | null;
   brand?: string | null;
   category_id?: string | null;
+  category_name?: string | null;
   price?: number;
   wholesale_price?: number | null;
   unit?: string;
   stock?: number;
   is_visible?: boolean;
+  is_featured?: boolean;
   status?: string;
   image_url?: string;
   image?: string;
+  media?: ProductMedia[];
 };
 
-const UNITS = ["piece", "كيلو", "علبة", "عبوة", "رزمة", "طرد", "شوال", "كرتونة", "زجاجة", "كيس"];
+const UNITS = [
+  "piece",
+  "كيلو",
+  "علبة",
+  "عبوة",
+  "رزمة",
+  "طرد",
+  "شوال",
+  "كرتونة",
+  "زجاجة",
+  "كيس",
+];
 
 export function ProductsManagement() {
+  const toast = useToast();
   const [rows, setRows] = useState<ProductRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [editing, setEditing] = useState<ProductRow | null>(null);
   const [open, setOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [categories, setCategories] = useState<{ id: string; name_ar: string }[]>([]);
+  const [categories, setCategories] = useState<
+    { id: string; name_ar: string }[]
+  >([]);
 
   async function load() {
     setLoading(true);
     setError(null);
     try {
       const [p, c] = await Promise.all([
-        fetch("/api/admin/products", { cache: "no-store" }).then((r) => r.json()),
-        fetch("/api/catalog/categories", { cache: "no-store" }).then((r) => r.json()),
+        fetch("/api/admin/products", { cache: "no-store" }).then((r) =>
+          r.json()
+        ),
+        // Use admin categories endpoint so hidden categories are also available
+        fetch("/api/admin/categories", { cache: "no-store" }).then((r) =>
+          r.json()
+        ),
       ]);
       setRows(Array.isArray(p?.data) ? p.data : []);
       setCategories(
-        (Array.isArray(c?.data) ? c.data : []).map((x: { id: string; name: string }) => ({
-          id: x.id,
-          name_ar: x.name,
-        })),
+        (Array.isArray(c?.data) ? c.data : []).map(
+          (x: { id: string; name_ar: string }) => ({
+            id: x.id,
+            name_ar: x.name_ar,
+          })
+        )
       );
     } catch {
       setError("تعذر تحميل المنتجات");
@@ -79,7 +123,7 @@ export function ProductsManagement() {
       (r) =>
         (r.name_ar ?? "").toLowerCase().includes(q) ||
         (r.name_en ?? "").toLowerCase().includes(q) ||
-        (r.brand ?? "").toLowerCase().includes(q),
+        (r.brand ?? "").toLowerCase().includes(q)
     );
   }, [rows, query]);
 
@@ -95,9 +139,19 @@ export function ProductsManagement() {
   async function remove(row: ProductRow) {
     if (!confirm(`حذف "${row.name_ar ?? row.id}"؟`)) return;
     setError(null);
-    const res = await fetch(`/api/admin/products?id=${row.id}`, { method: "DELETE" });
-    if (res.ok) load();
-    else setError("تعذر حذف المنتج");
+    try {
+      const res = await fetch(`/api/admin/products?id=${row.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        toast.success("تم حذف المنتج");
+        load();
+      } else {
+        toast.error("تعذر حذف المنتج");
+      }
+    } catch {
+      toast.error("تعذر حذف المنتج");
+    }
   }
 
   return (
@@ -126,7 +180,9 @@ export function ProductsManagement() {
               <Loader2 className="size-5 animate-spin" /> جارٍ التحميل…
             </div>
           ) : filtered.length === 0 ? (
-            <p className="p-10 text-center text-muted-foreground">لا توجد منتجات.</p>
+            <p className="p-10 text-center text-muted-foreground">
+              لا توجد منتجات. اضغط &quot;منتج جديد&quot; لإضافة أول منتج.
+            </p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-right text-sm">
@@ -134,9 +190,9 @@ export function ProductsManagement() {
                   <tr>
                     <th className="p-3 font-semibold">الصورة</th>
                     <th className="p-3 font-semibold">الاسم</th>
-                    <th className="p-3 font-semibold">العلامة</th>
+                    <th className="p-3 font-semibold">القسم</th>
                     <th className="p-3 font-semibold">السعر</th>
-                    <th className="p-3 font-semibold">جملة</th>
+                    <th className="p-3 font-semibold">الوحدة</th>
                     <th className="p-3 font-semibold">المخزون</th>
                     <th className="p-3 font-semibold">الحالة</th>
                     <th className="p-3 font-semibold">إجراءات</th>
@@ -153,28 +209,69 @@ export function ProductsManagement() {
                           imgClassName="size-full object-cover"
                         />
                       </td>
-                      <td className="p-3 font-bold">{r.name_ar}</td>
-                      <td className="p-3 text-muted-foreground">{r.brand ?? "—"}</td>
-                      <td className="p-3">{r.price} ج.م</td>
-                      <td className="p-3">{r.wholesale_price ?? "—"}</td>
-                      <td className="p-3">{r.stock ?? 0}</td>
+                      <td className="p-3">
+                        <div className="font-bold">{r.name_ar}</div>
+                        {r.brand && (
+                          <div className="text-xs text-muted-foreground">
+                            {r.brand}
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-muted-foreground">
+                        {r.category_name ?? "—"}
+                      </td>
+                      <td className="p-3 font-medium">{r.price} ج.م</td>
+                      <td className="p-3 text-muted-foreground">
+                        {r.unit === "piece" ? "حبة" : r.unit ?? "—"}
+                      </td>
                       <td className="p-3">
                         <span
-                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                            r.is_visible === false || r.status === "inactive"
-                              ? "bg-destructive/10 text-destructive"
-                              : "bg-primary/10 text-primary"
-                          }`}
+                          className={
+                            (r.stock ?? 0) <= 0
+                              ? "text-destructive font-bold"
+                              : ""
+                          }
                         >
-                          {r.is_visible === false || r.status === "inactive" ? "مخفي" : "ظاهر"}
+                          {r.stock ?? 0}
                         </span>
                       </td>
                       <td className="p-3">
+                        <div className="flex flex-col gap-1">
+                          <span
+                            className={`w-fit rounded-full px-2 py-0.5 text-xs font-semibold ${
+                              r.is_visible === false ||
+                              r.status === "inactive"
+                                ? "bg-destructive/10 text-destructive"
+                                : "bg-primary/10 text-primary"
+                            }`}
+                          >
+                            {r.is_visible === false || r.status === "inactive"
+                              ? "مخفي"
+                              : "ظاهر"}
+                          </span>
+                          {r.is_featured && (
+                            <span className="w-fit rounded-full bg-accent/15 px-2 py-0.5 text-[10px] font-semibold text-accent">
+                              <Star className="inline size-3" /> مميز
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-3">
                         <div className="flex gap-1">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(r)} aria-label="تعديل">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEdit(r)}
+                            aria-label="تعديل"
+                          >
                             <Edit3 className="size-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => remove(r)} aria-label="حذف">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => remove(r)}
+                            aria-label="حذف"
+                          >
                             <Trash2 className="size-4 text-destructive" />
                           </Button>
                         </div>
@@ -203,6 +300,8 @@ export function ProductsManagement() {
   );
 }
 
+/* ─── Product Dialog ─── */
+
 function ProductDialog({
   open,
   row,
@@ -216,34 +315,62 @@ function ProductDialog({
   onClose: () => void;
   onSaved: () => void;
 }) {
+  const toast = useToast();
   const [nameAr, setNameAr] = useState(row?.name_ar ?? "");
   const [nameEn, setNameEn] = useState(row?.name_en ?? "");
+  const [description, setDescription] = useState(row?.description ?? "");
   const [brand, setBrand] = useState(row?.brand ?? "");
   const [categoryId, setCategoryId] = useState(row?.category_id ?? "");
   const [unit, setUnit] = useState(row?.unit ?? "piece");
   const [price, setPrice] = useState(String(row?.price ?? ""));
-  const [wholesale, setWholesale] = useState(String(row?.wholesale_price ?? ""));
+  const [wholesale, setWholesale] = useState(
+    String(row?.wholesale_price ?? "")
+  );
   const [stock, setStock] = useState(String(row?.stock ?? 0));
-  const [image, setImage] = useState(row?.image_url || row?.image || "");
-  const [visible, setVisible] = useState(row?.is_visible !== false && row?.status !== "inactive");
+  const [imageUrl, setImageUrl] = useState(
+    row?.image_url || row?.image || ""
+  );
+  const [cloudinaryData, setCloudinaryData] =
+    useState<CloudinaryUploadData | null>(null);
+  const [visible, setVisible] = useState(
+    row?.is_visible !== false && row?.status !== "inactive"
+  );
+  const [featured, setFeatured] = useState(row?.is_featured ?? false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Existing media for edit mode
+  const [existingMedia, setExistingMedia] = useState<ProductMedia[]>(
+    row?.media ?? []
+  );
+
   async function save() {
+    if (!nameAr.trim()) {
+      setError("اسم المنتج مطلوب");
+      return;
+    }
+    if (!price || Number(price) <= 0) {
+      setError("السعر مطلوب ويجب أن يكون أكبر من صفر");
+      return;
+    }
+
     setSaving(true);
     setError(null);
+
     const payload = {
-      nameAr: nameAr || "بدون اسم",
-      nameEn: nameEn || undefined,
-      brand: brand || undefined,
+      nameAr: nameAr.trim(),
+      nameEn: nameEn.trim() || undefined,
+      description: description.trim() || undefined,
+      brand: brand.trim() || undefined,
       categoryId: categoryId || undefined,
       unit: unit || "piece",
-      price: Number(price) || 0,
+      price: Number(price),
       wholesalePrice: wholesale ? Number(wholesale) : undefined,
       stock: Number(stock) || 0,
-      image: image || undefined,
+      isFeatured: featured,
       isVisible: visible,
     };
+
     try {
       const res = row
         ? await fetch(`/api/admin/products/${row.id}`, {
@@ -256,14 +383,105 @@ function ProductDialog({
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(payload),
           });
+
       const body = await res.json();
       if (!res.ok || !body?.success) {
         setError(body?.error ?? "تعذر الحفظ");
         return;
       }
+
+      // Get the product ID (from response or from existing row)
+      const productId = row?.id ?? body?.data?.id;
+      if (!productId) {
+        setError("تم حفظ المنتج ولكن تعذر تحديد المعرف");
+        return;
+      }
+
+      // Attach image media if we have a new upload
+      if (cloudinaryData?.cloudinaryPublicId) {
+        // If editing and there's existing primary media, delete it first
+        if (row && existingMedia.length > 0) {
+          const primaryMedia = existingMedia.find((m) => m.is_primary);
+          if (primaryMedia) {
+            await fetch(
+              `/api/admin/products/media?id=${primaryMedia.id}`,
+              { method: "DELETE" }
+            ).catch(() => {});
+          }
+        }
+
+        // Attach new media
+        const mediaRes = await fetch("/api/admin/products/media", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            productId,
+            media: {
+              cloudinaryPublicId: cloudinaryData.cloudinaryPublicId,
+              secureUrl: cloudinaryData.secureUrl,
+              width: cloudinaryData.width,
+              height: cloudinaryData.height,
+              format: cloudinaryData.format,
+              isPrimary: true,
+              displayOrder: 0,
+            },
+          }),
+        });
+
+        if (!mediaRes.ok) {
+          const mediaBody = await mediaRes.json().catch(() => ({}));
+          toast.error(
+            "تم حفظ المنتج ولكن فشل حفظ الصورة: " +
+              (mediaBody?.error ?? "خطأ غير معروف")
+          );
+          onSaved();
+          return;
+        }
+      } else if (imageUrl && !cloudinaryData) {
+        // URL was manually pasted — store it as a direct-URL media record
+        // Only if the URL changed from the original
+        const originalUrl = row?.image_url || row?.image || "";
+        if (imageUrl !== originalUrl && imageUrl.startsWith("http")) {
+          // Delete old media if exists
+          if (row && existingMedia.length > 0) {
+            const primaryMedia = existingMedia.find((m) => m.is_primary);
+            if (primaryMedia) {
+              await fetch(
+                `/api/admin/products/media?id=${primaryMedia.id}`,
+                { method: "DELETE" }
+              ).catch(() => {});
+            }
+          }
+          // Attach as direct URL media
+          await fetch("/api/admin/products/media", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              productId,
+              media: {
+                cloudinaryPublicId: imageUrl,
+                secureUrl: imageUrl,
+                isPrimary: true,
+                displayOrder: 0,
+              },
+            }),
+          }).catch(() => {});
+        }
+      } else if (!imageUrl && row && existingMedia.length > 0) {
+        // Image was removed — delete existing media
+        const primaryMedia = existingMedia.find((m) => m.is_primary);
+        if (primaryMedia) {
+          await fetch(
+            `/api/admin/products/media?id=${primaryMedia.id}`,
+            { method: "DELETE" }
+          ).catch(() => {});
+        }
+      }
+
+      toast.success(row ? "تم تحديث المنتج" : "تم إنشاء المنتج");
       onSaved();
     } catch {
-      setError("تعذر الحفظ");
+      setError("تعذر الحفظ — تحقق من الاتصال");
     } finally {
       setSaving(false);
     }
@@ -271,27 +489,47 @@ function ProductDialog({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{row ? "تعديل منتج" : "منتج جديد"}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-4">
+          {/* Names */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="nameAr">الاسم (عربي) *</Label>
-              <Input id="nameAr" value={nameAr} onChange={(e) => setNameAr(e.target.value)} />
+              <Label htmlFor="nameAr">
+                اسم المنتج (عربي) <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="nameAr"
+                value={nameAr}
+                onChange={(e) => setNameAr(e.target.value)}
+                placeholder="مثال: أرز مصري 1 كجم"
+              />
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="nameEn">الاسم (إنجليزي)</Label>
-              <Input id="nameEn" value={nameEn} onChange={(e) => setNameEn(e.target.value)} />
+              <Input
+                id="nameEn"
+                value={nameEn}
+                onChange={(e) => setNameEn(e.target.value)}
+                placeholder="Egyptian Rice 1kg"
+                dir="ltr"
+              />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Brand + Category */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <Label htmlFor="brand">العلامة التجارية</Label>
-              <Input id="brand" value={brand} onChange={(e) => setBrand(e.target.value)} />
+              <Input
+                id="brand"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                placeholder="مثال: الأهرام"
+              />
             </div>
             <div className="flex flex-col gap-1">
               <Label htmlFor="cat">القسم</Label>
@@ -301,7 +539,7 @@ function ProductDialog({
                 onChange={(e) => setCategoryId(e.target.value)}
                 className="h-10 rounded-xl border border-input bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
-                <option value="">— بدون قسم —</option>
+                <option value="">— اختر القسم —</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name_ar}
@@ -311,9 +549,37 @@ function ProductDialog({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
+          {/* Price + Wholesale + Unit */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="flex flex-col gap-1">
-              <Label htmlFor="unit">الوحدة</Label>
+              <Label htmlFor="price">
+                سعر التجزئة (ج.م){" "}
+                <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="ws">سعر الجملة (ج.م)</Label>
+              <Input
+                id="ws"
+                type="number"
+                min="0"
+                step="0.01"
+                value={wholesale}
+                onChange={(e) => setWholesale(e.target.value)}
+                placeholder="0"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Label htmlFor="unit">الوحدة / العبوة</Label>
               <select
                 id="unit"
                 value={unit}
@@ -322,36 +588,76 @@ function ProductDialog({
               >
                 {UNITS.map((u) => (
                   <option key={u} value={u}>
-                    {u}
+                    {u === "piece" ? "حبة" : u}
                   </option>
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Stock */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex flex-col gap-1">
               <Label htmlFor="stock">المخزون</Label>
-              <Input id="stock" type="number" value={stock} onChange={(e) => setStock(e.target.value)} />
+              <Input
+                id="stock"
+                type="number"
+                min="0"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+              />
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="price">سعر التجزئة (ج.م) *</Label>
-              <Input id="price" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
-            </div>
-            <div className="flex flex-col gap-1">
-              <Label htmlFor="ws">سعر الجملة (ج.م)</Label>
-              <Input id="ws" type="number" value={wholesale} onChange={(e) => setWholesale(e.target.value)} />
-            </div>
+          {/* Description */}
+          <div className="flex flex-col gap-1">
+            <Label htmlFor="desc">وصف المنتج</Label>
+            <Textarea
+              id="desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="وصف قصير للمنتج..."
+            />
           </div>
 
-          <ImageUploader value={image} onChange={setImage} label="صورة المنتج" />
+          {/* Image Upload */}
+          <div>
+            <ImageUploader
+              value={imageUrl}
+              onChange={setImageUrl}
+              onCloudinaryData={setCloudinaryData}
+              label="صور المنتج"
+            />
+          </div>
 
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={visible} onChange={(e) => setVisible(e.target.checked)} />
-            ظاهر في المتجر
-          </label>
+          {/* Checkboxes */}
+          <div className="flex flex-wrap gap-4">
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={visible}
+                onChange={(e) => setVisible(e.target.checked)}
+                className="size-4 rounded"
+              />
+              ظاهر في المتجر
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={featured}
+                onChange={(e) => setFeatured(e.target.checked)}
+                className="size-4 rounded"
+              />
+              <Star className="size-4 text-accent" /> منتج مميز
+            </label>
+          </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && (
+            <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-lg">
+              {error}
+            </p>
+          )}
         </div>
 
         <DialogFooter>
