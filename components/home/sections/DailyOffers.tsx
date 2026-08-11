@@ -9,6 +9,10 @@ import { waLink } from "@/lib/site";
 import { isPlaceholderImage } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
+// Default decorative offers artwork shipped with the site. Used as a fallback
+// when no admin-managed `offers_banner` promo is configured.
+const DEFAULT_OFFERS_BANNER = "/offers-banner.jpg";
+
 const dayMonthFmt = new Intl.DateTimeFormat("ar-EG", {
   day: "numeric",
   month: "long",
@@ -65,10 +69,12 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
           (p: { image_url?: string }) =>
             p.image_url && !isPlaceholderImage(p.image_url),
         );
-        if (row) setBanner(row.image_url);
+        // Admin-managed promo wins; otherwise fall back to the shipped artwork.
+        setBanner(row?.image_url ?? DEFAULT_OFFERS_BANNER);
       })
       .catch(() => {
-        /* banner is decorative — ignore failures */
+        /* banner is decorative — fall back to the shipped artwork */
+        if (active) setBanner(DEFAULT_OFFERS_BANNER);
       });
     return () => {
       active = false;
