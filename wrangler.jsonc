@@ -13,7 +13,7 @@
 	//   CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET → Cloudinary (set via `wrangler secret`)
 	// ============================================================
 	"name": "souqelgomala",
-	"main": ".open-next/worker.js",
+	"main": "./worker.js",
 	// Disable esbuild keep_names: it injects an undefined `__name` helper into
 	// client chunks, breaking client components at runtime (ReferenceError).
 	"keep_names": false,
@@ -69,7 +69,7 @@
 	"triggers": {
 		"crons": [
 			"0 2 * * *", // daily at 02:00 UTC — low stock check
-			"*/30 * * * *", // every 30 min — expired session cleanup
+			"*/30 * * * *", // every 30 min — social feed auto-sync (handled in worker.js)
 			"0 0 * * *" // midnight UTC — scheduled offers evaluation
 		]
 	},

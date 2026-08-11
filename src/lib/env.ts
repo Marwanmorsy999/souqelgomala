@@ -169,6 +169,102 @@ export const env = {
     return v as unknown as QueueBinding
   },
 
+  // --- Meta Graph API (Facebook + Instagram) — server-only secrets ---
+  // Long-lived Page/IG access token for FB + IG. Empty when unset.
+  get META_ACCESS_TOKEN(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.META_ACCESS_TOKEN === 'string' ? fromContext.env.META_ACCESS_TOKEN : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).META_ACCESS_TOKEN
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.META_ACCESS_TOKEN || undefined
+  },
+  get META_PAGE_ID(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.META_PAGE_ID === 'string' ? fromContext.env.META_PAGE_ID : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).META_PAGE_ID
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.META_PAGE_ID || undefined
+  },
+  get META_INSTAGRAM_USER_ID(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.META_INSTAGRAM_USER_ID === 'string' ? fromContext.env.META_INSTAGRAM_USER_ID : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).META_INSTAGRAM_USER_ID
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.META_INSTAGRAM_USER_ID || undefined
+  },
+
+  // --- TikTok Display API — server-only secrets (author's own videos only) ---
+  get TIKTOK_CLIENT_KEY(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.TIKTOK_CLIENT_KEY === 'string' ? fromContext.env.TIKTOK_CLIENT_KEY : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).TIKTOK_CLIENT_KEY
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.TIKTOK_CLIENT_KEY || undefined
+  },
+  get TIKTOK_CLIENT_SECRET(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.TIKTOK_CLIENT_SECRET === 'string' ? fromContext.env.TIKTOK_CLIENT_SECRET : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).TIKTOK_CLIENT_SECRET
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.TIKTOK_CLIENT_SECRET || undefined
+  },
+  get TIKTOK_REFRESH_TOKEN(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.TIKTOK_REFRESH_TOKEN === 'string' ? fromContext.env.TIKTOK_REFRESH_TOKEN : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).TIKTOK_REFRESH_TOKEN
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.TIKTOK_REFRESH_TOKEN || undefined
+  },
+  get TIKTOK_OPEN_ID(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.TIKTOK_OPEN_ID === 'string' ? fromContext.env.TIKTOK_OPEN_ID : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).TIKTOK_OPEN_ID
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.TIKTOK_OPEN_ID || undefined
+  },
+
+  // Shared secret used by the Worker `scheduled` handler to authenticate the
+  // internal cron sync endpoint. Empty when unset.
+  get CRON_SECRET(): string | undefined {
+    assertServerOnly()
+    const fromContext = (globalThis as Record<symbol, unknown>)[Symbol.for('__cloudflare-context__')] as
+      | { env?: Record<string, unknown> }
+      | undefined
+    const viaContext = typeof fromContext?.env?.CRON_SECRET === 'string' ? fromContext.env.CRON_SECRET : undefined
+    const viaGlobal = (globalThis as Record<string, unknown>).CRON_SECRET
+    if (typeof viaContext === 'string' && viaContext) return viaContext
+    if (typeof viaGlobal === 'string' && viaGlobal) return viaGlobal
+    return process.env.CRON_SECRET || undefined
+  },
+
   // Runtime
   NODE_ENV: resolved.NODE_ENV,
   IS_BROWSER: isBrowser,

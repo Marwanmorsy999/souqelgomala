@@ -1,15 +1,19 @@
 /**
- * Social posts service — admin-managed real social content.
+ * Social posts service — admin-managed + auto-synced real social content.
  *
  * The business publishes its daily offers on Facebook / Instagram / TikTok.
- * Admins add the real post URL + thumbnail + caption here. The storefront
- * SocialFeed renders ONLY these admin-managed posts (no scraping, no fake
- * live feed). A post may be flagged `featured` ("عرض النهارده") and optionally
- * linked to an existing offer campaign (`linked_offer_id`) so the badge can
- * bridge to the daily offers section without duplicating data entry.
+ * Admins add the real post URL + thumbnail + caption here, and the storefront
+ * SocialFeed renders these admin-managed posts first. Posts can ALSO be
+ * auto-synced from the official Meta Graph + TikTok Display APIs (see
+ * src/services/social-sync): synced rows carry `external_id` / `sync_source`
+ * / `is_synced` and never overwrite manual rows. A post may be flagged
+ * `featured` ("عرض النهارده") and optionally linked to an existing offer
+ * campaign (`linked_offer_id`) so the badge can bridge to the daily offers
+ * section without duplicating data entry.
  *
  * The table is guaranteed to exist at runtime (same pattern as orders/reviews)
- * and is also present in the 0003 migration for `wrangler d1 migrations apply`.
+ * and is also present in the 0003 migration + 0007 sync migration for
+ * `wrangler d1 migrations apply`.
  */
 
 import { getDb } from '@/db'
@@ -50,7 +54,38 @@ let ensured = false
 async function ensureSocialTable(): Promise<void> {
   if (ensured) return
   await getDb().run(sql.raw(CREATE_SQL))
+  await ensureSyncColumns()
   ensured = true
+}
+
+/**
+ * Idempotently add the auto-sync columns. SQLite has no `ADD COLUMN IF NOT
+ * EXISTS`, so on a fresh DB the migration (0007) or this block adds them once;
+ * on subsequent cold starts the ALTERs throw "duplicate column", which we
+ * swallow. Never throws for an already-migrated table.
+ */
+async function ensureSyncColumns(): Promise<void> {
+  const alters = [
+    `ALTER TABLE social_posts ADD COLUMN external_id text`,
+    `ALTER TABLE social_posts ADD COLUMN sync_source text`,
+    `ALTER TABLE social_posts ADD COLUMN is_synced integer NOT NULL DEFAULT false`,
+  ]
+  for (const stmt of alters) {
+    try {
+      await getDb().run(sql.raw(stmt))
+    } catch (err) {
+      const msg = (err as Error)?.message ?? ''
+      // Ignore "duplicate column" — columns already exist from a prior run.
+      if (!/duplicate column/i.test(msg)) {
+        logger.warn('Social: ensureSyncColumns unexpected error', { error: msg })
+      }
+    }
+  }
+  try {
+    await getDb().run(sql.raw(`CREATE INDEX IF NOT EXISTS idx_social_posts_external ON social_posts (external_id)`))
+  } catch {
+    /* index already exists */
+  }
 }
 
 export class SocialError extends Error {

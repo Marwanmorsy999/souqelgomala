@@ -129,9 +129,9 @@ export type SocialPlatform = 'facebook' | 'instagram' | 'tiktok' | 'whatsapp'
 /**
  * A social post shown in the storefront "📱 شوف عروضنا أول بأول" section.
  *
- * This is the ADMIN-MANAGED SOCIAL POST contract. The business publishes its
- * daily offers on Facebook / Instagram / TikTok; the storefront section below
- * is built to display those posts as REAL social content.
+ * Posts come from the `social_posts` D1 table: manually curated admin posts
+ * AND posts auto-synced from the official Meta Graph (Facebook + Instagram)
+ * and TikTok Display APIs. The storefront displays them as REAL social content.
  *
  *   - platform   → which channel published the post
  *   - url        → canonical post/profile URL (opens on the platform)
@@ -139,13 +139,10 @@ export type SocialPlatform = 'facebook' | 'instagram' | 'tiktok' | 'whatsapp'
  *   - title      → short title (e.g. "عرض النهارده")
  *   - caption    → optional copy shown under the title
  *   - date       → ISO publish date (rendered as a relative date)
- *   - featured   → marks TODAY's offer post. Future workflow: the admin marks
- *                  one post as "عرض النهارده" and it surfaces BOTH here and in
- *                  the "🔥 عروض النهارده" section without duplicating content.
+ *   - featured   → marks TODAY's offer post ("عرض النهارده")
  *
- * ⚠️ Currently driven by config (`lib/site.ts` `socialPosts`). The shape is
- * intentionally identical to what a future `GET /api/social` endpoint will
- * return so this section can switch to the backend without UI changes.
+ * Returned by `GET /api/catalog/social` (KV-cached), consumed by
+ * `lib/services/catalog#getSocialPosts`.
  */
 export type SocialPost = {
   id: string

@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Loader2, X, Star, Share2, Camera, Music2, Send } from "lucide-react"
+import { Plus, Pencil, Trash2, Loader2, X, Star, Share2, Camera, Music2, Send, RefreshCw } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -61,6 +61,28 @@ export default function AdminSocialPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [syncing, setSyncing] = useState(false)
+
+  async function handleSyncNow() {
+    setSyncing(true)
+    try {
+      const res = await fetch("/api/admin/social/sync", { method: "POST" })
+      const body = await res.json()
+      if (body?.success) {
+        const { total, inserted, updated, skipped } = body.data ?? {}
+        toast.success(
+          `تمت المزامنة: ${total ?? 0} منشور (جديد ${inserted ?? 0}، محدث ${updated ?? 0}، متجاهل ${skipped ?? 0})`
+        )
+        await load()
+      } else {
+        toast.error(body?.error ?? "تعذرت مزامنة المنشورات")
+      }
+    } catch {
+      toast.error("تعذرت مزامنة المنشورات")
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   function openCreate() {
     setEditingId(null)
@@ -169,10 +191,16 @@ export default function AdminSocialPage() {
         title="السوشيال ميديا"
         description="إدارة منشورات فيسبوك وإنستجرام وتيك توك (محتوى حقيقي تديره أنت)"
         actions={
-          <Button onClick={openCreate} disabled={showForm}>
-            <Plus className="size-4" />
-            <span className="mr-2">منشور جديد</span>
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={handleSyncNow} disabled={syncing} variant="outline">
+              {syncing ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}
+              <span className="mr-2">{syncing ? "جارٍ المزامنة…" : "مزامنة الآن"}</span>
+            </Button>
+            <Button onClick={openCreate} disabled={showForm}>
+              <Plus className="size-4" />
+              <span className="mr-2">منشور جديد</span>
+            </Button>
+          </div>
         }
       />
 

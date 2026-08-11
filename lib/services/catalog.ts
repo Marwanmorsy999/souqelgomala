@@ -250,8 +250,10 @@ export async function getDailyOffers(): Promise<DailyOffersPayload> {
 }
 
 /**
- * Admin-managed social posts for the storefront SocialFeed.
- * Real post URLs/thumbnails only — empty array when none are published.
+ * Social posts for the storefront SocialFeed.
+ * Returns both manually-curated admin posts and posts auto-synced from the
+ * official Meta Graph / TikTok Display APIs (real post URLs/thumbnails).
+ * Empty array when none are published.
  */
 export async function getSocialPosts(): Promise<SocialPost[]> {
   return getJSON<SocialPost[]>("/social");

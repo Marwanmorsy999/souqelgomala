@@ -14,12 +14,14 @@ const PLATFORM_LABEL: Record<SocialPlatform, string> = {
 };
 
 /**
- * "تابع عروضنا أول بأول" — real admin-managed social content.
+ * "تابع عروضنا أول بأول" — real social content from our own pages.
  *
- * The feed renders ONLY posts the admin added in the dashboard (real post URLs
- * + thumbnails). No scraping, no fake live feed. When there are no posts yet
- * the section shows the business profiles as plain links — an honest state.
- * Featured posts ("عرض النهارده") surface first.
+ * The feed renders posts from the `social_posts` D1 table: manually curated
+ * admin posts AND posts auto-synced from the official Meta Graph (Facebook +
+ * Instagram) and TikTok Display APIs (see src/services/social-sync). Synced
+ * posts never overwrite manual ones and manual "عرض النهارده" posts surface
+ * first. When there are no posts at all the section shows the business
+ * profiles as plain links — an honest state.
  */
 export function SocialFeed() {
   const settings = useSiteSettings();
@@ -51,10 +53,10 @@ export function SocialFeed() {
       <div className="rounded-xl border border-border bg-card p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-xl font-black sm:text-2xl">تابع عروضنا أول بأول</h2>
+            <h2 className="text-xl font-black sm:text-2xl">أحدث الفيديوهات والمنشورات من صفحاتنا</h2>
             <p className="mt-1 max-w-xl text-sm leading-6 text-muted-foreground">
-              بننزل عروض وفرص كل يوم على الصفحات من جوه المحل — تابعنا عشان
-              أول عرض توصلك.
+              بننزل عروض وفرص كل يوم على صفحاتنا على فيسبوك وإنستجرام وتيك توك —
+              تابعنا عشان أول عرض توصلك.
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm font-bold text-primary">

@@ -14,10 +14,10 @@ export const dynamic = 'force-dynamic'
  *
  * GET /api/catalog/social
  *
- * Returns admin-managed, visible social posts (real post URLs + thumbnails).
- * No scraping and no fake feed — if the admin hasn't added posts yet the
- * response is an empty array so the storefront renders an honest state.
- * KV-cached; the admin social service invalidates the cache on every write.
+ * Returns visible social posts (real post URLs + thumbnails) from the D1
+ * `social_posts` table — both manually curated admin posts and posts auto-synced
+ * from the official Meta Graph (Facebook + Instagram) and TikTok Display APIs.
+ * KV-cached; the social service invalidates the cache on every write/sync.
  */
 export async function GET(_request: NextRequest) {
   try {
