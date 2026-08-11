@@ -15,7 +15,7 @@ import {
   X,
 } from "lucide-react";
 import type { ComponentType } from "react";
-import { getCategories } from "@/lib/services/catalog";
+import { getCategoryTree } from "@/lib/services/catalog";
 import type { Category } from "@/lib/types";
 import { SITE } from "@/lib/site";
 
@@ -57,7 +57,7 @@ export function HamburgerMenu({ open, cartCount, onClose, onNavigate }: Props) {
   // Real catalog categories (same D1 source as the homepage chips).
   useEffect(() => {
     let active = true;
-    getCategories()
+    getCategoryTree()
       .then((cats) => active && setMenuCategories(cats))
       .catch(() => active && setMenuCategories([]));
     return () => {
@@ -158,23 +158,54 @@ export function HamburgerMenu({ open, cartCount, onClose, onNavigate }: Props) {
                               transition={{ duration: 0.2 }}
                               className="overflow-hidden"
                             >
-                              {menuCategories.map((c) => (
-                                <li key={c.id}>
-                                  <button
-                                    onClick={() => {
-                                      onClose();
-                                      onNavigate({
-                                        view: "category",
-                                        category: c.name,
-                                      });
-                                    }}
-                                    className="flex w-full items-center gap-3 rounded-xl px-5 py-2.5 text-right text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                                  >
-                                    <span className="size-2 rounded-full bg-primary/50" />
-                                    {c.name}
-                                  </button>
-                                </li>
-                              ))}
+                              {menuCategories.map((c) => {
+                                const children = c.children ?? []
+                                return (
+                                  <li key={c.id}>
+                                    <button
+                                      onClick={() => {
+                                        onClose();
+                                        onNavigate({
+                                          view: "category",
+                                          category: c.name,
+                                        });
+                                      }}
+                                      className="flex w-full items-center justify-between rounded-xl px-5 py-2.5 text-right text-sm font-bold text-foreground transition-colors hover:bg-muted"
+                                    >
+                                      <span className="flex items-center gap-3">
+                                        <span className="size-2 rounded-full bg-primary/50" />
+                                        {c.name}
+                                      </span>
+                                      {children.length > 0 && (
+                                        <span className="text-xs text-muted-foreground">
+                                          {children.length}
+                                        </span>
+                                      )}
+                                    </button>
+                                    {children.length > 0 && (
+                                      <ul className="mr-4 flex flex-col gap-1 border-r border-border pr-3">
+                                        {children.map((child) => (
+                                          <li key={child.id}>
+                                            <button
+                                              onClick={() => {
+                                                onClose();
+                                                onNavigate({
+                                                  view: "category",
+                                                  category: child.name,
+                                                });
+                                              }}
+                                              className="flex w-full items-center gap-3 rounded-xl px-5 py-2 text-right text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                                            >
+                                              <span className="size-1.5 rounded-full bg-muted-foreground" />
+                                              {child.name}
+                                            </button>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    )}
+                                  </li>
+                                )
+                              })}
                             </motion.ul>
                           )}
                         </AnimatePresence>

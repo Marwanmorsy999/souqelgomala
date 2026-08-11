@@ -101,6 +101,20 @@ export async function findCategoriesWithMedia(): Promise<Array<{ category: Categ
   return cats.map((category) => ({ category, media: mediaMap.get(category.id) ?? [] }))
 }
 
+/** Product counts per category id (active products only). */
+export async function findCategoryProductCounts(): Promise<Map<string, number>> {
+  const rows = await db
+    .select({ category_id: products.category_id, count: count() })
+    .from(products)
+    .where(ACTIVE(products))
+    .groupBy(products.category_id)
+  const map = new Map<string, number>()
+  for (const r of rows) {
+    if (r.category_id) map.set(r.category_id, r.count)
+  }
+  return map
+}
+
 /** Single category by id (active only). */
 export async function findCategoryById(id: string): Promise<CategoryRow | null> {
   const row = await db

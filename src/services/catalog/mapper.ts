@@ -42,6 +42,10 @@ export interface StorefrontCategory {
   id: string
   name: string
   image: string
+  name_en?: string
+  parent_id?: string | null
+  productCount?: number
+  children?: StorefrontCategory[]
 }
 
 /** Pick the primary media row (or first by display order). */
@@ -115,7 +119,7 @@ export function mapProductToStorefront(
 /** Map a D1 category (+ media) to the storefront shape. */
 export function mapCategoryToStorefront(
   category: CategoryRow,
-  opts: { media?: CategoryMediaRow[] } = {}
+  opts: { media?: CategoryMediaRow[]; productCount?: number; children?: StorefrontCategory[] } = {}
 ): StorefrontCategory {
   // 1. Try category_media table (Cloudinary-backed).
   const primary = (opts.media ?? []).find((m) => m.is_primary && !m.deleted_at)
@@ -139,6 +143,10 @@ export function mapCategoryToStorefront(
     id: category.id,
     name: category.name_ar,
     image,
+    name_en: category.name_en ?? undefined,
+    parent_id: category.parent_id ?? undefined,
+    productCount: opts.productCount,
+    children: opts.children,
   }
 }
 

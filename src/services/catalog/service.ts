@@ -11,7 +11,6 @@
 
 import {
   findProductsWithRelations,
-  findActiveCategories,
   findCategoriesWithMedia,
   findCategoryById,
   findCategoryByName,
@@ -21,6 +20,7 @@ import {
   findBestSellerProducts,
   findActiveOffersWithProducts,
   findFacets,
+  findCategoryProductCounts,
   type ProductSearchWhere,
   type ListResult,
   type CatalogFacets,
@@ -91,8 +91,32 @@ export async function invalidateCategoryCache(id?: string, name?: string): Promi
 export async function getCategories(): Promise<StorefrontCategory[]> {
   return kvGetOrSet(CATALOG_KEYS.CATEGORIES, async () => {
     const rows = await findCategoriesWithMedia()
-    return rows.map(({ category, media }) => mapCategoryToStorefront(category, { media }))
+    const counts = await findCategoryProductCounts()
+    const mapped = rows.map(({ category, media }) =>
+      mapCategoryToStorefront(category, { media, productCount: counts.get(category.id) ?? 0 })
+    )
+    return buildCategoryTree(mapped)
   }, CATALOG_TTL)
+}
+
+/** Build parent → children tree from a flat list of categories. */
+function buildCategoryTree(categories: StorefrontCategory[]): StorefrontCategory[] {
+  const map = new Map<string, StorefrontCategory>()
+  for (const c of categories) {
+    map.set(c.id, { ...c, children: [] })
+  }
+  const roots: StorefrontCategory[] = []
+  for (const c of categories) {
+    const node = map.get(c.id)!
+    if (c.parent_id && map.has(c.parent_id)) {
+      const parent = map.get(c.parent_id)!
+      parent.children = parent.children ?? []
+      parent.children.push(node)
+    } else {
+      roots.push(node)
+    }
+  }
+  return roots
 }
 
 /** A single active category by id (KV cached). */

@@ -23,7 +23,7 @@
     "verify": "pnpm verify:shim && pnpm verify:crud && pnpm verify:auth",
     "db:migrate": "wrangler d1 migrations apply DB",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
+    "deploy": "opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

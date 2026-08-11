@@ -13,6 +13,7 @@ type Props = {
 
 export function CategoryProducts({ category, onBack, onOpen }: Props) {
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
+  const [parentCategory, setParentCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -25,6 +26,12 @@ export function CategoryProducts({ category, onBack, onOpen }: Props) {
         if (!active) return;
         const match = cats.find((c) => c.name === category);
         setCategoryId(match?.id);
+        if (match?.parent_id) {
+          const parent = cats.find((c) => c.id === match.parent_id) ?? null
+          setParentCategory(parent)
+        } else {
+          setParentCategory(null)
+        }
       })
       .catch(() => active && setCategoryId(undefined))
       .finally(() => active && setLoading(false));
@@ -44,17 +51,27 @@ export function CategoryProducts({ category, onBack, onOpen }: Props) {
 
   return (
     <>
-      <button
-        onClick={onBack}
-        aria-label="رجوع"
-        className="fixed right-3 top-3 z-30 flex size-9 items-center justify-center rounded-lg bg-background/95 shadow border transition-colors hover:bg-muted"
-      >
-        <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M19 12H5M12 19l-7-7 7-7" />
-        </svg>
-      </button>
+      <div className="sticky top-0 z-30 bg-background/95 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={onBack}
+            aria-label="رجوع"
+            className="flex size-9 items-center justify-center rounded-lg border border-border transition-colors hover:bg-muted"
+          >
+            <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <div className="flex-1">
+            {parentCategory && (
+              <p className="text-xs text-muted-foreground">{parentCategory.name}</p>
+            )}
+            <h1 className="text-lg font-black">{category}</h1>
+          </div>
+        </div>
+      </div>
       <ProductBrowser
-        title={`قسم ${category}`}
+        title={category}
         hideCategoryTree
         initialFilters={categoryId ? { categoryId } : {}}
         onOpen={onOpen}

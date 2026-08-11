@@ -185,7 +185,8 @@ export async function getProductsByCategory(category: string): Promise<Product[]
   if (!category || category === "الكل") {
     return getProducts();
   }
-  const cats = await getJSON<Category[]>("/categories");
+  const tree = await getJSON<Category[]>("/categories")
+  const cats = flattenCategories(tree)
   const match = cats.find((c) => c.name === category);
   if (!match) return [];
   // Filter server-side by category id (handles the full 7k+ catalog).
@@ -199,9 +200,32 @@ export async function searchProducts(query: string): Promise<Product[]> {
   return fetchAllProducts({ search: q, pageSize: 100 });
 }
 
-/** Fetch all active categories (for the homepage circular categories). */
+/**
+ * Fetch all active categories (for the homepage circular categories).
+ * Returns a flat list regardless of the server-side tree shape.
+ */
 export async function getCategories(): Promise<Category[]> {
-  return getJSON<Category[]>("/categories");
+  const tree = await getJSON<Category[]>("/categories")
+  return flattenCategories(tree)
+}
+
+export function flattenCategories(tree: Category[]): Category[] {
+  const flat: Category[] = []
+  for (const c of tree) {
+    flat.push(c)
+    if (c.children && c.children.length > 0) {
+      flat.push(...c.children)
+    }
+  }
+  return flat
+}
+
+/**
+ * Fetch categories as a tree (parents with nested children).
+ * Used by the homepage sections and menu.
+ */
+export async function getCategoryTree(): Promise<Category[]> {
+  return getJSON<Category[]>("/categories")
 }
 
 /** Campaign-level offers (from D1 offers table). Empty array when none active. */

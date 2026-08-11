@@ -61,6 +61,10 @@ export type Category = {
   id: string
   name: string
   image: string
+  name_en?: string
+  parent_id?: string | null
+  productCount?: number
+  children?: Category[]
 }
 
 /**

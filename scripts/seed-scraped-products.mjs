@@ -262,6 +262,18 @@ function normalizeUnit(raw) {
 }
 
 // ---------------------------------------------------------------------------
+// Slug generation (B2) — stable URL-safe slugs from name_en.
+// ---------------------------------------------------------------------------
+function generateSlug(nameEn, id) {
+  const s = String(nameEn || `product-${id}`)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80)
+  return s || `product-${id}`
+}
+
+// ---------------------------------------------------------------------------
 // Arabic translation of product names (free Google Translate endpoint, no key).
 // Source data has name_ar = null for ALL products, so we translate name_en.
 // Results are cached in a JSON file so re-runs are cheap and idempotent.
@@ -386,11 +398,17 @@ async function d1ExecLocal(sql) {
 }
 
 async function d1Exec(sql) {
-  if (TARGET === 'local') return d1ExecLocal(sql)
-  if (!CF_D1_TOKEN) {
-    throw new Error('No D1 token available (set CLOUDFLARE_D1_TOKEN or CLOUDFLARE_OAUTH_TOKEN).')
-  }
-  return d1ExecHttp(sql)
+  const dir = mkdtempSync(join(tmpdir(), 'seed-'))
+  const tmp = join(dir, 'batch.sql')
+  writeFileSync(tmp, sql)
+  const wranglerBin = join(ROOT, 'node_modules', '.bin', 'wrangler')
+  const cmd = process.platform === 'win32' ? `${wranglerBin}.cmd` : wranglerBin
+  const remote = TARGET === 'prod' ? '--remote' : '--local'
+  return execFileSync(cmd, ['d1', 'execute', 'DB', remote, '--file', tmp], {
+    cwd: ROOT,
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  })
 }
 
 // For prod we use parameterized single-row inserts. For local we batch raw SQL.
@@ -578,6 +596,35 @@ async function seedCategories() {
   console.log('[seed-cat] DONE')
 }
 
+// fix-slugs: generate URL-safe slugs from name_en for all kz-% products.
+async function fixSlugs() {
+  console.log(`[fix-slugs] target=${TARGET} — generating slugs for kz-% products`)
+  const products = JSON.parse(readFileSync(SOURCE_JSON, 'utf8'))
+  const BATCH = 200
+  let updated = 0
+  let failed = 0
+  for (let i = 0; i < products.length; i += BATCH) {
+    const slice = products.slice(i, i + BATCH)
+    const cases = slice
+      .map((p) => `WHEN 'kz-${p.id}' THEN '${generateSlug(p.name_en, p.id)}'`)
+      .join(' ')
+    const idList = slice.map((p) => `'kz-${p.id}'`).join(',')
+    const sql = `UPDATE products SET slug = CASE id ${cases} END WHERE id IN (${idList});`
+    try {
+      await d1Exec(sql)
+      updated += slice.length
+    } catch (e) {
+      console.error(`[fix-slugs] batch failed: ${e.message}`)
+      failed += slice.length
+    }
+    if (i % (BATCH * 10) === 0 || i + BATCH >= products.length) {
+      console.log(`[fix-slugs] progress ${updated + failed}/${products.length} updated=${updated} failed=${failed}`)
+    }
+    await sleep(TARGET === 'prod' ? 150 : 20)
+  }
+  console.log(`[fix-slugs] DONE updated=${updated} failed=${failed}`)
+}
+
 // reclassify: re-assign category_id + normalized unit for all kz-% products.
 async function reclassify() {
   console.log(`[reclassify] target=${TARGET} — re-classifying + normalizing kz-% products`)
@@ -683,6 +730,8 @@ if (MODE === 'fix-categories-v2') {
   fixCategoriesV2().catch((e) => { console.error('FATAL', e); process.exit(1) })
 } else if (MODE === 'fix-translate') {
   fixTranslate().catch((e) => { console.error('FATAL', e); process.exit(1) })
+} else if (MODE === 'fix-slugs') {
+  fixSlugs().catch((e) => { console.error('FATAL', e); process.exit(1) })
 } else if (MODE === 'preview-classify') {
   previewClassify()
 } else if (MODE === 'audit-categories') {

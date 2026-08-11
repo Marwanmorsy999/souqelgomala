@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Search, X } from 'lucide-react'
-import { getCategories, searchProducts } from '@/lib/services/catalog'
+import { getCategoryTree, searchProducts, flattenCategories } from '@/lib/services/catalog'
 import type { Category, Product } from '@/lib/types'
 
 type Props = {
@@ -22,6 +22,7 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
 
   useEffect(() => {
     if (!open) return
+    let active = true
     const t = window.setTimeout(() => {
       setQuery('')
       setResults([])
@@ -30,10 +31,11 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
     }, 0)
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose()
     window.addEventListener('keydown', onKey)
-    getCategories()
-      .then(setCategories)
-      .catch(() => setCategories([]))
+    getCategoryTree()
+      .then((tree) => active && setCategories(flattenCategories(tree)))
+      .catch(() => active && setCategories([]))
     return () => {
+      active = false
       window.clearTimeout(t)
       window.removeEventListener('keydown', onKey)
     }
@@ -41,19 +43,18 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
 
   useEffect(() => {
     if (!open) return
+    let active = true
     const term = query.trim()
     if (!term) {
-      setResults([])
-      setCategoryResults([])
       return
     }
-    let active = true
     const t = window.setTimeout(() => {
-      Promise.all([searchProducts(term), getCategories()])
-        .then(([p, c]) => {
+      Promise.all([searchProducts(term), getCategoryTree()])
+        .then(([p, tree]) => {
           if (!active) return
           setResults(p)
-          setCategoryResults(c.filter((cat) => cat.name.includes(term)))
+          const flat = flattenCategories(tree)
+          setCategoryResults(flat.filter((cat) => cat.name.includes(term)))
         })
         .catch(() => {
           if (active) {
