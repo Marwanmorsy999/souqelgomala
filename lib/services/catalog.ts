@@ -16,12 +16,23 @@ import type { SiteSettings } from "../../src/lib/site-settings";
 
 const API_BASE = "/api/catalog";
 
+interface CatalogApiResponse<T> {
+  success: boolean;
+  data?: T;
+  meta?: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
 async function getJSON<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
   if (!res.ok) {
     throw new Error(`Catalog request failed: ${res.status}`);
   }
-  const body = (await res.json()) as { success: boolean; data?: T };
+  const body = (await res.json()) as CatalogApiResponse<T>;
   if (!body.success || !body.data) {
     throw new Error("Catalog response missing data");
   }
@@ -35,26 +46,117 @@ export interface CatalogListResult {
   pageSize: number;
 }
 
-/** Fetch paginated products (optionally filtered by category / discounted). */
+export type ProductSort =
+  | "default"
+  | "price_asc"
+  | "price_desc"
+  | "newest"
+  | "best_seller"
+  | "featured";
+
+/** Filter/sort params shared by the shop page and category listings. */
+export interface ProductFilters {
+  categoryId?: string;
+  search?: string;
+  discountedOnly?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  unit?: string;
+  inStockOnly?: boolean;
+  sort?: ProductSort;
+}
+
+/** Facet values for the filter UI (from GET /api/catalog/facets). */
+export interface CatalogFacets {
+  units: string[];
+  priceMin: number;
+  priceMax: number;
+  categories: Array<{ id: string; name: string; parentId: string | null }>;
+}
+
+/**
+ * Fetch one page of products (optionally filtered by category / search /
+ * discounted / price / unit / stock / sort). Returns the unwrapped page shape
+ * the rest of this module expects ({ data, total, ... }) — pull `total` out of
+ * the API's `meta` envelope.
+ */
 export async function fetchProducts(opts?: {
   page?: number;
   pageSize?: number;
+  categoryId?: string;
+  search?: string;
+  discounted?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+  unit?: string;
+  inStockOnly?: boolean;
+  sort?: ProductSort;
 }): Promise<CatalogListResult> {
   const q = new URLSearchParams();
   if (opts?.page) q.set("page", String(opts.page));
   if (opts?.pageSize) q.set("pageSize", String(opts.pageSize));
-  return getJSON<CatalogListResult>(`/products${q.size ? `?${q}` : ""}`);
+  if (opts?.categoryId) q.set("categoryId", opts.categoryId);
+  if (opts?.search) q.set("search", opts.search);
+  if (opts?.discounted) q.set("discounted", "true");
+  if (opts?.minPrice != null && Number.isFinite(opts.minPrice)) q.set("minPrice", String(opts.minPrice));
+  if (opts?.maxPrice != null && Number.isFinite(opts.maxPrice)) q.set("maxPrice", String(opts.maxPrice));
+  if (opts?.unit) q.set("unit", opts.unit);
+  if (opts?.inStockOnly) q.set("inStock", "true");
+  if (opts?.sort && opts.sort !== "default") q.set("sort", opts.sort);
+  const suffix = q.toString();
+  const path = `/products${suffix ? `?${suffix}` : ""}`;
+  const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+  if (!res.ok) {
+    throw new Error(`Catalog request failed: ${res.status}`);
+  }
+  const body = (await res.json()) as CatalogApiResponse<Product[]>;
+  if (!body.success || !body.data) {
+    throw new Error("Catalog response missing data");
+  }
+  return {
+    data: body.data,
+    total: body.meta?.total ?? body.data.length,
+    page: body.meta?.page ?? opts?.page ?? 1,
+    pageSize: body.meta?.pageSize ?? opts?.pageSize ?? 100,
+  };
 }
 
-/** Fetch all active products (latest pagination default). */
+/** Fetch the facet values used to build the storefront filter controls. */
+export async function getFacets(): Promise<CatalogFacets> {
+  return getJSON<CatalogFacets>("/facets");
+}
+
+/**
+ * Fetch every matching product by walking all pages. Used for category views
+ * and search where the full result set must be available client-side.
+ */
+async function fetchAllProducts(opts?: {
+  categoryId?: string;
+  search?: string;
+  discounted?: boolean;
+  pageSize?: number;
+}): Promise<Product[]> {
+  const pageSize = opts?.pageSize ?? 100;
+  const all: Product[] = [];
+  let page = 1;
+  // Hard cap to avoid runaway loops on a misbehaving API.
+  while (page <= 500) {
+    const res = await fetchProducts({ page, pageSize, categoryId: opts?.categoryId, search: opts?.search, discounted: opts?.discounted });
+    all.push(...res.data);
+    if (all.length >= res.total || res.data.length === 0) break;
+    page += 1;
+  }
+  return all;
+}
+
+/** Fetch all active products (walk all pages). */
 export async function getProducts(): Promise<Product[]> {
-  const result = await fetchProducts({ page: 1, pageSize: 100 });
-  return result.data;
+  return fetchAllProducts({ pageSize: 100 });
 }
 
 /** Fetch a single product by id. */
 export async function getProductById(id: string): Promise<Product | undefined> {
-  const list = await getProducts();
+  const list = await fetchAllProducts({ pageSize: 100 });
   return list.find((p) => p.id === id);
 }
 
@@ -78,7 +180,7 @@ export async function getLatest(): Promise<Product[]> {
   return home.latest;
 }
 
-/** Products in a given category (by category name). */
+/** Products in a given category (by Arabic category name). */
 export async function getProductsByCategory(category: string): Promise<Product[]> {
   if (!category || category === "الكل") {
     return getProducts();
@@ -86,20 +188,15 @@ export async function getProductsByCategory(category: string): Promise<Product[]
   const cats = await getJSON<Category[]>("/categories");
   const match = cats.find((c) => c.name === category);
   if (!match) return [];
-  const result = await fetchProducts({ page: 1, pageSize: 100 });
-  return result.data.filter((p) => p.category === category);
+  // Filter server-side by category id (handles the full 7k+ catalog).
+  return fetchAllProducts({ categoryId: match.id, pageSize: 100 });
 }
 
-/** Search active products by query. */
+/** Search active products by query (server-side search across all pages). */
 export async function searchProducts(query: string): Promise<Product[]> {
   const q = query.trim();
   if (!q) return [];
-  const all = await getProducts();
-  return all.filter((p) =>
-    `${p.name} ${p.english} ${p.category} ${p.brand ?? ""}`
-      .toLowerCase()
-      .includes(q.toLowerCase())
-  );
+  return fetchAllProducts({ search: q, pageSize: 100 });
 }
 
 /** Fetch all active categories (for the homepage circular categories). */

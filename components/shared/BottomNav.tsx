@@ -5,6 +5,7 @@ import {
   Home,
   LayoutGrid,
   Search,
+  ShoppingBag,
   ShoppingCart,
 } from "lucide-react";
 import type { View } from "@/lib/types";
@@ -39,6 +40,12 @@ export function BottomNav({
       icon: ShoppingCart,
       active: view === "cart",
       action: () => onNavigate("cart"),
+    },
+    {
+      label: "المتجر",
+      icon: ShoppingBag,
+      active: view === "shop",
+      action: () => onNavigate("shop"),
     },
     {
       label: "الأقسام",

@@ -16,7 +16,7 @@ import {
 } from '@/db/schema/catalog'
 import { offers } from '@/db/schema/offers'
 import type { ProductRow, ProductMediaRow, CategoryRow, CategoryMediaRow, OfferRow } from '@/types/database'
-import { eq, and, gt, like, or, desc, asc, count, inArray, isNull, lte, gte } from 'drizzle-orm'
+import { eq, and, gt, like, or, desc, asc, count, inArray, isNull, lte, gte, sql } from 'drizzle-orm'
 
 /** Active, visible, non-deleted product filter. */
 const ACTIVE = (t: typeof products) =>
@@ -27,10 +27,24 @@ const ACTIVE = (t: typeof products) =>
     isNull(t.deleted_at),
   )
 
+export type ProductSort =
+  | 'default'
+  | 'price_asc'
+  | 'price_desc'
+  | 'newest'
+  | 'best_seller'
+  | 'featured'
+
 export interface ProductSearchWhere {
   categoryId?: string
   search?: string
   discountedOnly?: boolean
+  minPrice?: number
+  maxPrice?: number
+  /** Normalized unit facet value (e.g. "كيلو", "حبة"). */
+  unit?: string
+  inStockOnly?: boolean
+  sort?: ProductSort
 }
 
 export interface ListResult<T> {
@@ -117,6 +131,14 @@ export async function findProducts(where: ProductSearchWhere = {}, page = 1, pag
     conditions.push(or(like(products.name_ar, term), like(products.name_en, term), like(products.brand, term)))
   }
   if (where.discountedOnly) conditions.push(gt(products.offer_price, 0))
+  if (typeof where.minPrice === 'number' && Number.isFinite(where.minPrice)) {
+    conditions.push(gte(products.price, where.minPrice))
+  }
+  if (typeof where.maxPrice === 'number' && Number.isFinite(where.maxPrice)) {
+    conditions.push(lte(products.price, where.maxPrice))
+  }
+  if (where.unit) conditions.push(eq(products.unit, where.unit))
+  if (where.inStockOnly) conditions.push(gt(products.stock, 0))
 
   const whereExpr = and(...conditions as never[])
   const totalRows = await db
@@ -125,15 +147,74 @@ export async function findProducts(where: ProductSearchWhere = {}, page = 1, pag
     .where(whereExpr ?? undefined as never)
   const total = totalRows[0]?.value ?? 0
 
+  const orderBy = buildProductSort(where.sort)
   const rows = await db
     .select()
     .from(products)
     .where(whereExpr ?? undefined as never)
-    .orderBy(desc(products.is_featured), asc(products.display_order), desc(products.created_at))
+    .orderBy(...orderBy)
     .limit(pageSize)
     .offset((page - 1) * pageSize)
 
   return { data: rows, total, page, pageSize }
+}
+
+/** Map the requested sort to Drizzle order expressions (backward-compatible). */
+function buildProductSort(sort?: ProductSort) {
+  switch (sort) {
+    case 'price_asc':
+      return [asc(products.price)]
+    case 'price_desc':
+      return [desc(products.price)]
+    case 'newest':
+      return [desc(products.created_at)]
+    case 'best_seller':
+      return [desc(products.is_best_seller), desc(products.created_at)]
+    case 'featured':
+      return [desc(products.is_featured), desc(products.created_at)]
+    case 'default':
+    default:
+      return [desc(products.is_featured), asc(products.display_order), desc(products.created_at)]
+  }
+}
+
+export interface CatalogFacets {
+  units: string[]
+  priceMin: number
+  priceMax: number
+  categories: Array<{ id: string; name: string; parentId: string | null }>
+}
+
+/**
+ * Distinct facet values for the storefront filter UI:
+ *   - normalized unit values present on active products
+ *   - active price bounds
+ *   - active category tree (id + parent)
+ */
+export async function findFacets(): Promise<CatalogFacets> {
+  const active = ACTIVE(products)
+  const unitRows = await db
+    .selectDistinct({ unit: products.unit })
+    .from(products)
+    .where(active)
+  const priceRows = await db
+    .select({ min: sql<number>`min(${products.price})`, max: sql<number>`max(${products.price})` })
+    .from(products)
+    .where(active)
+  const cats = await db
+    .select({ id: categories.id, name_ar: categories.name_ar, parent_id: categories.parent_id })
+    .from(categories)
+    .where(and(eq(categories.is_visible, true), isNull(categories.deleted_at)))
+
+  const units = unitRows
+    .map((r) => r.unit)
+    .filter((u): u is string => typeof u === 'string' && u.length > 0)
+    .sort((a, b) => a.localeCompare(b, 'ar'))
+  const priceMin = priceRows[0]?.min ?? 0
+  const priceMax = priceRows[0]?.max ?? 0
+  const categoriesList = cats.map((c) => ({ id: c.id, name: c.name_ar, parentId: c.parent_id ?? null }))
+
+  return { units, priceMin, priceMax, categories: categoriesList }
 }
 
 /** Products joined with category name + media (storefront-ready rows). */

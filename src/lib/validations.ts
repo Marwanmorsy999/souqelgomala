@@ -15,6 +15,22 @@ export const urlSchema = z.string().url('Invalid URL').optional()
 export const positiveNumberSchema = z.number().positive('Must be a positive number')
 export const nonnegativeNumberSchema = z.number().nonnegative('Must be a non-negative number')
 
+/**
+ * Catalog FK identifiers — used for `categories.parent_id` and
+ * `products.category_id` (and their admin write schemas).
+ *
+ * New rows use standard RFC 4122 UUIDs, but the legacy/seeded catalog uses the
+ * shape `10000000-0000-0000-0000-0000000000XX`. Zod's `z.string().uuid()`
+ * enforces the RFC 4122 version/variant nibbles, which rejects those valid
+ * seeded ids and blocks assigning products/parents to existing categories.
+ *
+ * Both forms are 8-4-4-4-12 hex tokens, so validate that shape (rejecting
+ * arbitrary garbage) without the extra RFC nibble constraint. The `products`
+ * / `categories` columns are text FKs with no DB-level UUID constraint.
+ */
+const catalogIdSchema = z.string().regex(/^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$/, 'Invalid ID format')
+
+
 export const paginationSchema = z.object({
   page: z.coerce.number().int().positive().default(1),
   pageSize: z.coerce.number().int().min(1).max(100).default(20),
@@ -50,7 +66,7 @@ export type CreateBranchInput = z.infer<typeof createBranchSchema>
 export const createCategorySchema = z.object({
   nameAr: z.string().min(1, 'Arabic name is required'),
   nameEn: z.string().optional(),
-  parentId: uuidSchema.optional(),
+  parentId: catalogIdSchema.optional(),
   image: z.string().optional(),
   sortOrder: z.coerce.number().int().nonnegative().default(0),
   isVisible: z.boolean().default(true),
@@ -66,7 +82,7 @@ export const createProductSchema = z.object({
   nameEn: z.string().optional(),
   description: z.string().optional(),
   brand: z.string().optional(),
-  categoryId: uuidSchema.optional(),
+  categoryId: catalogIdSchema.optional(),
   price: positiveNumberSchema,
   offerPrice: z.coerce.number().positive().optional(),
   wholesalePrice: z.coerce.number().positive().optional(),

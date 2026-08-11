@@ -161,11 +161,45 @@ export const CACHE_KEYS = {
 } as const
 
 /**
+ * Delete all keys sharing a prefix (KV `delete` does not support globs).
+ * Lists keys page-by-page and deletes each one.
+ */
+export async function kvDeleteByPrefix(prefix: string): Promise<void> {
+  const ns = getCache()
+  if (!ns) {
+    logger.warn('KV: CACHE binding not available, skipping prefix delete')
+    return
+  }
+  const listing = ns as unknown as {
+    list(opts: { prefix: string; cursor?: string }): Promise<{ keys: Array<{ name: string }>; cursor?: string }>
+  }
+  let cursor: string | undefined
+  try {
+    do {
+      const listed = await listing.list({ prefix: `${CACHE_PREFIX}${prefix}`, cursor })
+      for (const item of listed.keys) {
+        await ns.delete(item.name)
+      }
+      cursor = listed.cursor
+    } while (cursor)
+  } catch (err) {
+    logger.error('KV: prefix delete failed', { prefix, error: err })
+  }
+}
+
+/**
  * Invalidate a set of cache keys. Call after any mutation that affects the
  * corresponding aggregates so consumers refetch from D1 (source of truth).
+ *
+ * A key ending in `*` is treated as a prefix and all matching keys are purged
+ * (KV `delete` does not support glob patterns on its own).
  */
 export async function invalidateCache(...keys: string[]): Promise<void> {
-  await Promise.all(keys.map((key) => kvDelete(key)))
+  await Promise.all(
+    keys.map((key) =>
+      key.endsWith('*') ? kvDeleteByPrefix(key.slice(0, -1)) : kvDelete(key),
+    ),
+  )
 }
 
 /**

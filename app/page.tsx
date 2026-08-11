@@ -10,6 +10,7 @@ import { HamburgerMenu } from "@/components/home/HamburgerMenu";
 import { SearchOverlay } from "@/components/home/SearchOverlay";
 import { WhatsAppButton } from "@/components/home/WhatsAppButton";
 import { CategoryProducts } from "@/components/home/CategoryProducts";
+import { ShopPage } from "@/components/home/ShopPage";
 import { Hero } from "@/components/home/sections/Hero";
 import { PromoBanner } from "@/components/home/sections/PromoBanner";
 import { DailyOffers } from "@/components/home/sections/DailyOffers";
@@ -36,6 +37,7 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [category, setCategory] = useState("");
+  const [shopSearch, setShopSearch] = useState<string | undefined>(undefined);
 
   const cart = useStore((s) => s.cart);
   const isWholesale = useStore((s) => s.isWholesale);
@@ -202,6 +204,13 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
             />
           )}
 
+          {view === "shop" && (
+            <ShopPage
+              search={shopSearch}
+              onOpen={setSelected}
+            />
+          )}
+
           {view === "cart" && (
             <CartView
               cart={cart}
@@ -238,7 +247,10 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
           if (target.view === "category" && target.category)
             handleCategory(target.category);
           else if (target.view === "cart") setView("cart");
-          else if (target.view === "account") setAuthOpen(true);
+          else if (target.view === "shop") {
+            setShopSearch(undefined);
+            setView("shop");
+          } else if (target.view === "account") setAuthOpen(true);
           else setView("home");
         }}
       />
@@ -247,7 +259,10 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
         onSelectCategory={handleCategory}
-        onSelectProduct={setSelected}
+        onSelectProduct={(p) => {
+          setShopSearch(p.name);
+          setView("shop");
+        }}
       />
 
       <AuthDialog
