@@ -7,46 +7,51 @@ import {
   TikTokIcon,
   WhatsAppIcon,
 } from "@/components/ui/SocialIcons";
-import type { SocialPlatform } from "@/lib/types";
 
 interface Profile {
-  platform: SocialPlatform;
+  key: string;
   label: string;
   href: string;
   icon: typeof FacebookIcon;
+  /** Official brand color used for the logo + accent. */
+  color: string;
   handle: string;
 }
 
 /**
- * "تابع عروضنا أول بأول" — live links to our social profiles.
+ * "تابع عروضنا أول بأول" — live links to our real social profiles.
  *
- * A simple, always-working section at the end of the page that points
- * visitors to the business' real Facebook / Instagram / TikTok pages (the
- * live source of daily offers). No scraping or API sync — just the profiles.
+ * Three side-by-side panels (Facebook / Instagram / TikTok), each using the
+ * official brand logo and linking straight to the live profile — the real
+ * source of daily offers. Plus a WhatsApp button. No fabricated icons, no API
+ * scraping: these are the actual platform pages.
  */
 export function SocialFeed() {
   const settings = useSiteSettings();
 
   const profiles: Profile[] = [
     {
-      platform: "facebook",
+      key: "facebook",
       label: "فيسبوك",
       href: settings.social.facebook,
       icon: FacebookIcon,
-      handle: "صفحة سوق الجملة",
+      color: "#1877F2",
+      handle: "سوق الجملة",
     },
     {
-      platform: "instagram",
+      key: "instagram",
       label: "إنستجرام",
       href: settings.social.instagram,
       icon: InstagramIcon,
+      color: "#E4405F",
       handle: "@soukelgomla",
     },
     {
-      platform: "tiktok",
+      key: "tiktok",
       label: "تيك توك",
       href: settings.social.tiktok,
       icon: TikTokIcon,
+      color: "#000000",
       handle: "@soukelgomla",
     },
   ];
@@ -70,7 +75,7 @@ export function SocialFeed() {
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-muted"
           >
-            <WhatsAppIcon className="size-4 text-accent" />
+            <WhatsAppIcon className="size-4" style={{ color: "#25D366" }} />
             واتساب
           </a>
         </div>
@@ -80,14 +85,17 @@ export function SocialFeed() {
             const Icon = p.icon;
             return (
               <a
-                key={p.platform}
+                key={p.key}
                 href={p.href}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group flex items-center gap-3 rounded-xl border border-border bg-background p-4 transition-shadow hover:shadow-md"
               >
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
-                  <Icon className="size-5" />
+                <span
+                  className="flex size-12 shrink-0 items-center justify-center rounded-full text-white"
+                  style={{ backgroundColor: p.color }}
+                >
+                  <Icon className="size-6" />
                 </span>
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate text-sm font-black text-foreground">
@@ -97,7 +105,10 @@ export function SocialFeed() {
                     {p.handle}
                   </span>
                 </span>
-                <span className="ms-auto text-xs font-bold text-primary underline-offset-2 group-hover:underline">
+                <span
+                  className="ms-auto text-xs font-bold underline-offset-2 group-hover:underline"
+                  style={{ color: p.color }}
+                >
                   افتح
                 </span>
               </a>
