@@ -25,3 +25,6 @@ scripts/.kz_translate.log
 scripts/.kz_translate_cache.json
 scripts/.opennext-build.log
 scripts/.opennext-deploy.log
+
+# Local agent tooling
+.kilo/
