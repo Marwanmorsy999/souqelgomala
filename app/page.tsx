@@ -198,8 +198,6 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
                       return <DealsCountdown key="deals" />
                     case "products":
                       return <LatestProducts key="products" onOpen={setSelected} />
-                    case "social_strip":
-                      return <SocialFeed key="social" />
                     default:
                       return null
                   }
@@ -207,6 +205,7 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
               <DailyOffers onOpen={setSelected} />
               <PromoBanner />
               <Footer />
+              <SocialFeed />
             </div>
           )}
 
