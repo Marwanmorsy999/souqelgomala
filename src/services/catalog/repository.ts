@@ -71,10 +71,15 @@ async function loadProductMedia(productIds: string[]): Promise<Map<string, Produ
 
 async function loadCategoryMedia(categoryIds: string[]): Promise<Map<string, CategoryMediaRow[]>> {
   if (categoryIds.length === 0) return new Map()
-  const rows = await db
-    .select()
-    .from(categoryMedia)
-    .where(and(inArray(categoryMedia.category_id, categoryIds), isNull(categoryMedia.deleted_at)))
+  const rows: CategoryMediaRow[] = []
+  // D1 limits bound parameters per statement (~100); chunk the IN(...) list.
+  for (const ids of chunkArray(categoryIds, 100)) {
+    const chunk = await db
+      .select()
+      .from(categoryMedia)
+      .where(and(inArray(categoryMedia.category_id, ids), isNull(categoryMedia.deleted_at)))
+    rows.push(...chunk)
+  }
   const map = new Map<string, CategoryMediaRow[]>()
   for (const row of rows) {
     const list = map.get(row.category_id) ?? []
@@ -82,6 +87,57 @@ async function loadCategoryMedia(categoryIds: string[]): Promise<Map<string, Cat
     map.set(row.category_id, list)
   }
   return map
+}
+
+/** All categories (id -> parent_id) — used to expand category filters across the tree. */
+async function loadCategoryParentMap(): Promise<Map<string, string | null>> {
+  const rows = await db.select({ id: categories.id, parent_id: categories.parent_id }).from(categories)
+  const map = new Map<string, string | null>()
+  for (const r of rows) map.set(r.id, r.parent_id ?? null)
+  return map
+}
+
+/** Reverse of the parent map: parent id -> child ids. */
+async function loadCategoryChildMap(): Promise<Map<string, string[]>> {
+  const parents = await loadCategoryParentMap()
+  const children = new Map<string, string[]>()
+  for (const [id, pid] of parents) {
+    if (pid) {
+      const arr = children.get(pid) ?? []
+      arr.push(id)
+      children.set(pid, arr)
+    }
+  }
+  return children
+}
+
+/**
+ * Resolve a category id to itself + its entire subtree (all descendants). Lets a
+ * product assigned to any child category show when its parent (or any ancestor)
+ * is selected, and vice-versa — so every item is reachable from its category or
+ * any subcategory in its path.
+ */
+async function expandCategoryToSubtree(categoryId: string): Promise<string[]> {
+  const children = await loadCategoryChildMap()
+  const ids = new Set<string>([categoryId])
+  const stack = [categoryId]
+  while (stack.length) {
+    const cur = stack.pop()!
+    for (const child of children.get(cur) ?? []) {
+      if (!ids.has(child)) {
+        ids.add(child)
+        stack.push(child)
+      }
+    }
+  }
+  return [...ids]
+}
+
+/** Split an array into chunks (D1 caps bound parameters per statement). */
+function chunkArray<T>(arr: T[], size: number): T[][] {
+  const out: T[][] = []
+  for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size))
+  return out
 }
 
 /** Active categories for the storefront (visible, non-deleted). */
@@ -101,18 +157,46 @@ export async function findCategoriesWithMedia(): Promise<Array<{ category: Categ
   return cats.map((category) => ({ category, media: mediaMap.get(category.id) ?? [] }))
 }
 
-/** Product counts per category id (active products only). */
+/**
+ * Product counts per category id (active products only), expanded across the
+ * subtree so every category shows the count of products reachable from it —
+ * i.e. a product on a child category is also counted under its parent and every
+ * ancestor, and a parent's count includes all of its descendants.
+ */
 export async function findCategoryProductCounts(): Promise<Map<string, number>> {
   const rows = await db
     .select({ category_id: products.category_id, count: count() })
     .from(products)
     .where(ACTIVE(products))
     .groupBy(products.category_id)
-  const map = new Map<string, number>()
+  const direct = new Map<string, number>()
   for (const r of rows) {
-    if (r.category_id) map.set(r.category_id, r.count)
+    if (r.category_id) direct.set(r.category_id, r.count)
   }
-  return map
+  const parents = await loadCategoryParentMap()
+  const children = new Map<string, string[]>()
+  for (const [id, pid] of parents) {
+    if (pid) {
+      const arr = children.get(pid) ?? []
+      arr.push(id)
+      children.set(pid, arr)
+    }
+  }
+  const expanded = new Map<string, number>()
+  for (const id of parents.keys()) {
+    let total = 0
+    const stack = [id]
+    const seen = new Set<string>()
+    while (stack.length) {
+      const cur = stack.pop()!
+      if (seen.has(cur)) continue
+      seen.add(cur)
+      total += direct.get(cur) ?? 0
+      for (const ch of children.get(cur) ?? []) stack.push(ch)
+    }
+    expanded.set(id, total)
+  }
+  return expanded
 }
 
 /** Single category by id (active only). */
@@ -139,7 +223,12 @@ export async function findCategoryByName(name: string): Promise<CategoryRow | nu
 export async function findProducts(where: ProductSearchWhere = {}, page = 1, pageSize = 20): Promise<ListResult<ProductRow>> {
   const conditions: unknown[] = []
   conditions.push(ACTIVE(products))
-  if (where.categoryId) conditions.push(eq(products.category_id, where.categoryId))
+  if (where.categoryId) {
+    // Include the whole subtree so a product on any child category shows when its
+    // parent (or any ancestor) is selected, and vice-versa.
+    const ids = await expandCategoryToSubtree(where.categoryId)
+    conditions.push(inArray(products.category_id, ids))
+  }
   if (where.search) {
     const term = `%${where.search.trim()}%`
     conditions.push(or(like(products.name_ar, term), like(products.name_en, term), like(products.brand, term)))
