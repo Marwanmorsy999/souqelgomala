@@ -4,130 +4,253 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   DESIGN TOKENS — single source of truth (spec §2-9)
+   ============================================================ */
 @theme inline {
+  /* ── Fonts ── */
   --font-sans: var(--font-cairo), Arial, sans-serif;
   --font-mono: var(--font-inter), monospace;
   --font-cairo: "Cairo", Arial, sans-serif;
-  --font-inter: "Inter", Arial, sans-serif;
+  --font-inter: "Inter", Arial, monospace;
+
+  /* ── Spacing (8px base unit, spec §4) ── */
+  --spacing-1: 0.25rem;  /* 4px  */
+  --spacing-2: 0.5rem;   /* 8px  */
+  --spacing-3: 0.75rem;  /* 12px */
+  --spacing-4: 1rem;     /* 16px */
+  --spacing-5: 1.25rem;  /* 20px */
+  --spacing-6: 1.5rem;   /* 24px */
+  --spacing-7: 2rem;     /* 32px */
+  --spacing-8: 2.5rem;   /* 40px */
+  --spacing-9: 3rem;     /* 48px */
+  --spacing-10: 4rem;    /* 64px */
+
+  /* ── Border radius (spec §5) ── */
+  --radius-sm: 0.25rem;   /* 4px  — badges, chips   */
+  --radius-md: 0.5rem;    /* 8px  — buttons, inputs */
+  --radius-lg: 0.75rem;   /* 12px — cards           */
+  --radius-xl: 1rem;      /* 16px — modals, sheets  */
+  --radius-2xl: 1.5rem;   /* 24px — larger panels    */
+  --radius-3xl: 1.75rem;  /* 28px                    */
+  --radius-full: 999px;   /* pills, circles          */
+  --radius: 0.75rem;      /* 12px — card base        */
+
+  /* ── Semantic color palette (spec §2) ──
+     These generate bg-*, text-*, border-* utilities. ── */
+
+  /* BASE */
+  --color-bg-base: #0f0f0f;
+  --color-bg-surface: #1a1a1a;
+  --color-bg-surface-alt: #1f1f1f;
+  --color-bg-elevated: #242424;
+  --color-border-default: #2a2a2a;
+  --color-border-strong: #3a3a3a;
+
+  /* BRAND */
+  --color-nav: #1a3a2a;
+  --color-nav-hover: #234a35;
+  --color-brand-green: #1a7a3a;
+  --color-brand-green-light: #7ec96e;
+  --color-brand-orange: #f5a623;
+  --color-brand-orange-hover: #e0951a;
+  --color-yellow-warning: #f5c542;
+  --color-red-error: #e74c3c;
+  --color-green-success: #1a7a3a;
+  --color-wa-green: #25d366;
+
+  /* ALPHA / DIM variants */
+  --color-brand-green-dim: rgba(26, 122, 58, 0.15);
+  --color-brand-orange-dim: rgba(245, 166, 35, 0.15);
+  --color-red-error-dim: rgba(231, 76, 60, 0.12);
+  --color-wa-green-dim: rgba(37, 211, 102, 0.15);
+
+  /* ── Shadows (spec §6, tuned for near-black) ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.6);
+  --shadow-xl: 0 12px 28px rgba(0, 0, 0, 0.6);
+  --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.6);
+  --shadow-wa: 0 4px 12px rgba(37, 211, 102, 0.4);
+  --shadow-focus: 0 0 0 3px rgba(26, 122, 58, 0.4);
+
+  /* ── Typography scale (spec §3, Cairo font) ── */
+  --font-size-display-lg: 2rem;      /* 32px / 900 / 1.2  */
+  --line-height-display-lg: 1.2;
+  --font-size-display-sm: 1.5rem;    /* 24px / 800 / 1.3  */
+  --line-height-display-sm: 1.3;
+  --font-size-heading-lg: 1.125rem;  /* 18px / 700 / 1.4  */
+  --line-height-heading-lg: 1.4;
+  --font-size-heading-sm: 0.9375rem; /* 15px / 700 / 1.4  */
+  --line-height-heading-sm: 1.4;
+  --font-size-body-lg: 0.875rem;     /* 14px / 400 / 1.6  */
+  --line-height-body-lg: 1.6;
+  --font-size-body-sm: 0.8125rem;    /* 13px / 400 / 1.5  */
+  --line-height-body-sm: 1.5;
+  --font-size-caption: 0.75rem;     /* 12px / 400 / 1.4  */
+  --line-height-caption: 1.4;
+  --font-size-micro: 0.6875rem;     /* 11px / 400 / 1.3  */
+  --line-height-micro: 1.3;
+  --font-size-badge-text: 0.625rem; /* 10px / 700 / 1    */
+  --line-height-badge-text: 1;
+  --font-size-price-lg: 2rem;        /* 32px / 800 / 1    */
+  --line-height-price-lg: 1;
+  --font-size-price-md: 1.125rem;    /* 18px / 700 / 1    */
+  --line-height-price-md: 1;
+  --font-size-price-sm: 0.875rem;    /* 14px / 600 / 1    */
+  --line-height-price-sm: 1;
+
+  /* ── Shadcn variable bridges (maps spec → shadcn class names) ── */
+  --color-background: var(--color-bg-base);
+  --color-foreground: #ffffff;
+  --color-card: var(--color-bg-surface);
+  --color-card-foreground: #ffffff;
+  --color-popover: var(--color-bg-elevated);
+  --color-popover-foreground: #ffffff;
+  --color-primary: var(--color-brand-orange);
+  --color-primary-foreground: #ffffff;
+  --color-primary-hover: var(--color-brand-orange-hover);
+  --color-secondary: var(--color-brand-green);
+  --color-secondary-foreground: #ffffff;
+  --color-secondary-hover: var(--color-brand-green-light);
+  --color-accent: var(--color-brand-green-light);
+  --color-accent-foreground: #0f0f0f;
+  --color-muted: var(--color-bg-surface-alt);
+  --color-muted-foreground: rgba(255, 255, 255, 0.65);
+  --color-border: var(--color-border-default);
+  --color-input: var(--color-border-default);
+  --color-ring: var(--color-brand-green);
+  --color-ring-offset: var(--color-bg-base);
+  --color-destructive: var(--color-red-error);
+  --color-destructive-foreground: #ffffff;
+
+  /* Text opacity levels (spec §2) */
+  --color-text-primary: #ffffff;
+  --color-text-secondary: rgba(255, 255, 255, 0.65);
+  --color-text-muted: rgba(255, 255, 255, 0.40);
+  --color-text-disabled: rgba(255, 255, 255, 0.25);
+
   --sidebar-width: 260px;
   --sidebar-collapsed-width: 72px;
   --topbar-height: 64px;
-  --color-sidebar-ring: var(--sidebar-ring);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar: var(--sidebar);
-  --color-ring: var(--ring);
-  --color-input: var(--input);
-  --color-border: var(--border);
-  --color-destructive: var(--destructive);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-accent: var(--accent);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-muted: var(--muted);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-secondary: var(--secondary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-primary: var(--primary);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-popover: var(--popover);
-  --color-card-foreground: var(--card-foreground);
-  --color-card: var(--card);
-  --color-foreground: var(--foreground);
-  --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
 }
 
+/* ── Runtime CSS variables (mapped from spec §2) ── */
 :root {
-  color-scheme: light;
-  --background: oklch(0.985 0.004 80);
-  --foreground: oklch(0.23 0.012 50);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.23 0.012 50);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.23 0.012 50);
-  --primary: oklch(0.4 0.115 148);
-  --primary-foreground: oklch(0.985 0.01 110);
-  --secondary: oklch(0.953 0.008 85);
-  --secondary-foreground: oklch(0.34 0.02 55);
-  --muted: oklch(0.955 0.007 85);
-  --muted-foreground: oklch(0.48 0.018 60);
-  --accent: oklch(0.71 0.18 55);
-  --accent-foreground: oklch(0.3 0.06 45);
-  --destructive: oklch(0.58 0.21 28);
-  --border: oklch(0.9 0.008 85);
-  --input: oklch(0.9 0.008 85);
-  --ring: oklch(0.55 0.11 148);
-  --radius: 0.9rem;
-  --sidebar: oklch(0.98 0.004 85);
-  --sidebar-foreground: oklch(0.23 0.012 50);
-  --sidebar-primary: oklch(0.4 0.115 148);
-  --sidebar-primary-foreground: oklch(0.985 0.01 110);
-  --sidebar-accent: oklch(0.95 0.012 85);
-  --sidebar-accent-foreground: oklch(0.3 0.04 55);
-  --sidebar-border: oklch(0.9 0.008 85);
-  --sidebar-ring: oklch(0.55 0.11 148);
-  --chart-1: oklch(0.4 0.115 148);
-  --chart-2: oklch(0.71 0.18 55);
-  --chart-3: oklch(0.55 0.12 205);
-  --chart-4: oklch(0.62 0.08 290);
-}
-
-.dark {
   color-scheme: dark;
-  --background: oklch(0.17 0.012 50);
-  --foreground: oklch(0.96 0.005 85);
-  --card: oklch(0.205 0.014 50);
-  --card-foreground: oklch(0.96 0.005 85);
-  --popover: oklch(0.205 0.014 50);
-  --popover-foreground: oklch(0.96 0.005 85);
-  --primary: oklch(0.62 0.125 148);
-  --primary-foreground: oklch(0.16 0.03 145);
-  --secondary: oklch(0.26 0.018 55);
-  --secondary-foreground: oklch(0.96 0.005 85);
-  --muted: oklch(0.255 0.016 55);
-  --muted-foreground: oklch(0.72 0.012 70);
-  --accent: oklch(0.73 0.16 55);
-  --accent-foreground: oklch(0.22 0.05 45);
-  --destructive: oklch(0.67 0.18 28);
-  --border: oklch(1 0 0 / 12%);
-  --input: oklch(1 0 0 / 16%);
-  --ring: oklch(0.62 0.125 148);
-  --sidebar: oklch(0.2 0.014 50);
-  --sidebar-foreground: oklch(0.96 0.005 85);
-  --sidebar-primary: oklch(0.62 0.125 148);
-  --sidebar-primary-foreground: oklch(0.16 0.03 145);
-  --sidebar-accent: oklch(0.255 0.016 55);
-  --sidebar-accent-foreground: oklch(0.96 0.005 85);
-  --sidebar-border: oklch(1 0 0 / 12%);
-  --sidebar-ring: oklch(0.62 0.125 148);
-  --chart-1: oklch(0.62 0.125 148);
-  --chart-2: oklch(0.73 0.16 55);
-  --chart-3: oklch(0.68 0.12 205);
-  --chart-4: oklch(0.72 0.1 290);
+  /* BASE */
+  --background: var(--color-bg-base);
+  --foreground: var(--color-text-primary);
+  --bg-base: var(--color-bg-base);
+  --bg-surface: var(--color-bg-surface);
+  --bg-surface-alt: var(--color-bg-surface-alt);
+  --bg-elevated: var(--color-bg-elevated);
+  --border-default: var(--color-border-default);
+  --border-strong: var(--color-border-strong);
+  /* BRAND */
+  --bg-nav: var(--color-nav);
+  --bg-nav-hover: var(--color-nav-hover);
+  --brand-green: var(--color-brand-green);
+  --brand-green-light: var(--color-brand-green-light);
+  --brand-green-dim: var(--color-brand-green-dim);
+  --brand-orange: var(--color-brand-orange);
+  --brand-orange-hover: var(--color-brand-orange-hover);
+  --brand-orange-dim: var(--color-brand-orange-dim);
+  --wa-green: var(--color-wa-green);
+  --wa-green-dim: var(--color-wa-green-dim);
+  --yellow-warning: var(--color-yellow-warning);
+  --red-error: var(--color-red-error);
+  --red-error-dim: var(--color-red-error-dim);
+  --green-success: var(--color-green-success);
+  /* TEXT */
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --text-disabled: var(--color-text-disabled);
+  /* SHADCN bridge variables */
+  --card: var(--color-bg-surface);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-bg-elevated);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-brand-orange);
+  --primary-foreground: var(--color-text-primary);
+  --primary-hover: var(--color-brand-orange-hover);
+  --secondary: var(--color-brand-green);
+  --secondary-foreground: var(--color-text-primary);
+  --accent: var(--color-brand-green-light);
+  --accent-foreground: var(--color-bg-base);
+  --muted: var(--color-bg-surface-alt);
+  --muted-foreground: var(--color-text-secondary);
+  --border: var(--color-border-default);
+  --input: var(--color-border-default);
+  --ring: var(--color-brand-green);
+  --destructive: var(--color-red-error);
+  --destructive-foreground: var(--color-text-primary);
+  /* Sidebar (admin) */
+  --sidebar: var(--color-bg-surface);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-brand-orange);
+  --sidebar-primary-foreground: var(--color-text-primary);
+  --sidebar-accent: var(--color-bg-surface-alt);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border-default);
+  --sidebar-ring: var(--color-brand-green);
 }
 
-/*
- * Branded hero fallback — replaces generic supermarket stock photography
- * until the real Souq El Gomla shop photo is supplied via `heroConfig`
- * (lib/site.ts). A plain deep-green band; the photo does the visual work
- * the moment it is available.
- */
-.hero-branded {
-  background: linear-gradient(
-    160deg,
-    oklch(0.2 0.06 150) 0%,
-    oklch(0.29 0.085 150) 55%,
-    oklch(0.42 0.1 148) 100%
-  );
+/* Dark class mirrors values (ThemeProvider compatibility) */
+.dark {
+  --background: var(--color-bg-base);
+  --foreground: var(--color-text-primary);
+  --bg-base: var(--color-bg-base);
+  --bg-surface: var(--color-bg-surface);
+  --bg-surface-alt: var(--color-bg-surface-alt);
+  --bg-elevated: var(--color-bg-elevated);
+  --border-default: var(--color-border-default);
+  --border-strong: var(--color-border-strong);
+  --bg-nav: var(--color-nav);
+  --bg-nav-hover: var(--color-nav-hover);
+  --brand-green: var(--color-brand-green);
+  --brand-green-light: var(--color-brand-green-light);
+  --brand-green-dim: var(--color-brand-green-dim);
+  --brand-orange: var(--color-brand-orange);
+  --brand-orange-hover: var(--color-brand-orange-hover);
+  --brand-orange-dim: var(--color-brand-orange-dim);
+  --wa-green: var(--color-wa-green);
+  --wa-green-dim: var(--color-wa-green-dim);
+  --yellow-warning: var(--color-yellow-warning);
+  --red-error: var(--color-red-error);
+  --red-error-dim: var(--color-red-error-dim);
+  --green-success: var(--color-green-success);
+  --text-primary: var(--color-text-primary);
+  --text-secondary: var(--color-text-secondary);
+  --text-muted: var(--color-text-muted);
+  --text-disabled: var(--color-text-disabled);
+  --card: var(--color-bg-surface);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-bg-elevated);
+  --popover-foreground: var(--color-text-primary);
+  --primary: var(--color-brand-orange);
+  --primary-foreground: var(--color-text-primary);
+  --primary-hover: var(--color-brand-orange-hover);
+  --secondary: var(--color-brand-green);
+  --secondary-foreground: var(--color-text-primary);
+  --accent: var(--color-brand-green-light);
+  --accent-foreground: var(--color-bg-base);
+  --muted: var(--color-bg-surface-alt);
+  --muted-foreground: var(--color-text-secondary);
+  --border: var(--color-border-default);
+  --input: var(--color-border-default);
+  --ring: var(--color-brand-green);
+  --destructive: var(--color-red-error);
+  --destructive-foreground: var(--color-text-primary);
+  --sidebar: var(--color-bg-surface);
+  --sidebar-foreground: var(--color-text-primary);
+  --sidebar-primary: var(--color-brand-orange);
+  --sidebar-primary-foreground: var(--color-text-primary);
+  --sidebar-accent: var(--color-bg-surface-alt);
+  --sidebar-accent-foreground: var(--color-text-primary);
+  --sidebar-border: var(--color-border-default);
+  --sidebar-ring: var(--color-brand-green);
 }
 
 @layer base {
@@ -136,6 +259,7 @@
   }
   html {
     background: var(--background);
+    font-family: var(--font-cairo), Arial, sans-serif;
   }
   html,
   body {
@@ -144,11 +268,19 @@
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-cairo), Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   button,
   input,
-  textarea {
+  textarea,
+  select {
     font-family: inherit;
+  }
+  /* Prices & phone numbers stay LTR within RTL text (spec §1) */
+  [dir="ltr"] {
+    direction: ltr;
+    text-align: right;
   }
 }
 
@@ -161,63 +293,48 @@
   display: none;
 }
 
-/*
- * Homepage section container — practical desktop width (~1280px) with
- * consistent mobile edge padding. Inner carousels pair it with -mx-3/-mx-4
- * + px to reach the viewport edges on mobile without ever overflowing it.
- */
 @layer components {
   .site-section {
     @apply mx-auto w-full max-w-7xl px-3 sm:px-4;
   }
-}
 
-/* Keep sticky/fixed elements (header, bottom nav, FAB) above page content */
-#__next {
-  isolation: isolate;
-}
-
-/*
- * Z-index layering system:
- * 10-29  — page content (cards, sections)
- * 30     — sticky header, bottom nav
- * 40     — header (already set)
- * 99     — floating action buttons (WhatsApp FAB)
- * 1000+  — overlays, drawers, modals
- */
-
-/* Category icon wrapper — transparent PNG / logo presentation.
-   Uses object-fit: contain so varying aspect ratios never distort. */
-.category-icon-wrapper {
-  position: relative;
-  display: block;
-  width: 6rem;
-  height: 6rem;
-  overflow: hidden;
-  border-radius: 9999px;
-  background:
-    radial-gradient(circle at 50% 35%, color-mix(in oklab, var(--primary) 12%, transparent), transparent 70%),
-    color-mix(in oklab, var(--muted) 90%, var(--background));
-  box-shadow: 0 1px 2px rgb(0 0 0 / 0.06), inset 0 0 0 1px color-mix(in oklab, var(--border) 60%, transparent);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.category-icon-wrapper:hover {
-  transform: translateY(-0.25rem);
-  box-shadow: 0 6px 16px rgb(0 0 0 / 0.1), inset 0 0 0 1px color-mix(in oklab, var(--primary) 40%, transparent);
-}
-
-@media (min-width: 768px) {
-  .category-icon-wrapper {
-    width: 7rem;
-    height: 7rem;
+  /* Section vertical rhythm (spec §4) */
+  .site-section > .section-vrh {
+    @apply pt-6 pb-6 sm:pt-8 sm:pb-8 lg:pt-10 lg:pb-10;
   }
-}
 
-@media (min-width: 1024px) {
-  .category-icon-wrapper {
-    width: 8rem;
-    height: 8rem;
+  /* Branded hero fallback — deep green gradient (spec §8) */
+  .hero-branded {
+    background: linear-gradient(
+      160deg,
+      oklch(0.2 0.06 150) 0%,
+      oklch(0.29 0.085 150) 55%,
+      oklch(0.42 0.1 148) 100%
+    );
+  }
+
+  /* Image background behind product photos (spec §8) */
+  .img-bg {
+    background-color: var(--bg-surface-alt);
+  }
+
+  /* Focus ring (spec §9) */
+  .focus-ring {
+    @apply outline-3 outline-offset-2 outline-brand-green;
+  }
+
+  /* RTL directional icon flip (spec §7) */
+  .rtl-flip {
+    @apply rtl:scale-x-[-1];
+  }
+
+  /* Pulse skeleton (spec §10 SKELETON) */
+  .skeleton-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
 }
 
@@ -225,4 +342,9 @@
 .menu-drawer-open .whatsapp-fab {
   pointer-events: none !important;
   opacity: 0 !important;
+}
+
+/* Z-index layering system (spec §14) */
+#__next {
+  isolation: isolate;
 }

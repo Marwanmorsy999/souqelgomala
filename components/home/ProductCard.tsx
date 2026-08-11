@@ -8,6 +8,7 @@ import {
   formatPrice,
   hasProductImage,
   productImageSrc,
+  packageLabel,
 } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
@@ -34,16 +35,20 @@ export function ProductArtwork({
       src={productImageSrc(product)}
       alt={product.name}
       eager={large}
-      className="w-full bg-muted aspect-square"
-      imgClassName="size-full object-contain p-3"
+            className="w-full aspect-square"
+      imgClassName="size-full object-cover"
+      wrapperClassName="img-bg"
     >
       {discount > 0 && (
-        <span className="absolute right-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-foreground">
-          خصم {discount}%
+                <span
+          className="absolute top-2 end-2 rounded-sm bg-red-error px-[7px] py-0.5 text-[10px] font-black text-white"
+          aria-label={`خصم ${discount}%`}
+        >
+          -{discount}%
         </span>
       )}
       {!product.inStock && (
-        <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-xs font-bold text-white">
+                <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-black text-white">
           نفذت الكمية
         </span>
       )}
@@ -65,24 +70,33 @@ export function PriceBlock({
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="flex flex-wrap items-baseline gap-x-2">
-        <span className="text-xl font-black text-foreground">
+            <div className="flex flex-wrap items-baseline gap-x-2">
+        <span
+          className="text-price-md font-black text-brand-orange"
+          dir="ltr"
+        >
           {formatPrice(primary)}
         </span>
-        {product.oldPrice && product.oldPrice > product.retail && (
-          <span className="text-xs text-muted-foreground line-through">
+        {product.oldPrice && product.oldPrice > primary && (
+          <span
+            className="text-xs text-muted-foreground line-through"
+            dir="ltr"
+          >
             {formatPrice(product.oldPrice)}
           </span>
+        )}
+        {pct > 0 && (
+          <span className="text-xs font-bold text-red-error">خصم {pct}%</span>
         )}
         {pct > 0 && (
           <span className="text-xs font-bold text-accent">خصم {pct}%</span>
         )}
       </div>
-      <p className="text-[11px] text-muted-foreground">
+            <p className="text-[11px] text-text-secondary">
         {isWholesale ? (
-          <>قطاعي: {formatPrice(secondary)}</>
+          <>جملة: <span dir="ltr">{formatPrice(secondary)}</span></>
         ) : (
-          <>جملة: {formatPrice(secondary)}</>
+          <>قطاعي: <span dir="ltr">{formatPrice(secondary)}</span></>
         )}
       </p>
     </div>
@@ -105,7 +119,7 @@ export function ProductCard({ product, onOpen }: Props) {
   const hasImage = hasProductImage(product);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border-default bg-bg-surface text-foreground transition-all duration-200 hover:border-brand-green hover:shadow-sm">
       {hasImage && (
         <button
           className="block w-full text-right"
@@ -116,18 +130,26 @@ export function ProductCard({ product, onOpen }: Props) {
         </button>
       )}
 
-      <div className="flex flex-1 flex-col gap-2 p-3">
+            <div className="flex flex-1 flex-col gap-2 p-3 pt-4">
+        {/* Category chip (spec §10 CARDS) */}
+        {product.category && (
+          <span className="self-start text-[10px] font-bold text-brand-green-light">
+            {product.category}
+          </span>
+        )}
+
         <button
           className="block min-w-0 text-right"
           onClick={() => onOpen(product)}
           aria-label={`عرض ${product.name}`}
         >
-          <p className="truncate text-sm font-black text-foreground">
+          <p className="line-clamp-2 text-body-sm font-semibold text-foreground">
             {product.name}
           </p>
         </button>
-        <p className="truncate text-xs text-muted-foreground">
-          {product.size && product.size.trim() ? product.size : "حبة"}
+
+        <p className="text-micro text-text-muted">
+          {packageLabel(product)}
         </p>
 
         <div className="mt-1">
@@ -144,27 +166,28 @@ export function ProductCard({ product, onOpen }: Props) {
                   ? `${product.name} نفذت الكمية`
                   : `أضف ${product.name} للسلة`
               }
-              className="flex h-10 w-full items-center justify-center gap-1.5 rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+                            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-brand-orange text-sm font-black text-white transition-colors hover:bg-brand-orange-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ShoppingCart className="size-4" />
               أضف للسلة
             </button>
           ) : (
-            <div className="flex h-10 w-full items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-1.5">
+                        <div className="flex h-11 w-full items-center justify-between rounded-md border border-brand-green/30 bg-brand-green-dim px-1.5">
               <button
                 onClick={() => decrement(product.id)}
                 aria-label={`إنقاص ${product.name}`}
-                className="flex size-8 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/10"
+                                className="flex size-8 items-center justify-center rounded-md text-brand-green-light transition-colors hover:bg-bg-nav-hover"
               >
                 <Minus className="size-4" />
               </button>
-              <span className="min-w-5 text-center text-sm font-black text-primary">
+              <span className="min-w-5 text-center text-sm font-black text-brand-green-light">
                 {quantity}
               </span>
               <button
-                onClick={() => increment(product.id)}
+                onClick={() => product.inStock && increment(product.id)}
+                disabled={!product.inStock}
                 aria-label={`زيادة ${product.name}`}
-                className="flex size-8 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/10"
+                className="flex size-8 items-center justify-center rounded-md text-brand-green-light transition-colors hover:bg-bg-nav-hover"
               >
                 <Plus className="size-4" />
               </button>

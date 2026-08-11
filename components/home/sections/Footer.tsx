@@ -15,7 +15,7 @@ export function Footer() {
   ] as const;
 
   return (
-    <footer className="border-t bg-muted/40">
+    <footer className="border-t border-border-subtle bg-bg-deep">
       <div className="site-section py-10">
         <div className="grid gap-8 md:grid-cols-[1.2fr_1fr_1fr]">
           {/* Brand */}
@@ -27,28 +27,28 @@ export function Footer() {
                 className="size-10 rounded-lg object-contain"
               />
               <div>
-                <p className="text-lg font-black">{settings.name}</p>
-                <p dir="ltr" className="text-xs text-muted-foreground">
+                <p className="text-lg font-black text-foreground">{settings.name}</p>
+                <p dir="ltr" className="text-xs text-text-muted">
                   {settings.nameEn}
                 </p>
               </div>
             </div>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">
+            <p className="mt-3 text-sm leading-7 text-text-secondary">
               {settings.location}
             </p>
             <div className="mt-4 flex flex-col gap-2 text-sm">
               <a
                 href={`tel:${settings.phoneMain}`}
-                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+                className="flex items-center gap-2 text-text-secondary transition-colors hover:text-brand-green"
               >
-                <Phone className="size-4 text-primary" />
+                <Phone className="size-4 text-brand-green" />
                 <span dir="ltr">{settings.phoneMain}</span>
               </a>
               <a
                 href={`tel:${settings.phoneAlt}`}
-                className="flex items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
+                className="flex items-center gap-2 text-text-secondary transition-colors hover:text-brand-green"
               >
-                <Phone className="size-4 text-primary" />
+                <Phone className="size-4 text-brand-green" />
                 <span dir="ltr">{settings.phoneAlt}</span>
               </a>
             </div>
@@ -62,7 +62,7 @@ export function Footer() {
                 <li key={href}>
                   <a
                     href={`#${href}`}
-                    className="text-sm text-muted-foreground transition-colors hover:text-primary"
+                    className="text-sm text-text-secondary transition-colors hover:text-brand-green"
                   >
                     {label}
                   </a>
@@ -80,7 +80,7 @@ export function Footer() {
                   href={settings.social.facebook}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="text-text-secondary transition-colors hover:text-brand-green"
                 >
                   فيسبوك
                 </a>
@@ -90,7 +90,7 @@ export function Footer() {
                   href={settings.social.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="text-text-secondary transition-colors hover:text-brand-green"
                 >
                   إنستجرام
                 </a>
@@ -100,7 +100,7 @@ export function Footer() {
                   href={settings.social.tiktok}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="text-text-secondary transition-colors hover:text-brand-green"
                 >
                   تيك توك
                 </a>
@@ -110,7 +110,7 @@ export function Footer() {
                   href={`https://wa.me/${settings.whatsapp.replace(/[^\d]/g, "")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-muted-foreground transition-colors hover:text-primary"
+                  className="text-text-secondary transition-colors hover:text-brand-green"
                 >
                   واتساب
                 </a>
@@ -119,7 +119,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t pt-5 text-xs text-muted-foreground md:flex-row">
+        <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-border-subtle pt-5 text-xs text-text-muted md:flex-row">
           <p>
             © {new Date().getFullYear()} {settings.name} — جميع الحقوق محفوظة.
           </p>

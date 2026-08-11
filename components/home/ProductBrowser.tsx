@@ -307,8 +307,8 @@ export function ProductBrowser({ initialFilters = {}, hideCategoryTree = false, 
         >
           <SlidersHorizontal className="size-4" />
           فلاتر
-          {activeFilterCount > 0 && (
-            <span className="flex size-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                    {activeFilterCount > 0 && (
+            <span className="flex size-5 items-center justify-center rounded-full bg-brand-green text-[10px] font-black text-white">
               {activeFilterCount}
             </span>
           )}
@@ -317,25 +317,25 @@ export function ProductBrowser({ initialFilters = {}, hideCategoryTree = false, 
 
       <div className="mx-auto flex max-w-6xl gap-5 px-3 py-4">
         {/* Desktop sidebar */}
-        <aside className="hidden w-64 shrink-0 lg:block">
-          <div className="sticky top-16 rounded-xl border border-border bg-card p-4">{FilterPanel}</div>
+                <aside className="hidden w-64 shrink-0 lg:block">
+          <div className="sticky top-16 rounded-lg border border-border-default bg-bg-surface p-4">{FilterPanel}</div>
         </aside>
 
         <div className="min-w-0 flex-1">
-          <p className="mb-3 text-xs text-muted-foreground">
+          <p className="mb-3 text-xs text-text-secondary">
             {loading ? "جار التحميل..." : `${total} منتج`}
           </p>
 
           {loading ? (
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="h-56 animate-pulse rounded-xl bg-muted" />
+                <div key={i} className="h-56 animate-pulse rounded-lg bg-bg-surface" />
               ))}
             </div>
           ) : products.length === 0 ? (
-            <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-center">
+                        <div className="flex min-h-[55vh] flex-col items-center justify-center gap-3 text-center">
               <p className="text-lg font-black">لا توجد منتجات مطابقة</p>
-              <p className="text-sm text-muted-foreground">جرّب تغيير الفلاتر أو مسحها.</p>
+              <p className="text-sm text-text-secondary">جرّب تغيير الفلاتر أو مسحها.</p>
             </div>
           ) : (
             <>
@@ -346,9 +346,9 @@ export function ProductBrowser({ initialFilters = {}, hideCategoryTree = false, 
               </div>
               {total > products.length && (
                 <div className="mt-5 flex justify-center">
-                  <button
+                                    <button
                     onClick={() => setPage((pg) => pg + 1)}
-                    className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+                    className="rounded-lg bg-brand-green px-6 py-2.5 text-sm font-black text-white transition-colors hover:bg-brand-green-hover"
                   >
                     تحميل المزيد
                   </button>

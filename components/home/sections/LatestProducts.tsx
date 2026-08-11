@@ -39,7 +39,7 @@ export function LatestProducts({ onOpen }: Props) {
     <section id="products" className="site-section scroll-mt-20">
       <div className="mb-4">
         <h2 className="text-xl font-black sm:text-2xl">منتجات سوق الجملة</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-text-secondary">
           الأكثر طلبًا والأحدث على رفوف المحل
         </p>
       </div>
@@ -50,7 +50,7 @@ export function LatestProducts({ onOpen }: Props) {
           ? Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-56 w-44 shrink-0 animate-pulse rounded-xl bg-muted md:w-auto"
+                className="h-56 w-44 shrink-0 animate-pulse rounded-lg bg-bg-surface md:w-auto"
               />
             ))
           : all.map((p) => (

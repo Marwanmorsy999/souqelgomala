@@ -13,7 +13,7 @@ import {
 import type { Product } from "@/lib/types";
 
 /**
- * Offer product card — used in the "🔥 عروض النهارده" sales board.
+  * Offer product card — used in the daily offers sales board.
  *
  * Image-aware layout (critical rule):
  *   - WITH a real photo  -> photo on top (single discount badge on the photo).
@@ -37,27 +37,30 @@ export function OfferProductCard({
   const hasImage = hasProductImage(product);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card">
+        <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border-default bg-bg-surface">
       {hasImage && (
         <button
           className="block w-full text-right"
           onClick={() => onOpen(product)}
           aria-label={`عرض ${product.name}`}
         >
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+          <div className="relative aspect-[4/3] w-full overflow-hidden img-bg">
             <ClientImage
               src={productImageSrc(product)}
               alt={product.name}
               imgClassName="size-full object-cover"
               wrapperClassName="size-full"
             >
-              {pct > 0 && (
-                <span className="absolute right-2 top-2 rounded-full bg-accent px-2 py-0.5 text-[11px] font-bold text-accent-foreground">
-                  خصم {pct}%
+                            {pct > 0 && (
+                <span
+                  className="absolute top-2 end-2 rounded-sm bg-red-error px-[7px] py-0.5 text-[10px] font-black text-white"
+                  aria-label={`خصم ${pct}%`}
+                >
+                  -{pct}%
                 </span>
               )}
               {!product.inStock && (
-                <span className="absolute inset-0 flex items-center justify-center bg-black/30 text-xs font-bold text-white">
+                <span className="absolute inset-0 flex items-center justify-center bg-black/50 text-xs font-black text-white">
                   نفذت الكمية
                 </span>
               )}
@@ -78,49 +81,51 @@ export function OfferProductCard({
           {packageLabel(product)}
         </p>
 
-        <div className="mt-auto flex flex-col gap-1 pt-2">
+                <div className="mt-auto flex flex-col gap-1 pt-2">
           <div className="flex flex-wrap items-baseline gap-x-2">
-            <span className="text-xl font-black text-foreground">
+            <span className="text-price-md font-black text-brand-orange" dir="ltr">
               {formatPrice(product.retail)}
             </span>
             {product.oldPrice && product.oldPrice > product.retail && (
-              <span className="text-xs text-muted-foreground line-through">
+              <span className="text-xs text-muted-foreground line-through" dir="ltr">
                 {formatPrice(product.oldPrice)}
               </span>
             )}
             {pct > 0 && (
-              <span className="text-xs font-bold text-accent">خصم {pct}%</span>
+              <span className="text-xs font-bold text-red-error">خصم {pct}%</span>
             )}
           </div>
-          <p className="text-[11px] text-muted-foreground">
-            جملة: {formatPrice(product.wholesale)}
+          <p className="text-[11px] text-text-secondary">
+            جملة: <span dir="ltr">{formatPrice(product.wholesale)}</span>
           </p>
         </div>
 
-        {quantity === 0 ? (
+                {quantity === 0 ? (
           <button
             onClick={() => product.inStock && add(product.id)}
             disabled={!product.inStock}
-            className="mt-2 flex h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-primary text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-brand-orange text-sm font-black text-white transition-colors hover:bg-brand-orange-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
             <ShoppingCart className="size-4" />
             اطلب الآن
           </button>
         ) : (
-          <div className="mt-2 flex h-9 w-full items-center justify-between rounded-xl border border-primary/30 bg-primary/5 px-1.5">
+          <div className="mt-2 flex h-11 w-full items-center justify-between rounded-md border border-brand-green/30 bg-brand-green-dim px-1.5">
             <button
               onClick={() => decrement(product.id)}
               aria-label={`إنقاص ${product.name}`}
-              className="flex size-7 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/10"
+              className="flex size-8 items-center justify-center rounded-md text-brand-green-light transition-colors hover:bg-bg-nav-hover"
             >
               <Minus className="size-4" />
             </button>
-            <span className="text-sm font-black text-primary">{quantity}</span>
+            <span className="min-w-5 text-center text-sm font-black text-brand-green-light">
+              {quantity}
+            </span>
             <button
               onClick={() => product.inStock && increment(product.id)}
               disabled={!product.inStock}
               aria-label={`زيادة ${product.name}`}
-              className="flex size-7 items-center justify-center rounded-lg text-primary transition-colors hover:bg-primary/10"
+              className="flex size-8 items-center justify-center rounded-md text-brand-green-light transition-colors hover:bg-bg-nav-hover"
             >
               <Plus className="size-4" />
             </button>

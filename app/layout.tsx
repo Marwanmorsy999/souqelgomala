@@ -5,7 +5,11 @@ import StructuredDataDefault from "@/components/home/StructuredData";
 const StructuredData = StructuredDataDefault;
 import "./globals.css";
 
-const cairo = Cairo({ subsets: ["arabic", "latin"], variable: "--font-cairo" });
+const cairo = Cairo({
+  subsets: ["arabic", "latin"],
+  variable: "--font-cairo",
+  weight: ["400", "500", "600", "700", "900"],
+});
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export const metadata: Metadata = {
@@ -46,11 +50,8 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  colorScheme: "light dark",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#faf8f4" },
-    { media: "(prefers-color-scheme: dark)", color: "#191918" },
-  ],
+    colorScheme: "dark",
+  themeColor: "#0f0f0f",
 };
 
 export default function RootLayout({

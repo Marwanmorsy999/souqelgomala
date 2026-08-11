@@ -41,7 +41,7 @@ export function Hero({ onOffers }: Props) {
 
       <div className="site-section relative pb-16 pt-14 sm:pb-20 sm:pt-20 md:pb-24 md:pt-28">
         <h1 className="max-w-2xl text-3xl font-black leading-[1.2] text-white sm:text-4xl md:text-5xl">
-          <span className="mb-3 block text-lg font-black tracking-wide text-accent sm:text-xl">
+          <span className="mb-3 block text-lg font-black tracking-wide text-brand-green-light sm:text-xl">
             {settings.name}
           </span>
           {headline}
@@ -53,7 +53,7 @@ export function Hero({ onOffers }: Props) {
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <button
             onClick={onOffers}
-            className="flex h-12 items-center gap-2 rounded-xl bg-accent px-6 text-base font-black text-accent-foreground transition-colors hover:bg-accent/90"
+            className="flex h-12 items-center gap-2 rounded-lg bg-brand-green px-6 text-base font-black text-white transition-colors hover:bg-brand-green-hover"
           >
             {settings.hero.ctaLabel || "شوف عروض النهارده"}
           </button>
@@ -61,7 +61,7 @@ export function Hero({ onOffers }: Props) {
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-12 items-center gap-2 rounded-xl border border-white/30 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20"
+            className="flex h-12 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20"
           >
             {settings.hero.whatsappCtaLabel || "اطلب على واتساب"}
           </a>

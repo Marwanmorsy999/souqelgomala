@@ -12,6 +12,7 @@ import { WhatsAppButton } from "@/components/home/WhatsAppButton";
 import { CategoryProducts } from "@/components/home/CategoryProducts";
 import { ShopPage } from "@/components/home/ShopPage";
 import { Hero } from "@/components/home/sections/Hero";
+import { DealsCountdown } from "@/components/home/sections/DealsCountdown";
 import { PromoBanner } from "@/components/home/sections/PromoBanner";
 import { DailyOffers } from "@/components/home/sections/DailyOffers";
 import { Categories } from "@/components/home/sections/Categories";
@@ -185,8 +186,9 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
           transition={{ duration: 0.22 }}
         >
           {view === "home" && (
-            <div className="flex flex-col gap-10 pb-4 pt-3">
+                        <div className="flex flex-col gap-10 pb-4 pt-3">
               <Hero onOffers={() => goToAnchor("offers")} />
+              <DealsCountdown />
               <DailyOffers onOpen={setSelected} />
               <Categories onSelect={handleCategory} />
               <LatestProducts onOpen={setSelected} />

@@ -35,7 +35,7 @@ export function AuthDialog({ open, onClose, onSuccess }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="rounded-3xl sm:max-w-md">
+            <DialogContent className="rounded-lg sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-right text-2xl font-black">
             {otpStep ? 'تأكيد رقم الموبايل' : 'أهلاً بيك في سوق الجملة'}
@@ -57,7 +57,7 @@ export function AuthDialog({ open, onClose, onSuccess }: Props) {
               onChange={(e) => setOtp(e.target.value)}
               className="h-14 text-center text-2xl tracking-[0.5em]"
             />
-            <Button className="h-12 rounded-2xl" onClick={handleConfirm} disabled={otp.length !== 4}>
+                        <Button className="h-11 rounded-md" onClick={handleConfirm} disabled={otp.length !== 4}>
               تأكيد ودخول
             </Button>
             <Button variant="ghost" onClick={() => setOtpStep(false)}>رجوع</Button>
@@ -65,16 +65,16 @@ export function AuthDialog({ open, onClose, onSuccess }: Props) {
         ) : (
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
-              <Button
+                            <Button
                 variant={userType === 'customer' ? 'default' : 'outline'}
-                className="flex-1 rounded-xl"
+                className="flex-1 rounded-md"
                 onClick={() => setUserType('customer')}
               >
                 عميل
               </Button>
               <Button
                 variant={userType === 'wholesale' ? 'default' : 'outline'}
-                className="flex-1 rounded-xl"
+                className="flex-1 rounded-md"
                 onClick={() => setUserType('wholesale')}
               >
                 تاجر جملة
@@ -84,14 +84,14 @@ export function AuthDialog({ open, onClose, onSuccess }: Props) {
             <div className="flex flex-col gap-2">
               <Label htmlFor="phone">رقم الموبايل</Label>
               <div className="relative">
-                <Input
+                                <Input
                   id="phone"
                   dir="ltr"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="01xxxxxxxxx"
                   inputMode="tel"
-                  className="h-12 rounded-xl pr-10 text-right"
+                  className="h-12 rounded-md"
                 />
                 {validPhone && (
                   <Check className="absolute right-3 top-1/2 size-5 -translate-y-1/2 text-primary" />

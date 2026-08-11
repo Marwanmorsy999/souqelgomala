@@ -91,13 +91,13 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
           <h2 className="text-xl font-black sm:text-2xl">🔥 عروض النهارده</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{today}</p>
+          <p className="mt-1 text-sm text-text-secondary">{today}</p>
         </div>
         <button
           onClick={() =>
             document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })
           }
-          className="text-sm font-bold text-primary transition-colors hover:text-primary/80"
+          className="text-sm font-bold text-brand-green transition-colors hover:text-brand-green-hover"
         >
           كل العروض
         </button>
@@ -106,13 +106,13 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
       {loading ? (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="h-44 animate-pulse rounded-xl bg-muted" />
+            <div key={i} className="h-44 animate-pulse rounded-lg bg-bg-surface" />
           ))}
         </div>
       ) : hasAny ? (
         <div className="flex flex-col gap-5">
           {banners.map((offer) => (
-            <div key={offer.id} className="overflow-hidden rounded-xl border border-border">
+            <div key={offer.id} className="overflow-hidden rounded-lg border border-border-default">
               <ClientImage
                 src={offer.banner as string}
                 alt={offer.title}
@@ -128,7 +128,7 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
                 <p key={offer.id} className="flex flex-wrap items-baseline gap-x-3 text-sm">
                   <span className="font-bold text-foreground">{offer.title}</span>
                   {offer.endDate && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-text-muted">
                       حتى {formatDayMonth(offer.endDate)}
                     </span>
                   )}
@@ -161,11 +161,11 @@ function EmptyOffersState() {
         مفيش عروض مُسجلة على الموقع لسه النهارده — بننشر عروض اليوم على صفحة
         الفيسبوك والإنستجرام، أو اسألنا مباشرة على واتساب.
       </p>
-      <a
+            <a
         href={waLink}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex h-10 shrink-0 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
+        className="flex h-11 shrink-0 items-center gap-2 rounded-md bg-brand-green px-4 text-sm font-black text-white transition-colors hover:bg-brand-green-hover"
       >
         <MessageCircle className="size-4" />
         استفسر عن عروض النهارده

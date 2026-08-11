@@ -63,7 +63,7 @@ export function BottomNav({
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-30 border-t bg-background/95 backdrop-blur"
+      className="fixed bottom-0 left-0 right-0 z-30 border-t border-border-subtle bg-bg-nav/95 backdrop-blur"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="شريط التنقل السفلي"
     >
@@ -75,13 +75,13 @@ export function BottomNav({
             aria-label={label}
             aria-current={active ? "page" : undefined}
             className={`relative flex min-h-11 min-w-14 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-[11px] font-semibold transition-colors ${
-              active ? "text-primary" : "text-muted-foreground"
+              active ? "text-brand-green" : "text-text-muted hover:text-text-primary"
             }`}
           >
             <span className="relative">
               <Icon className="size-5" />
               {label === "السلة" && cartCount > 0 && (
-                <span className="absolute -right-2 -top-1.5 flex size-4 min-w-4 items-center justify-center rounded-full bg-accent px-0.5 text-[9px] font-bold text-accent-foreground">
+                <span className="absolute -right-2 -top-1.5 flex size-4 min-w-4 items-center justify-center rounded-full bg-brand-orange px-0.5 text-[9px] font-black text-white">
                   {cartCount}
                 </span>
               )}

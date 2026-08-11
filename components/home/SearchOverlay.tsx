@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Search, X } from 'lucide-react'
 import { getCategoryTree, searchProducts, flattenCategories } from '@/lib/services/catalog'
+import { formatPrice } from '@/lib/utils'
 import type { Category, Product } from '@/lib/types'
 
 type Props = {
@@ -92,27 +93,27 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
         >
           <div className="absolute inset-0 bg-black/40" onClick={onClose} aria-hidden="true" />
           <motion.div
-            className="absolute inset-y-0 right-0 flex w-full flex-col bg-background shadow-2xl"
+            className="absolute inset-y-0 right-0 flex w-full flex-col bg-bg-surface shadow-2xl"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
             transition={{ duration: 0.22 }}
           >
-            <div className="flex items-center gap-2 border-b px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-3">
               <div className="relative flex-1">
-                <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-text-muted" />
                 <input
                   ref={inputRef}
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   placeholder="ابحث عن منتج..."
-                  className="h-10 w-full rounded-xl border border-input bg-muted/60 pr-10 pl-3 text-sm outline-none focus:border-primary"
+                  className="h-10 w-full rounded-lg border border-border-default bg-bg-input pr-10 pl-3 text-sm outline-none focus:border-brand-green"
                 />
               </div>
               <button
                 onClick={onClose}
                 aria-label="إغلاق"
-                className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+                className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-bg-nav-hover"
               >
                 <X className="size-5" />
               </button>
@@ -121,16 +122,16 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
             <div className="flex-1 overflow-y-auto px-4 pb-28 pt-4">
               {query.trim() === '' ? (
                 <div>
-                  <p className="mb-3 text-sm font-bold text-muted-foreground">الأقسام</p>
+                  <p className="mb-3 text-sm font-bold text-text-secondary">الأقسام</p>
                   <div className="flex flex-col gap-1">
                     {popular.map((c) => (
                       <button
                         key={c.id}
                         onClick={() => pickCategory(c.name)}
-                        className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm transition-colors hover:bg-muted"
+                        className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-bg-nav-hover"
                       >
                         <span className="font-bold">{c.name}</span>
-                        <Search className="size-4 text-muted-foreground" />
+                        <Search className="size-4 text-text-muted" />
                       </button>
                     ))}
                   </div>
@@ -138,7 +139,7 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
               ) : results.length === 0 && categoryResults.length === 0 ? (
                 <div className="flex flex-col items-center gap-3 py-16 text-center">
                   <p className="text-lg font-black">مفيش نتائج</p>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-text-secondary">
                     جرّب كلمة تانية أو تواصل معنا على واتساب.
                   </p>
                 </div>
@@ -148,9 +149,9 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
                     <button
                       key={c.id}
                       onClick={() => pickCategory(c.name)}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-right text-sm font-bold transition-colors hover:bg-muted"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-right text-sm font-bold transition-colors hover:bg-bg-nav-hover"
                     >
-                      <span className="size-2 rounded-full bg-primary/50" />
+                      <span className="size-2 rounded-full bg-brand-green/50" />
                       قسم {c.name}
                     </button>
                   ))}
@@ -158,13 +159,13 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
                     <button
                       key={p.id}
                       onClick={() => pickProduct(p)}
-                      className="flex w-full items-center gap-3 rounded-xl p-2 text-right transition-colors hover:bg-muted"
+                      className="flex w-full items-center gap-3 rounded-lg p-2 text-right transition-colors hover:bg-bg-nav-hover"
                     >
-                      <img src={p.image} alt={p.name} className="size-12 shrink-0 rounded-lg object-cover" />
+                      <img src={p.image} alt={p.name} className="size-12 shrink-0 rounded-md object-cover" />
                       <span className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-bold">{p.name}</span>
-                        <span className="block text-xs text-muted-foreground">
-                          {p.size && p.size.trim() ? p.size : 'حبة'} · {p.retail} ج.م
+                        <span className="block text-xs text-text-secondary">
+                          {p.size && p.size.trim() ? p.size : 'حبة'} · {formatPrice(p.retail)} ج.م
                         </span>
                       </span>
                     </button>

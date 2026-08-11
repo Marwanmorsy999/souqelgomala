@@ -7,7 +7,7 @@ export function Brands() {
     <section className="mx-auto max-w-6xl px-4">
       <div className="mb-6 text-center">
         <h2 className="text-xl font-black sm:text-2xl">العلامات المتوفرة</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-text-secondary">
           ماركات موجودة داخل تشكيلة سوق الجملة
         </p>
       </div>
@@ -16,7 +16,7 @@ export function Brands() {
         {brands.map((brand) => (
           <div
             key={brand.id}
-            className="group flex items-center justify-center rounded-2xl border border-border/60 bg-card p-4 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+            className="group flex items-center justify-center rounded-lg border border-border-default bg-bg-surface p-4 transition-all duration-300 hover:-translate-y-1 hover:border-brand-green/50"
           >
             <img
               src={brand.logo_url}
@@ -28,7 +28,7 @@ export function Brands() {
         ))}
       </div>
 
-      <p className="mt-4 text-center text-[11px] text-muted-foreground">
+      <p className="mt-4 text-center text-[11px] text-text-muted">
         وعلامات تجارية أخرى متوفرة حسب التشكيلة الحالية — تُحدَّث من إدارة
         المتجر.
       </p>

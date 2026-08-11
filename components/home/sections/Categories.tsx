@@ -31,7 +31,7 @@ export function Categories({ onSelect }: Props) {
     <section id="categories" className="site-section scroll-mt-20">
       <div className="mb-4">
         <h2 className="text-xl font-black sm:text-2xl">الأقسام</h2>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-text-secondary">
           تصفح الأقسام الرئيسية والفرعية
         </p>
       </div>
@@ -41,9 +41,9 @@ export function Categories({ onSelect }: Props) {
           <div key={parent.id} className="flex flex-col gap-2">
             <button
               onClick={() => onSelect(parent.name)}
-              className="flex flex-col items-center gap-2 rounded-2xl border border-border bg-card p-3 transition-all hover:border-primary/50 hover:shadow-sm"
+              className="flex flex-col items-center gap-2 rounded-lg border border-border-default bg-bg-surface p-3 transition-all hover:border-brand-green/50 hover:shadow-sm"
             >
-              <div className="relative size-14 overflow-hidden rounded-xl bg-muted">
+              <div className="relative size-14 overflow-hidden rounded-md bg-bg-input">
                 {parent.image && !parent.image.includes("placeholder") ? (
                   <img
                     src={parent.image}
@@ -52,7 +52,7 @@ export function Categories({ onSelect }: Props) {
                     className="size-full object-cover"
                   />
                 ) : (
-                  <div className="flex size-full items-center justify-center text-lg font-black text-primary/40">
+                  <div className="flex size-full items-center justify-center text-lg font-black text-brand-green/40">
                     {parent.name.charAt(0)}
                   </div>
                 )}
@@ -60,7 +60,7 @@ export function Categories({ onSelect }: Props) {
               <div className="text-center">
                 <p className="text-sm font-bold leading-tight">{parent.name}</p>
                 {parent.productCount != null && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-text-muted">
                     {parent.productCount} منتج
                   </p>
                 )}
@@ -73,7 +73,7 @@ export function Categories({ onSelect }: Props) {
                   <button
                     key={child.id}
                     onClick={() => onSelect(child.name)}
-                    className="rounded-full border border-border bg-background px-2.5 py-1 text-xs font-semibold transition-colors hover:border-primary/50 hover:text-primary"
+                    className="rounded-md border border-border-default bg-bg-surface px-2.5 py-1 text-xs font-semibold transition-colors hover:border-brand-green/50 hover:text-brand-green"
                   >
                     {child.name}
                   </button>

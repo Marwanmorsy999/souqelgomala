@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { useStore } from "@/lib/store";
 import { getProducts } from "@/lib/services/catalog";
-import { hasProductImage, productImageSrc } from "@/lib/utils";
+import { hasProductImage, productImageSrc, formatPrice } from "@/lib/utils";
 import ProductJsonLd from "./ProductJsonLd";
 import { ProductCard } from "./ProductCard";
 import type { Product } from "@/lib/types";
@@ -47,13 +47,13 @@ export function ProductDetail({
   const total = price * quantity;
 
   return (
-    <main className="min-h-screen bg-background pb-24" dir="rtl">
+    <main className="min-h-screen bg-bg-base pb-24" dir="rtl">
       <ProductJsonLd product={product} />
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b bg-background/95 px-4 py-3">
+      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border-subtle bg-bg-nav/95 px-4 py-3">
         <button
           onClick={onBack}
           aria-label="رجوع"
-          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-bg-nav-hover"
         >
           <svg viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M19 12H5M12 19l-7-7 7-7" />
@@ -65,7 +65,7 @@ export function ProductDetail({
 
       <div className="mx-auto max-w-3xl px-4 py-5">
         <div className="grid gap-5 md:grid-cols-2">
-          <div className="overflow-hidden rounded-xl bg-muted">
+          <div className="overflow-hidden rounded-lg bg-bg-input">
             {hasProductImage(product) ? (
               <img
                 src={productImageSrc(product)}
@@ -73,50 +73,50 @@ export function ProductDetail({
                 className="size-full object-contain"
               />
             ) : (
-              <div className="flex aspect-square items-center justify-center p-6 text-center text-sm text-muted-foreground">
+              <div className="flex aspect-square items-center justify-center p-6 text-center text-sm text-text-muted">
                 {product.name}
               </div>
             )}
           </div>
 
           <div className="flex flex-col gap-3">
-            <p className="text-xl font-black">{product.name}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xl font-black text-foreground">{product.name}</p>
+            <p className="text-sm text-text-secondary">
               {product.size && product.size.trim() ? product.size : "حبة"}
             </p>
 
             <div className="flex flex-wrap items-baseline gap-x-3">
-              <span className="text-2xl font-black text-foreground">
-                {price} ج.م
+              <span className="text-2xl font-black text-brand-orange" dir="ltr">
+                {formatPrice(price)} ج.م
               </span>
               {product.oldPrice && product.oldPrice > product.retail && (
-                <span className="text-sm text-muted-foreground line-through">
-                  {product.oldPrice} ج.م
+                <span className="text-sm text-text-muted line-through" dir="ltr">
+                  {formatPrice(product.oldPrice)} ج.م
                 </span>
               )}
             </div>
 
             {product.brand && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-text-muted">
                 الماركة: {product.brand}
               </p>
             )}
 
-            <div className="mt-2 flex items-center justify-between rounded-xl border border-border p-2">
-              <span className="text-xs text-muted-foreground">الكمية</span>
+            <div className="mt-2 flex items-center justify-between rounded-lg border border-border-default bg-bg-surface p-2">
+              <span className="text-xs text-text-secondary">الكمية</span>
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setQuantity((v: number) => Math.max(1, v - 1))}
-                  className="flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+                  className="flex size-8 items-center justify-center rounded-md transition-colors hover:bg-bg-nav-hover"
                 >
                   <Minus className="size-4" />
                 </button>
-                <span className="min-w-6 text-center text-sm font-black">
+                <span className="min-w-6 text-center text-sm font-black text-brand-green-light">
                   {quantity}
                 </span>
                 <button
                   onClick={() => setQuantity((v: number) => v + 1)}
-                  className="flex size-8 items-center justify-center rounded-lg transition-colors hover:bg-muted"
+                  className="flex size-8 items-center justify-center rounded-md transition-colors hover:bg-bg-nav-hover"
                 >
                   <Plus className="size-4" />
                 </button>
@@ -128,9 +128,9 @@ export function ProductDetail({
                 add(product.id);
                 onBack();
               }}
-              className="mt-1 flex h-12 w-full items-center justify-center rounded-xl bg-primary text-base font-black text-primary-foreground transition-colors hover:bg-primary/90"
+              className="mt-1 flex h-12 w-full items-center justify-center rounded-md bg-brand-orange text-base font-black text-white transition-colors hover:bg-brand-orange-hover"
             >
-              أضف للسلة — {total} ج.م
+              أضف للسلة — {formatPrice(total)} ج.م
             </button>
           </div>
         </div>
@@ -138,7 +138,7 @@ export function ProductDetail({
         {product.description && (
           <div className="mt-8">
             <h2 className="mb-2 text-lg font-black">الوصف</h2>
-            <p className="text-sm leading-7 text-muted-foreground">
+            <p className="text-sm leading-7 text-text-secondary">
               {product.description}
             </p>
           </div>
