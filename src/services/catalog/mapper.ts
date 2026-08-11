@@ -117,14 +117,25 @@ export function mapCategoryToStorefront(
   category: CategoryRow,
   opts: { media?: CategoryMediaRow[] } = {}
 ): StorefrontCategory {
+  // 1. Try category_media table (Cloudinary-backed).
   const primary = (opts.media ?? []).find((m) => m.is_primary && !m.deleted_at)
   const raw = primary?.secure_url
-  const image =
+  let image =
     raw && primary?.cloudinary_public_id && !isDirectUrl(primary.cloudinary_public_id)
       ? categoryImageUrl(primary.cloudinary_public_id)
-      : raw || placeholderImage()
+      : raw || ''
 
-    return {
+  // 2. Fall back to the `image` column on the categories table (direct URL or non-Cloudinary).
+  if (!image && category.image) {
+    image = category.image
+  }
+
+  // 3. Final fallback: placeholder.
+  if (!image) {
+    image = placeholderImage()
+  }
+
+  return {
     id: category.id,
     name: category.name_ar,
     image,

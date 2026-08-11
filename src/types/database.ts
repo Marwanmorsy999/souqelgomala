@@ -271,6 +271,7 @@ export interface OfferRow {
   start_date: string
   end_date: string
   status: OfferStatus
+  is_featured: boolean
   created_at: string
   updated_at: string
   deleted_at: string | null

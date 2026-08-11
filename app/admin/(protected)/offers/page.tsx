@@ -1,12 +1,14 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { Plus, Pencil, Trash2, Loader2, X, Star } from "lucide-react"
+import { useEffect, useState, useMemo } from "react"
+import { Plus, Pencil, Trash2, Loader2, X, Star, Search } from "lucide-react"
 import { PageHeader } from "@/components/layout/page-header"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { ImageUploader, type CloudinaryUploadData } from "@/components/admin/image-uploader"
+import { ClientImage } from "@/components/ui/client-image"
 import { runAfterRender } from "@/components/admin/use-deferred-load"
 import { useToast } from "@/components/ui/toast"
 
@@ -27,7 +29,12 @@ type Offer = {
   is_featured?: boolean
 }
 
-type ProductOption = { id: string; name_ar?: string }
+type ProductOption = {
+  id: string
+  name_ar?: string
+  price?: number
+  image_url?: string
+}
 
 const EMPTY_FORM = {
   campaign_name: "",
@@ -52,15 +59,38 @@ export default function AdminOffersPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [form, setForm] = useState(EMPTY_FORM)
+  const [cloudinaryData, setCloudinaryData] = useState<CloudinaryUploadData | null>(null)
+  const [productSearch, setProductSearch] = useState("")
+  const [error, setError] = useState<string | null>(null)
 
   function openCreate() {
     setEditingId(null)
     setForm(EMPTY_FORM)
+    setCloudinaryData(null)
+    setProductSearch("")
+    setError(null)
+    // Default dates: now → end of today
+    const now = new Date()
+    const endOfDay = new Date(now)
+    endOfDay.setHours(23, 59, 0, 0)
+    setForm({
+      ...EMPTY_FORM,
+      start_date: formatLocalDateTime(now),
+      end_date: formatLocalDateTime(endOfDay),
+    })
     setShowForm(true)
+  }
+
+  function formatLocalDateTime(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, "0")
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
   function openEdit(offer: Offer) {
     setEditingId(offer.id)
+    setCloudinaryData(null)
+    setProductSearch("")
+    setError(null)
     setForm({
       campaign_name: offer.campaign_name,
       banner: offer.banner ?? "",
@@ -95,10 +125,25 @@ export default function AdminOffersPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setError(null)
+
+    if (!form.campaign_name.trim()) {
+      setError("اسم العرض مطلوب")
+      return
+    }
+    if (!form.start_date || !form.end_date) {
+      setError("تاريخ البداية والنهاية مطلوبان")
+      return
+    }
+    if (form.product_ids.length === 0) {
+      setError("اختر منتجاً واحداً على الأقل")
+      return
+    }
+
     setSaving(true)
     try {
       const payload: Record<string, unknown> = {
-        campaignName: form.campaign_name,
+        campaignName: form.campaign_name.trim(),
         banner: form.banner || undefined,
         discountType: form.discount_type,
         productIds: form.product_ids,
@@ -127,9 +172,15 @@ export default function AdminOffersPage() {
         setShowForm(false)
         await load()
       } else {
-        toast.error(body?.error ?? "تعذر حفظ العرض")
+        const msg =
+          body?.error ??
+          (body?.post ? Object.values(body.post).flat().join("، ") : null) ??
+          "تعذر حفظ العرض"
+        setError(msg)
+        toast.error(msg)
       }
     } catch {
+      setError("تعذر حفظ العرض — تحقق من الاتصال")
       toast.error("تعذر حفظ العرض")
     } finally {
       setSaving(false)
@@ -152,6 +203,15 @@ export default function AdminOffersPage() {
       return `اشترِ ${o.buy_x} احصل على ${o.get_y}`
     return o.discount_type
   }
+
+  // Filtered products for the picker
+  const filteredProducts = useMemo(() => {
+    if (!productSearch.trim()) return products
+    const q = productSearch.trim().toLowerCase()
+    return products.filter((p) =>
+      (p.name_ar ?? "").toLowerCase().includes(q)
+    )
+  }, [products, productSearch])
 
   async function load() {
     setLoading(true)
@@ -197,149 +257,246 @@ export default function AdminOffersPage() {
                 <X className="size-4" />
               </Button>
             </div>
-            <form onSubmit={handleSubmit} className="grid gap-4 sm:grid-cols-2">
-              <div className="sm:col-span-2">
-                <Label htmlFor="campaign_name">اسم الحملة *</Label>
+            <form onSubmit={handleSubmit} className="grid gap-4">
+              {/* Campaign name */}
+              <div>
+                <Label htmlFor="campaign_name">
+                  اسم العرض <span className="text-destructive">*</span>
+                </Label>
                 <Input
                   id="campaign_name"
                   value={form.campaign_name}
                   onChange={(e) => setForm({ ...form, campaign_name: e.target.value })}
+                  placeholder="مثال: عرض اليوم - أرز وسكر"
                   required
                 />
               </div>
 
-              <div>
-                <Label htmlFor="discount_type">نوع الخصم *</Label>
-                <select
-                  id="discount_type"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={form.discount_type}
-                  onChange={(e) => setForm({ ...form, discount_type: e.target.value as Offer["discount_type"] })}
-                >
-                  <option value="percentage">نسبة مئوية</option>
-                  <option value="fixed_price">سعر ثابت</option>
-                  <option value="buy_x_get_y">اشترِ X واحصل على Y</option>
-                </select>
+              {/* Discount type + value */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="discount_type">نوع الخصم</Label>
+                  <select
+                    id="discount_type"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={form.discount_type}
+                    onChange={(e) => setForm({ ...form, discount_type: e.target.value as Offer["discount_type"] })}
+                  >
+                    <option value="percentage">نسبة مئوية (%)</option>
+                    <option value="fixed_price">سعر ثابت (خصم بالجنيه)</option>
+                    <option value="buy_x_get_y">اشترِ X واحصل على Y</option>
+                  </select>
+                </div>
+
+                {(form.discount_type === "percentage" || form.discount_type === "fixed_price") && (
+                  <div>
+                    <Label htmlFor="value">
+                      قيمة الخصم <span className="text-destructive">*</span>
+                    </Label>
+                    <Input
+                      id="value"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      value={form.value}
+                      onChange={(e) => setForm({ ...form, value: e.target.value })}
+                      placeholder={form.discount_type === "percentage" ? "مثال: 15" : "مثال: 10"}
+                      required
+                    />
+                  </div>
+                )}
+
+                {form.discount_type === "buy_x_get_y" && (
+                  <>
+                    <div>
+                      <Label htmlFor="buy_x">اشترِ X</Label>
+                      <Input
+                        id="buy_x"
+                        type="number"
+                        min="1"
+                        value={form.buy_x}
+                        onChange={(e) => setForm({ ...form, buy_x: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="get_y">احصل على Y</Label>
+                      <Input
+                        id="get_y"
+                        type="number"
+                        min="1"
+                        value={form.get_y}
+                        onChange={(e) => setForm({ ...form, get_y: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </>
+                )}
               </div>
 
-              {(form.discount_type === "percentage" || form.discount_type === "fixed_price") && (
+              {/* Product picker */}
+              <div>
+                <Label>
+                  المنتجات المشمولة{" "}
+                  <span className="text-primary font-bold">({form.product_ids.length})</span>
+                </Label>
+                <div className="mt-2 rounded-lg border border-input">
+                  {/* Search */}
+                  <div className="relative border-b border-input">
+                    <Search className="absolute right-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <input
+                      type="text"
+                      value={productSearch}
+                      onChange={(e) => setProductSearch(e.target.value)}
+                      placeholder="🔍 ابحث عن منتج..."
+                      className="w-full py-2 pr-9 pl-3 text-sm bg-transparent outline-none"
+                    />
+                  </div>
+                  {/* Selected products summary */}
+                  {form.product_ids.length > 0 && (
+                    <div className="flex flex-wrap gap-1 border-b border-input p-2">
+                      {form.product_ids.map((id) => {
+                        const p = products.find((pr) => pr.id === id)
+                        if (!p) return null
+                        return (
+                          <span
+                            key={id}
+                            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                          >
+                            {p.name_ar ?? id}
+                            <button
+                              type="button"
+                              onClick={() => toggleProduct(id)}
+                              className="text-primary/60 hover:text-primary"
+                            >
+                              <X className="size-3" />
+                            </button>
+                          </span>
+                        )
+                      })}
+                    </div>
+                  )}
+                  {/* Product list */}
+                  <div className="max-h-48 overflow-y-auto p-2">
+                    {products.length === 0 ? (
+                      <p className="py-4 text-center text-xs text-muted-foreground">
+                        لا توجد منتجات بعد. أضف منتجات أولاً.
+                      </p>
+                    ) : filteredProducts.length === 0 ? (
+                      <p className="py-4 text-center text-xs text-muted-foreground">
+                        لا توجد نتائج للبحث.
+                      </p>
+                    ) : (
+                      filteredProducts.map((p) => (
+                        <label
+                          key={p.id}
+                          className="flex items-center gap-3 rounded-md px-2 py-1.5 text-sm hover:bg-muted/50 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={form.product_ids.includes(p.id)}
+                            onChange={() => toggleProduct(p.id)}
+                            className="size-4 rounded shrink-0"
+                          />
+                          {p.image_url && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={p.image_url}
+                              alt=""
+                              className="size-8 rounded object-cover shrink-0"
+                            />
+                          )}
+                          <span className="flex-1 truncate">{p.name_ar ?? p.id}</span>
+                          {p.price != null && (
+                            <span className="text-xs text-muted-foreground shrink-0">
+                              {p.price} ج.م
+                            </span>
+                          )}
+                        </label>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Dates */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="value">القيمة *</Label>
+                  <Label htmlFor="start_date">
+                    يبدأ <span className="text-destructive">*</span>
+                  </Label>
                   <Input
-                    id="value"
-                    type="number"
-                    value={form.value}
-                    onChange={(e) => setForm({ ...form, value: e.target.value })}
+                    id="start_date"
+                    type="datetime-local"
+                    value={form.start_date}
+                    onChange={(e) => setForm({ ...form, start_date: e.target.value })}
                     required
                   />
                 </div>
-              )}
-
-              {form.discount_type === "buy_x_get_y" && (
-                <>
-                  <div>
-                    <Label htmlFor="buy_x">اشترِ X *</Label>
-                    <Input
-                      id="buy_x"
-                      type="number"
-                      value={form.buy_x}
-                      onChange={(e) => setForm({ ...form, buy_x: e.target.value })}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="get_y">احصل على Y *</Label>
-                    <Input
-                      id="get_y"
-                      type="number"
-                      value={form.get_y}
-                      onChange={(e) => setForm({ ...form, get_y: e.target.value })}
-                      required
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="sm:col-span-2">
-                <Label>المنتجات المشمولة ({form.product_ids.length})</Label>
-                <div className="mt-1 flex max-h-40 flex-col gap-1 overflow-y-auto rounded-md border border-input p-2">
-                  {products.length === 0 && (
-                    <p className="text-xs text-muted-foreground">لا توجد منتجات بعد.</p>
-                  )}
-                  {products.map((p) => (
-                    <label key={p.id} className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        checked={form.product_ids.includes(p.id)}
-                        onChange={() => toggleProduct(p.id)}
-                      />
-                      {p.name_ar ?? p.id}
-                    </label>
-                  ))}
+                <div>
+                  <Label htmlFor="end_date">
+                    ينتهي <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="end_date"
+                    type="datetime-local"
+                    value={form.end_date}
+                    onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                    required
+                  />
                 </div>
               </div>
 
+              {/* Status + Featured */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="status">الحالة</Label>
+                  <select
+                    id="status"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    value={form.status}
+                    onChange={(e) => setForm({ ...form, status: e.target.value })}
+                  >
+                    <option value="active">نشط</option>
+                    <option value="scheduled">مجدول</option>
+                    <option value="inactive">مسودة</option>
+                  </select>
+                </div>
+                <div className="flex items-end">
+                  <label className="flex items-center gap-2 text-sm">
+                    <input
+                      type="checkbox"
+                      checked={form.is_featured}
+                      onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
+                      className="size-4 rounded"
+                    />
+                    <Star className="size-4 text-accent" /> عرض مميز (يُظهر في الواجهة)
+                  </label>
+                </div>
+              </div>
+
+              {/* Banner Image Upload */}
               <div>
-                <Label htmlFor="start_date">تاريخ البدء *</Label>
-                <Input
-                  id="start_date"
-                  type="datetime-local"
-                  value={form.start_date}
-                  onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="end_date">تاريخ الانتهاء *</Label>
-                <Input
-                  id="end_date"
-                  type="datetime-local"
-                  value={form.end_date}
-                  onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                  required
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="status">الحالة *</Label>
-                <select
-                  id="status"
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  value={form.status}
-                  onChange={(e) => setForm({ ...form, status: e.target.value })}
-                >
-                  <option value="active">نشط</option>
-                  <option value="draft">مسودة</option>
-                  <option value="expired">منتهي</option>
-                </select>
-              </div>
-
-              <div className="flex items-end">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.is_featured}
-                    onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
-                  />
-                  <Star className="size-4 text-accent" /> عرض مميز (يُظهر في الواجهة)
-                </label>
-              </div>
-
-              <div className="sm:col-span-2">
-                <Label htmlFor="banner">رابط الصورة (البانر)</Label>
-                <Input
-                  id="banner"
+                <ImageUploader
                   value={form.banner}
-                  onChange={(e) => setForm({ ...form, banner: e.target.value })}
-                  placeholder="https://..."
+                  onChange={(url) => setForm({ ...form, banner: url })}
+                  onCloudinaryData={setCloudinaryData}
+                  label="صورة البانر (اختياري)"
                 />
               </div>
 
-              <div className="sm:col-span-2 flex gap-2">
+              {/* Error display */}
+              {error && (
+                <p className="text-sm text-destructive bg-destructive/10 p-2 rounded-lg">
+                  {error}
+                </p>
+              )}
+
+              {/* Actions */}
+              <div className="flex gap-2">
                 <Button type="submit" disabled={saving}>
                   {saving ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
-                  <span className="mr-2">{editingId ? "تحديث" : "إنشاء"}</span>
+                  <span className="mr-2">{editingId ? "تحديث" : "نشر العرض"}</span>
                 </Button>
                 <Button type="button" variant="outline" onClick={() => setShowForm(false)}>
                   إلغاء
@@ -357,7 +514,9 @@ export default function AdminOffersPage() {
         </div>
       ) : offers.length === 0 ? (
         <Card>
-          <CardContent className="p-8 text-center text-sm text-muted-foreground">لا توجد عروض حتى الآن.</CardContent>
+          <CardContent className="p-8 text-center text-sm text-muted-foreground">
+            لا توجد عروض حتى الآن. اضغط &quot;عرض جديد&quot; لإنشاء أول عرض.
+          </CardContent>
         </Card>
       ) : (
         <div className="flex flex-col gap-3">
@@ -365,7 +524,7 @@ export default function AdminOffersPage() {
             <Card key={offer.id}>
               <CardContent className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     <h4 className="font-bold">{offer.campaign_name}</h4>
                     {offer.is_featured && (
                       <span className="rounded-full bg-accent/15 px-2 py-0.5 text-xs font-semibold text-accent">
@@ -381,6 +540,15 @@ export default function AdminOffersPage() {
                     >
                       {discountLabel(offer)}
                     </span>
+                    <span
+                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                        offer.status === "active"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {offer.status === "active" ? "نشط" : offer.status === "scheduled" ? "مجدول" : offer.status}
+                    </span>
                   </div>
                   {offer.product_ids.length > 0 && (
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -391,8 +559,8 @@ export default function AdminOffersPage() {
                     </p>
                   )}
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {new Date(offer.start_date).toLocaleString("ar-EG")} —{" "}
-                    {new Date(offer.end_date).toLocaleString("ar-EG")}
+                    {new Date(offer.start_date).toLocaleDateString("ar-EG")} —{" "}
+                    {new Date(offer.end_date).toLocaleDateString("ar-EG")}
                   </p>
                 </div>
                 <div className="flex gap-2">
