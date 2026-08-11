@@ -19,7 +19,7 @@ import type { User } from '@/services/auth'
 import { hasPermission, type Role } from '@/lib/permissions'
 import { createProductSchema, updateProductSchema, type CreateProductInput, type UpdateProductInput } from '@/lib/validations'
 import { nanoid } from 'nanoid'
-import { eq, inArray, isNull, and, desc, asc, or, like, type SQL } from 'drizzle-orm'
+import { eq, inArray, isNull, and, desc, asc, or, like, sql, type SQL } from 'drizzle-orm'
 import { deleteCloudinaryAsset } from '@/lib/cloudinary/upload'
 import {
   invalidateCatalogCache,
@@ -488,4 +488,70 @@ export async function softDeleteCategory(user: User, id: string) {
     .where(eq(categories.id, id))
   await invalidateCategoryCache(id, existing[0].name_ar)
   return { success: true }
+}
+
+/** Count products assigned to a category (for delete dependency checks). */
+export async function countProductsInCategory(id: string): Promise<number> {
+  const [row] = await getDb()
+    .select({ count: sql<number>`count(*)` })
+    .from(products)
+    .where(eq(products.category_id, id))
+  return Number(row?.count ?? 0)
+}
+
+/** Reorder categories by id (drag-order). Each id gets an increasing sort_order. */
+export async function reorderCategories(user: User, ids: string[]): Promise<void> {
+  assertCanWrite(user, 'categories')
+  const db = getDb()
+  for (let index = 0; index < ids.length; index += 1) {
+    await db
+      .update(categories)
+      .set({ sort_order: index, updated_at: now() })
+      .where(eq(categories.id, ids[index]))
+  }
+}
+
+/**
+ * Delete a category with a dependency check. If products are assigned, the
+ * caller may reassign them to `reassignTo` (or the call blocks). Subcategories
+ * are re-parented to the deleted category's parent to avoid orphans.
+ */
+export async function deleteCategoryWithCheck(
+  user: User,
+  id: string,
+  reassignTo?: string,
+): Promise<{ deleted: boolean; productCount: number; reassigned: boolean }> {
+  assertCanWrite(user, 'categories')
+  const existing = await getDb().select().from(categories).where(eq(categories.id, id)).limit(1)
+  if (!existing[0]) throw new AdminCatalogError('القسم غير موجود', 404)
+
+  const productCount = await countProductsInCategory(id)
+  if (productCount > 0 && !reassignTo) {
+    // Block: products still assigned and no reassign target supplied.
+    throw new AdminCatalogError(
+      `لا يمكن حذف القسم لأنه يحتوي على ${productCount} منتجًا. أعد تعيين المنتجات لقسم آخر أولًا.`,
+      409,
+    )
+  }
+
+  if (productCount > 0 && reassignTo) {
+    await getDb()
+      .update(products)
+      .set({ category_id: reassignTo, updated_at: now() })
+      .where(eq(products.category_id, id))
+  }
+  // Re-parent direct children to the deleted category's parent.
+  const parentId = existing[0].parent_id
+  await getDb()
+    .update(categories)
+    .set({ parent_id: parentId, updated_at: now() })
+    .where(eq(categories.parent_id, id))
+
+  await getDb()
+    .update(categories)
+    .set({ deleted_at: now(), updated_at: now(), is_visible: false })
+    .where(eq(categories.id, id))
+
+  await invalidateCategoryCache(id, existing[0].name_ar)
+  return { deleted: true, productCount, reassigned: productCount > 0 }
 }

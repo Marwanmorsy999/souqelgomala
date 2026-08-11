@@ -66,6 +66,73 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
     ],
   },
   {
+    title: 'المحتوى والعروض',
+    items: [
+      {
+        label: 'شرائح البانر',
+        icon: 'Image',
+        path: '/admin/promos',
+        permission: 'promos.read',
+        children: [
+          {
+            label: 'الهيرو',
+            icon: 'Star',
+            path: '/admin/promos?placement=hero',
+            permission: 'promos.read',
+          },
+          {
+            label: 'شريط العروض',
+            icon: 'Tag',
+            path: '/admin/promos?placement=deals_strip',
+            permission: 'promos.read',
+          },
+          {
+            label: 'CTA الرئيسية',
+            icon: 'MousePointerClick',
+            path: '/admin/promos?placement=homepage_cta',
+            permission: 'promos.read',
+          },
+          {
+            label: 'بانرات الفئات',
+            icon: 'FolderOpen',
+            path: '/admin/promos?placement=category_banner',
+            permission: 'promos.read',
+          },
+          {
+            label: 'النوافذ المنبثقة',
+            icon: 'Popup',
+            path: '/admin/promos?placement=popup',
+            permission: 'promos.read',
+          },
+        ],
+      },
+      {
+        label: 'مكتبة الوسائط',
+        icon: 'GalleryHorizontal',
+        path: '/admin/media',
+        permission: 'media.read',
+      },
+      {
+        label: 'استيراد المنتجات',
+        icon: 'Upload',
+        path: '/admin/products/import',
+        permission: 'imports.read',
+      },
+      {
+        label: 'رفع صور مجمع',
+        icon: 'Images',
+        path: '/admin/products/images/bulk',
+        permission: 'products.write',
+      },
+      {
+        label: 'استيراد PDF (موردين)',
+        icon: 'FileText',
+        path: '/admin/products/pdf-import',
+        permission: 'imports.read',
+      },
+    ],
+  },
+  {
     title: 'العمليات',
     items: [
       {
@@ -126,6 +193,12 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         label: 'الإعدادات',
         icon: 'Settings',
         path: '/admin/settings',
+        permission: 'settings.read',
+      },
+      {
+        label: 'إعدادات الموقع',
+        icon: 'LayoutTemplate',
+        path: '/admin/site-settings',
         permission: 'settings.read',
       },
     ],

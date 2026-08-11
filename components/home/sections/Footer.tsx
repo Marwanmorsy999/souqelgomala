@@ -1,18 +1,16 @@
 "use client";
 
 import { Phone } from "lucide-react";
-import { logoUrl } from "@/lib/data";
-import { useSiteSettings } from "@/components/shared/site-settings";
+import { useSiteStructure, useWhatsappHref } from "@/components/shared/site-structure";
 
 export function Footer() {
-  const settings = useSiteSettings();
-  const links = [
-    ["الرئيسية", "home"],
-    ["الأقسام", "categories"],
-    ["المنتجات", "products"],
-    ["العروض", "offers"],
-    ["تواصل معنا", "contact"],
-  ] as const;
+  const { nav, footer, settings } = useSiteStructure();
+
+  const quickLinks = footer.filter((l) => l.section === "quick_links");
+  const contactLinks = footer.filter((l) => l.section === "contact");
+  const socialLinks = footer.filter((l) => l.section === "social");
+
+  const logoUrl = settings.logoUrl ?? "";
 
   return (
     <footer className="border-t border-border-subtle bg-bg-deep">
@@ -21,36 +19,31 @@ export function Footer() {
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3">
-              <img
-                src={logoUrl}
-                alt={settings.name}
-                className="size-10 rounded-lg object-contain"
-              />
+              {logoUrl ? (
+                <img src={logoUrl} alt={settings.businessName} className="size-10 rounded-lg object-contain" />
+              ) : (
+                <span className="text-lg font-black">{settings.businessName}</span>
+              )}
               <div>
-                <p className="text-lg font-black text-foreground">{settings.name}</p>
-                <p dir="ltr" className="text-xs text-text-muted">
-                  {settings.nameEn}
-                </p>
+                <p className="text-lg font-black text-foreground">{settings.businessName}</p>
               </div>
             </div>
-            <p className="mt-3 text-sm leading-7 text-text-secondary">
-              {settings.location}
-            </p>
+            {settings.address && (
+              <p className="mt-3 text-sm leading-7 text-text-secondary">{settings.address}</p>
+            )}
             <div className="mt-4 flex flex-col gap-2 text-sm">
-              <a
-                href={`tel:${settings.phoneMain}`}
-                className="flex items-center gap-2 text-text-secondary transition-colors hover:text-brand-green"
-              >
-                <Phone className="size-4 text-brand-green" />
-                <span dir="ltr">{settings.phoneMain}</span>
-              </a>
-              <a
-                href={`tel:${settings.phoneAlt}`}
-                className="flex items-center gap-2 text-text-secondary transition-colors hover:text-brand-green"
-              >
-                <Phone className="size-4 text-brand-green" />
-                <span dir="ltr">{settings.phoneAlt}</span>
-              </a>
+              {settings.phonePrimary && (
+                <a href={`tel:${settings.phonePrimary}`} className="flex items-center gap-2 text-text-secondary transition-colors hover:text-brand-green">
+                  <Phone className="size-4 text-brand-green" />
+                  <span dir="ltr">{settings.phonePrimary}</span>
+                </a>
+              )}
+              {settings.phoneSecondary && (
+                <a href={`tel:${settings.phoneSecondary}`} className="flex items-center gap-2 text-text-secondary transition-colors hover:text-brand-green">
+                  <Phone className="size-4 text-brand-green" />
+                  <span dir="ltr">{settings.phoneSecondary}</span>
+                </a>
+              )}
             </div>
           </div>
 
@@ -58,72 +51,48 @@ export function Footer() {
           <nav aria-label="روابط مفيدة">
             <p className="mb-3 text-sm font-black">روابط مفيدة</p>
             <ul className="flex flex-col gap-2">
-              {links.map(([label, href]) => (
-                <li key={href}>
-                  <a
-                    href={`#${href}`}
-                    className="text-sm text-text-secondary transition-colors hover:text-brand-green"
-                  >
-                    {label}
+              {quickLinks.map((link) => (
+                <li key={link.id}>
+                  <a href={link.url} className="text-sm text-text-secondary transition-colors hover:text-brand-green">
+                    {link.label}
                   </a>
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* Social */}
+          {/* Social / Contact */}
           <div>
-            <p className="mb-3 text-sm font-black">السوشيال ميديا</p>
+            <p className="mb-3 text-sm font-black">التواصل والسوشيال ميديا</p>
             <ul className="flex flex-col gap-2 text-sm">
-              <li>
-                <a
-                  href={settings.social.facebook}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-text-secondary transition-colors hover:text-brand-green"
-                >
-                  فيسبوك
-                </a>
-              </li>
-              <li>
-                <a
-                  href={settings.social.instagram}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-text-secondary transition-colors hover:text-brand-green"
-                >
-                  إنستجرام
-                </a>
-              </li>
-              <li>
-                <a
-                  href={settings.social.tiktok}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-text-secondary transition-colors hover:text-brand-green"
-                >
-                  تيك توك
-                </a>
-              </li>
-              <li>
-                <a
-                  href={`https://wa.me/${settings.whatsapp.replace(/[^\d]/g, "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-text-secondary transition-colors hover:text-brand-green"
-                >
-                  واتساب
-                </a>
-              </li>
+              {contactLinks.map((link) => (
+                <li key={link.id}>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-text-secondary transition-colors hover:text-brand-green">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+              {socialLinks.map((link) => (
+                <li key={link.id}>
+                  <a href={link.url} target="_blank" rel="noopener noreferrer" className="text-text-secondary transition-colors hover:text-brand-green">
+                    {link.label}
+                  </a>
+                </li>
+              ))}
+              {settings.whatsappNumber && (
+                <li>
+                  <a href={useWhatsappHref()} target="_blank" rel="noopener noreferrer" className="text-text-secondary transition-colors hover:text-brand-green">
+                    واتساب
+                  </a>
+                </li>
+              )}
             </ul>
           </div>
         </div>
 
         <div className="mt-8 flex flex-col items-center justify-between gap-2 border-t border-border-subtle pt-5 text-xs text-text-muted md:flex-row">
-          <p>
-            © {new Date().getFullYear()} {settings.name} — جميع الحقوق محفوظة.
-          </p>
-          <p>{settings.location}</p>
+          <p>© {new Date().getFullYear()} {settings.businessName} — جميع الحقوق محفوظة.</p>
+          {settings.address && <p>{settings.address}</p>}
         </div>
       </div>
     </footer>

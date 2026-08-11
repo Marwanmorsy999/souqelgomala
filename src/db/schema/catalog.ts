@@ -6,6 +6,7 @@ import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core
 
 export const ProductStatus = ['active', 'inactive', 'archived'] as const
 export type ProductStatus = (typeof ProductStatus)[number]
+export type PublishStatus = 'draft' | 'published'
 
 export const categories = sqliteTable(
   'categories',
@@ -15,6 +16,7 @@ export const categories = sqliteTable(
     name_en: text('name_en'),
     parent_id: text('parent_id'), // self-reference
     image: text('image'),
+    icon_url: text('icon_url'),
     sort_order: integer('sort_order').notNull().default(0),
     is_visible: integer('is_visible', { mode: 'boolean' }).notNull().default(true),
     created_at: text('created_at').notNull(),
@@ -48,11 +50,13 @@ export const products = sqliteTable(
     weight: real('weight'),
     stock: integer('stock').notNull().default(0),
     min_stock: integer('min_stock').notNull().default(10),
+    low_stock_threshold: integer('low_stock_threshold').notNull().default(5),
     is_featured: integer('is_featured', { mode: 'boolean' }).notNull().default(false),
     is_new_arrival: integer('is_new_arrival', { mode: 'boolean' }).notNull().default(false),
     is_best_seller: integer('is_best_seller', { mode: 'boolean' }).notNull().default(false),
     is_visible: integer('is_visible', { mode: 'boolean' }).notNull().default(true),
     status: text('status').$type<ProductStatus>().notNull().default('active'),
+    publish_status: text('publish_status').$type<PublishStatus>().notNull().default('published'), // 'draft' | 'published'
     display_order: integer('display_order').notNull().default(0),
     image_alt: text('image_alt'),
     created_at: text('created_at').notNull(),
@@ -64,6 +68,7 @@ export const products = sqliteTable(
     idx_products_barcode: index('idx_products_barcode').on(table.barcode),
     idx_products_sku: index('idx_products_sku').on(table.sku),
     idx_products_status: index('idx_products_status').on(table.status),
+    idx_products_publish: index('idx_products_publish').on(table.publish_status),
     idx_products_stock: index('idx_products_stock').on(table.stock),
     idx_products_brand: index('idx_products_brand').on(table.brand),
     idx_products_slug: index('idx_products_slug').on(table.slug),

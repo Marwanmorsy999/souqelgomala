@@ -29,8 +29,10 @@ import { BottomNav } from "@/components/shared/BottomNav";
 
 import { useStore } from "@/lib/store";
 import type { Product, View } from "@/lib/types";
+import { useSiteStructure } from "@/components/shared/site-structure";
 
 export default function Page() {
+  const { homepage } = useSiteStructure();
   const [loaded, setLoaded] = useState(false);
   const [view, setView] = useState<View>("home");
   const [selected, setSelected] = useState<Product | null>(null);
@@ -186,13 +188,26 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
           transition={{ duration: 0.22 }}
         >
           {view === "home" && (
-                        <div className="flex flex-col gap-10 pb-4 pt-3">
-              <Hero onOffers={() => goToAnchor("offers")} />
-              <DealsCountdown />
+            <div className="flex flex-col gap-10 pb-4 pt-3">
+              {homepage
+                .filter((s) => s.visible)
+                .map((s) => {
+                  switch (s.section_key) {
+                    case "hero":
+                      return <Hero key="hero" onOffers={() => goToAnchor("offers")} />
+                    case "deals_strip":
+                      return <DealsCountdown key="deals" />
+                    case "categories":
+                      return <Categories key="categories" onSelect={handleCategory} />
+                    case "products":
+                      return <LatestProducts key="products" onOpen={setSelected} />
+                    case "social_strip":
+                      return <SocialFeed key="social" />
+                    default:
+                      return null
+                  }
+                })}
               <DailyOffers onOpen={setSelected} />
-              <Categories onSelect={handleCategory} />
-              <LatestProducts onOpen={setSelected} />
-              <SocialFeed />
               <PromoBanner />
               <Footer />
             </div>

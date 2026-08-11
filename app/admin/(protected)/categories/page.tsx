@@ -1,20 +1,15 @@
 import type { Metadata } from 'next'
-import { PageHeader } from '@/components/layout/page-header'
-import { CategoriesManagement } from '@/components/admin/categories-management'
+import { CategoryManager } from '@/components/admin/site-settings-categories'
 
 export const metadata: Metadata = {
   title: 'الفئات | لوحة التحكم | سوق الجملة',
-  description: 'إدارة فئات المنتجات',
+  description: 'إدارة فئات وأقسام المنتجات (إنشاء وتعديل وحذف مع فحص التبعيات)',
 }
 
 export default function AdminCategoriesPage() {
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="الفئات"
-        description="إدارة فئات وأقسام المنتجات"
-      />
-      <CategoriesManagement />
+      <CategoryManager />
     </div>
   )
 }

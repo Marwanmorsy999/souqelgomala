@@ -1,8 +1,12 @@
 import { NextRequest } from 'next/server'
 import { requireAdminUser } from '@/services/catalog/admin-auth'
 import { hasPermission, type Role } from '@/lib/permissions'
-import { ok, forbidden, validationError, serverError } from '@/services/api-response'
-import { softDeleteCategory, updateCategory } from '@/services/catalog/admin-service'
+import { ok, forbidden, fail, validationError, serverError } from '@/services/api-response'
+import {
+  updateCategory,
+  deleteCategoryWithCheck,
+  countProductsInCategory,
+} from '@/services/catalog/admin-service'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,9 +45,31 @@ export async function PATCH(
   }
 }
 
-/** DELETE /api/admin/categories/:id — soft delete (RBAC: categories.write). */
+/**
+ * GET /api/admin/categories/:id/product-count — preview dependency before delete.
+ * DELETE /api/admin/categories/:id — delete with dependency check + optional reassign.
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const auth = await requireAdminUser()
+  if (auth instanceof Response) return auth
+  if (!hasPermission(auth.user.role as Role, 'categories.read')) {
+    return forbidden('ليس لديك صلاحية لعرض الأقسام')
+  }
+  const { id } = await params
+  try {
+    const count = await countProductsInCategory(id)
+    return ok({ categoryId: id, productCount: count })
+  } catch (err) {
+    return serverError((err as Error).message ?? 'تعذر حساب المنتجات')
+  }
+}
+
+/** DELETE /api/admin/categories/:id — delete with dependency check (RBAC: categories.write). */
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   const auth = await requireAdminUser()
@@ -52,10 +78,13 @@ export async function DELETE(
     return forbidden('ليس لديك صلاحية لإدارة الأقسام')
   }
   const { id } = await params
+  const reassignTo = request.nextUrl.searchParams.get('reassignTo') ?? undefined
   try {
-    const result = await softDeleteCategory(auth.user, id)
+    const result = await deleteCategoryWithCheck(auth.user, id, reassignTo)
     return ok(result)
   } catch (err) {
-    return serverError((err as Error).message ?? 'تعذر حذف القسم')
+    const status = (err as { status?: number }).status ?? 400
+    return fail((err as Error).message ?? 'تعذر حذف القسم', status)
   }
 }
+

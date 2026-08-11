@@ -1,13 +1,16 @@
 import { NextRequest } from 'next/server'
 import { requireAdminUser } from '@/services/catalog/admin-auth'
-import { hasPermission, type Role } from '@/lib/permissions'
 import { ok, forbidden, validationError, serverError } from '@/services/api-response'
+import { hasPermission, type Role } from '@/lib/permissions'
 import {
   listCategoriesAdmin,
   createCategory,
-  updateCategory,
+  reorderCategories,
 } from '@/services/catalog/admin-service'
-import { createCategorySchema } from '@/lib/validations'
+import {
+  createCategorySchema,
+  reorderCategoriesSchema,
+} from '@/lib/validations'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,5 +58,30 @@ export async function POST(request: NextRequest) {
     return ok(row, 201)
   } catch (err) {
     return validationError({ category: [(err as Error).message ?? 'تعذر إنشاء القسم'] })
+  }
+}
+
+/** PATCH /api/admin/categories/reorder — drag-reorder (RBAC: categories.write). */
+export async function PATCH(request: NextRequest) {
+  const auth = await requireAdminUser()
+  if (auth instanceof Response) return auth
+  if (!hasPermission(auth.user.role as Role, 'categories.write')) {
+    return forbidden('ليس لديك صلاحية لإدارة الأقسام')
+  }
+  let body: unknown
+  try {
+    body = await request.json()
+  } catch {
+    return validationError({ body: ['Invalid JSON body'] })
+  }
+  const parsed = reorderCategoriesSchema.safeParse(body)
+  if (!parsed.success) {
+    return validationError(parsed.error.flatten().fieldErrors)
+  }
+  try {
+    await reorderCategories(auth.user, parsed.data.ids)
+    return ok({ success: true })
+  } catch (err) {
+    return serverError((err as Error).message ?? 'تعذر إعادة الترتيب')
   }
 }

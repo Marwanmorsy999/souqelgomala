@@ -25,6 +25,10 @@ export type PaymentMethod = 'cash' | 'card' | 'wallet' | 'bank_transfer'
 export type DiscountType = 'percentage' | 'fixed_price' | 'buy_x_get_y'
 
 export type ProductStatus = 'active' | 'inactive' | 'archived'
+export type PublishStatus = 'draft' | 'published'
+export type PromoPlacement = 'hero' | 'deals_strip' | 'homepage_cta' | 'category_banner' | 'popup'
+export type ImportType = 'excel' | 'csv' | 'pdf'
+export type ImportStatus = 'pending' | 'validated' | 'committed' | 'failed'
 
 export type OfferStatus = 'active' | 'inactive' | 'scheduled' | 'expired'
 
@@ -119,11 +123,13 @@ export interface ProductRow {
   min_stock: number
   display_order: number
   image_alt: string | null
+  low_stock_threshold: number
   is_featured: boolean
   is_new_arrival: boolean
   is_best_seller: boolean
   is_visible: boolean
   status: ProductStatus
+  publish_status: PublishStatus
   created_at: string
   updated_at: string
   deleted_at: string | null
@@ -494,6 +500,100 @@ export interface CustomerWithMetrics extends CustomerRow {
 export interface CategoryTreeNode extends CategoryRow {
   children: CategoryTreeNode[]
 }
+
+// ============================================
+// PROMOS
+// ============================================
+
+export interface PromoSlotRow {
+  id: string
+  placement: PromoPlacement
+  category_id: string | null
+  image_url: string
+  title: string
+  subtitle: string | null
+  cta_text: string | null
+  cta_link: string | null
+  start_at: string
+  end_at: string
+  active: boolean
+  sort_order: number
+  publish_status: PublishStatus
+  frequency: string
+  created_by: string | null
+  created_at: string
+  updated_at: string
+  deleted_at: string | null
+}
+
+// ============================================
+// MEDIA LIBRARY
+// ============================================
+
+export interface MediaLibraryRow {
+  id: string
+  url: string
+  cloudinary_public_id: string
+  filename: string
+  alt_text: string | null
+  tags: string[]
+  width: number | null
+  height: number | null
+  format: string | null
+  resource_type: string
+  uploaded_by: string | null
+  uploaded_at: string
+  usage_count: number
+}
+
+// ============================================
+// DEAL HISTORY
+// ============================================
+
+export interface DealHistoryRow {
+  id: string
+  product_id: string
+  discount_pct: number | null
+  fixed_discount: number | null
+  start_at: string
+  end_at: string
+  created_by: string | null
+  created_at: string
+}
+
+// ============================================
+// IMPORT JOBS
+// ============================================
+
+export interface ImportJobRow {
+  id: string
+  type: ImportType
+  filename: string
+  status: ImportStatus
+  row_count: number
+  error_count: number
+  error_log: string | null
+  uploaded_by: string | null
+  created_at: string
+}
+
+// ============================================
+// STAFF PERMISSIONS
+// ============================================
+
+export interface StaffPermissionsRow {
+  staff_id: string
+  can_edit_products: boolean
+  can_edit_prices: boolean
+  can_edit_promos: boolean
+  can_manage_staff: boolean
+  can_view_reports: boolean
+  updated_at: string
+}
+
+// ============================================
+// COMPOSITE / VIEW TYPES
+// ============================================
 
 /** Dashboard aggregate response (from Edge Function or RPC) */
 export interface DashboardStats {

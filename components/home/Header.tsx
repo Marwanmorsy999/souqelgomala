@@ -1,8 +1,7 @@
 "use client";
 
 import { Menu, Phone, Search, ShoppingCart, UserRound } from "lucide-react";
-import { logoUrl } from "@/lib/data";
-import { useSiteSettings } from "@/components/shared/site-settings";
+import { useSiteStructure } from "@/components/shared/site-structure";
 
 type Props = {
   cartCount: number;
@@ -19,7 +18,8 @@ export function Header({
   onAccount,
   onCart,
 }: Props) {
-  const settings = useSiteSettings();
+  const { settings, nav } = useSiteStructure();
+  const logoUrl = settings.logoUrl ?? "";
 
   return (
     <header className="sticky top-0 z-40 border-b border-border-subtle bg-bg-nav/95 backdrop-blur">
@@ -38,15 +38,17 @@ export function Header({
           <button
             onClick={onMenu}
             className="hidden shrink-0 items-center gap-2 md:flex"
-            aria-label="سوق الجملة — الرئيسية"
+            aria-label={`${settings.businessName} — الرئيسية`}
           >
-            <img
-              src={logoUrl}
-              alt="سوق الجملة"
-              className="size-9 rounded-lg object-contain"
-            />
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt={settings.businessName}
+                className="size-9 rounded-lg object-contain"
+              />
+            ) : null}
             <span className="hidden text-lg font-black lg:block">
-              {settings.name}
+              {settings.businessName}
             </span>
           </button>
         </div>
@@ -55,13 +57,15 @@ export function Header({
         <button
           onClick={onMenu}
           className="absolute left-1/2 -translate-x-1/2 md:hidden"
-          aria-label="سوق الجملة — الرئيسية"
+          aria-label={`${settings.businessName} — الرئيسية`}
         >
-          <img
-            src={logoUrl}
-            alt="سوق الجملة"
-            className="size-10 rounded-lg object-contain"
-          />
+          {logoUrl ? (
+            <img
+              src={logoUrl}
+              alt={settings.businessName}
+              className="size-10 rounded-lg object-contain"
+            />
+          ) : null}
         </button>
 
         {/* Desktop search */}
@@ -81,23 +85,19 @@ export function Header({
           className="hidden items-center gap-1 lg:flex"
           aria-label="التنقل الرئيسي"
         >
-          {[
-            ["الرئيسية", "#home"],
-            ["الأقسام", "#categories"],
-            ["العروض", "#offers"],
-            ["المنتجات", "#products"],
-            ["تواصل معنا", "#contact"],
-          ].map(([label, href]) => (
+          {nav.map((link) => (
             <a
-              key={href}
-              href={href}
+              key={link.id}
+              href={link.url}
+              target={link.target === "external" ? "_blank" : undefined}
+              rel={link.target === "external" ? "noopener noreferrer" : undefined}
               className={`rounded-lg px-3 py-2 text-sm font-semibold transition-colors ${
-                label === "العروض"
+                link.label === "العروض"
                   ? "font-black text-brand-green hover:bg-brand-green-dim"
                   : "text-text-primary hover:bg-bg-nav-hover hover:text-brand-green"
               }`}
             >
-              {label === "العروض" ? "🔥 عروض النهارده" : label}
+              {link.label === "العروض" ? "🔥 عروض النهارده" : link.label}
             </a>
           ))}
         </nav>
@@ -105,13 +105,13 @@ export function Header({
         {/* Right group */}
         <div className="flex items-center gap-1">
           {/* Desktop phone CTA */}
-          <a
-            href={`tel:${settings.phoneMain}`}
-            className="hidden h-10 items-center gap-2 rounded-lg bg-brand-green px-3 text-sm font-black text-white transition-colors hover:bg-brand-green-hover lg:flex"
-          >
-            <Phone className="size-4" />
-            <span dir="ltr">{settings.phoneMain}</span>
-          </a>
+            <a
+              href={`tel:${settings.phonePrimary}`}
+              className="hidden h-10 items-center gap-2 rounded-lg bg-brand-green px-3 text-sm font-black text-white transition-colors hover:bg-brand-green-hover lg:flex"
+            >
+              <Phone className="size-4" />
+              <span dir="ltr">{settings.phonePrimary}</span>
+            </a>
 
           {/* Search (mobile) */}
           <button

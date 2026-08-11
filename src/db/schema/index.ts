@@ -14,6 +14,16 @@ export * from './auth'
 export * from './branches'
 // --- Catalog ---
 export * from './catalog'
+// --- Promos / Content ---
+export * from './promos'
+// --- Media Library ---
+export * from './media'
+// --- Deal History ---
+export * from './deals'
+// --- Import Jobs ---
+export * from './imports'
+// --- Staff Permissions ---
+export * from './staff'
 // --- Customers ---
 export * from './customers'
 // --- Orders ---
@@ -34,6 +44,9 @@ export * from './returns'
 export * from './reviews'
 // --- Social Posts (admin-managed daily offers content) ---
 export * from './social'
+// --- Site Structure ---
+export * from './site-structure'
+
 // --- Feature Flags ---
 export * from './featureFlags'
 
@@ -50,6 +63,7 @@ import * as inventorySchema from './inventory'
 import * as suppliersSchema from './suppliers'
 import * as returnsSchema from './returns'
 import * as reviewsSchema from './reviews'
+import * as siteStructureSchema from './site-structure'
 import * as featureFlagsSchema from './featureFlags'
 
 export const schema = {
@@ -65,5 +79,6 @@ export const schema = {
   ...suppliersSchema,
   ...returnsSchema,
   ...reviewsSchema,
+  ...siteStructureSchema,
   ...featureFlagsSchema,
 }

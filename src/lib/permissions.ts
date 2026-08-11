@@ -48,6 +48,10 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
     'inventory.read', 'inventory.write',
     'offers.read', 'offers.write',
     'returns.read', 'returns.write',
+    'promos.read', 'promos.write',
+    'media.read', 'media.write',
+    'imports.read', 'imports.write',
+    'staff.read', 'staff.write',
   ],
   employee: [
     'dashboard.read',
