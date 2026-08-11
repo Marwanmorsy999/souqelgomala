@@ -23,7 +23,7 @@ export type StorefrontFooterLink = {
 }
 
 export type StorefrontHomepageSection = {
-  section_key: "hero" | "deals_strip" | "categories" | "products" | "social_strip"
+  section_key: "hero" | "deals_strip" | "products" | "social_strip"
   visible: boolean
 }
 
@@ -52,14 +52,12 @@ export type SiteStructure = {
 const DEFAULT_STRUCTURE: SiteStructure = {
   nav: [
     { id: "n1", label: "الرئيسية", url: "#home", target: "internal" },
-    { id: "n2", label: "الأقسام", url: "#categories", target: "internal" },
     { id: "n3", label: "العروض", url: "#offers", target: "internal" },
     { id: "n4", label: "المنتجات", url: "#products", target: "internal" },
     { id: "n5", label: "تواصل معنا", url: "#contact", target: "internal" },
   ],
   footer: [
     { id: "f1", section: "quick_links", label: "الرئيسية", url: "#home" },
-    { id: "f2", section: "quick_links", label: "الأقسام", url: "#categories" },
     { id: "f3", section: "quick_links", label: "المنتجات", url: "#products" },
     { id: "f4", section: "quick_links", label: "العروض", url: "#offers" },
     { id: "f5", section: "contact", label: "واتساب", url: "https://wa.me/201222464999" },
@@ -73,7 +71,6 @@ const DEFAULT_STRUCTURE: SiteStructure = {
   homepage: [
     { section_key: "hero", visible: true },
     { section_key: "deals_strip", visible: true },
-    { section_key: "categories", visible: true },
     { section_key: "products", visible: true },
     { section_key: "social_strip", visible: true },
   ],

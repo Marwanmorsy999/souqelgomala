@@ -385,6 +385,7 @@ export const promoPlacementSchema = z.enum([
   'homepage_cta',
   'category_banner',
   'popup',
+  'offers_banner',
 ])
 
 export type PromoPlacementInput = z.infer<typeof promoPlacementSchema>
@@ -524,7 +525,6 @@ export type FooterSectionInput = z.infer<typeof footerSectionSchema>
 export const homepageSectionKeySchema = z.enum([
   'hero',
   'deals_strip',
-  'categories',
   'products',
   'social_strip',
 ])

@@ -19,6 +19,7 @@ export default function AdminPromosPage() {
       <PromoSlotEditor placement="homepage_cta" title="كتابة CTA الرئيسية" />
       <PromoSlotEditor placement="category_banner" title="بانرات الفئات" />
       <PromoSlotEditor placement="popup" title="النوافذ المنبثقة" />
+      <PromoSlotEditor placement="offers_banner" title="بانر عروض النهارده" />
     </div>
   )
 }

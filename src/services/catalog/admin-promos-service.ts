@@ -39,6 +39,28 @@ export async function listPromosAdmin(opts: { placement?: PromoPlacement } = {})
     .orderBy(desc(promoSlots.sort_order), desc(promoSlots.created_at))
 }
 
+/**
+ * Public read path — returns active, published promos within their date window.
+ * Used by the storefront (no auth). Falls back to an empty list on any error
+ * so a missing/invalid banner never breaks the page.
+ */
+export async function getActivePromos(opts: { placement?: PromoPlacement } = {}) {
+  const nowIso = new Date().toISOString()
+  const conditions: unknown[] = [
+    isNull(promoSlots.deleted_at),
+    eq(promoSlots.active, true),
+    eq(promoSlots.publish_status, 'published'),
+    sql`${promoSlots.start_at} <= ${nowIso}`,
+    sql`${promoSlots.end_at} >= ${nowIso}`,
+  ]
+  if (opts.placement) conditions.push(eq(promoSlots.placement, opts.placement as PromoPlacement))
+  return getDb()
+    .select()
+    .from(promoSlots)
+    .where(and(...conditions as never[]))
+    .orderBy(desc(promoSlots.sort_order), desc(promoSlots.created_at))
+}
+
 export async function createPromo(user: User, input: CreatePromoInput) {
   assertCanWritePromos(user)
   const parsed = createPromoSchema.parse(input)

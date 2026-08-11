@@ -15,7 +15,6 @@ import { Hero } from "@/components/home/sections/Hero";
 import { DealsCountdown } from "@/components/home/sections/DealsCountdown";
 import { PromoBanner } from "@/components/home/sections/PromoBanner";
 import { DailyOffers } from "@/components/home/sections/DailyOffers";
-import { Categories } from "@/components/home/sections/Categories";
 import { LatestProducts } from "@/components/home/sections/LatestProducts";
 import { SocialFeed } from "@/components/home/sections/SocialFeed";
 import { Footer } from "@/components/home/sections/Footer";
@@ -197,8 +196,6 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
                       return <Hero key="hero" onOffers={() => goToAnchor("offers")} />
                     case "deals_strip":
                       return <DealsCountdown key="deals" />
-                    case "categories":
-                      return <Categories key="categories" onSelect={handleCategory} />
                     case "products":
                       return <LatestProducts key="products" onOpen={setSelected} />
                     case "social_strip":

@@ -10,6 +10,7 @@ export type PromoPlacement =
   | 'homepage_cta'
   | 'category_banner'
   | 'popup'
+  | 'offers_banner'
 
 export const promoSlots = sqliteTable(
   'promo_slots',

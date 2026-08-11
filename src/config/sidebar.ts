@@ -104,6 +104,12 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
             path: '/admin/promos?placement=popup',
             permission: 'promos.read',
           },
+          {
+            label: 'بانر عروض النهارده',
+            icon: 'Flame',
+            path: '/admin/promos?placement=offers_banner',
+            permission: 'promos.read',
+          },
         ],
       },
       {

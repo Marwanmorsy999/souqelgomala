@@ -9,7 +9,7 @@ import { runAfterRender } from "@/components/admin/use-deferred-load"
 
 type SectionRow = {
   id: string
-  section_key: "hero" | "deals_strip" | "categories" | "products" | "social_strip"
+  section_key: "hero" | "deals_strip" | "products" | "social_strip"
   visible: boolean
   sort_order: number
 }
@@ -17,7 +17,6 @@ type SectionRow = {
 const LABELS: Record<SectionRow["section_key"], string> = {
   hero: "الهيرو",
   deals_strip: "شريط العروض",
-  categories: "الأقسام",
   products: "المنتجات",
   social_strip: "السوشيال ميديا",
 }

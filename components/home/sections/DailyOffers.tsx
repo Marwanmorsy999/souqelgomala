@@ -51,6 +51,30 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
     };
   }, []);
 
+  // Decorative offers artwork banner (admin-managed via the offers_banner promo
+  // slot). Renders nothing if unset or if the fetch fails.
+  const [banner, setBanner] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch("/api/promos?placement=offers_banner", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((body) => {
+        if (!active || !body?.success) return;
+        const row = (body.data ?? []).find(
+          (p: { image_url?: string }) =>
+            p.image_url && !isPlaceholderImage(p.image_url),
+        );
+        if (row) setBanner(row.image_url);
+      })
+      .catch(() => {
+        /* banner is decorative — ignore failures */
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const campaignOffers = data?.offers ?? [];
 
   // One flat board: campaign products first, then discounted + featured.
@@ -149,6 +173,17 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
         </div>
       ) : (
         <EmptyOffersState />
+      )}
+
+      {banner && (
+        <div className="mt-5 overflow-hidden rounded-lg border border-border-default">
+          <ClientImage
+            src={banner}
+            alt="عروض النهارده"
+            className="aspect-[4/1]"
+            imgClassName="size-full object-cover"
+          />
+        </div>
       )}
     </section>
   );

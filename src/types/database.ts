@@ -26,7 +26,7 @@ export type DiscountType = 'percentage' | 'fixed_price' | 'buy_x_get_y'
 
 export type ProductStatus = 'active' | 'inactive' | 'archived'
 export type PublishStatus = 'draft' | 'published'
-export type PromoPlacement = 'hero' | 'deals_strip' | 'homepage_cta' | 'category_banner' | 'popup'
+export type PromoPlacement = 'hero' | 'deals_strip' | 'homepage_cta' | 'category_banner' | 'popup' | 'offers_banner'
 export type ImportType = 'excel' | 'csv' | 'pdf'
 export type ImportStatus = 'pending' | 'validated' | 'committed' | 'failed'
 
