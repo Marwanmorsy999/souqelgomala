@@ -186,7 +186,7 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
           <ClientImage
             src={banner}
             alt="عروض النهارده"
-            className="aspect-[4/1]"
+            className="aspect-[3/2]"
             imgClassName="size-full object-cover"
           />
         </div>
