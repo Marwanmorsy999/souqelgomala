@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { ClientImage } from "@/components/ui/client-image";
 import { OfferProductCard } from "@/components/home/OfferProductCard";
+import { OfferBundleCard } from "@/components/home/OfferBundleCard";
 import { getDailyOffers, type DailyOffersPayload } from "@/lib/services/catalog";
 import { waLink } from "@/lib/site";
 import { isPlaceholderImage } from "@/lib/utils";
@@ -83,7 +84,10 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
 
   const campaignOffers = data?.offers ?? [];
 
-  // One flat board: campaign products first, then discounted + featured.
+  const bundleOffers = campaignOffers.filter((o) => o.discountType === 'bundle');
+  const otherCampaignOffers = campaignOffers.filter((o) => o.discountType !== 'bundle');
+
+  // One flat board: other campaign products first, then discounted + featured.
   const boardProducts = useMemo(() => {
     if (!data) return [];
     const seen = new Set<string>();
@@ -93,18 +97,18 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
       seen.add(p.id);
       out.push(p);
     };
-    for (const offer of campaignOffers) for (const p of offer.products) push(p);
+    for (const offer of otherCampaignOffers) for (const p of offer.products) push(p);
     for (const p of data.discounted) push(p);
     for (const p of data.featured) push(p);
     return out.slice(0, 8);
-  }, [data, campaignOffers]);
+  }, [data, otherCampaignOffers]);
 
   // Real banners only — never an empty / placeholder campaign area.
-  const banners = campaignOffers.filter(
+  const banners = otherCampaignOffers.filter(
     (o) => o.banner && !isPlaceholderImage(o.banner) && o.products.length > 0,
   );
-  const campaignRows = campaignOffers.filter((o) => o.products.length > 0);
-  const hasAny = boardProducts.length > 0 || banners.length > 0;
+  const campaignRows = otherCampaignOffers.filter((o) => o.products.length > 0);
+  const hasAny = boardProducts.length > 0 || banners.length > 0 || bundleOffers.length > 0;
 
   const today = useMemo(
     () =>
@@ -163,6 +167,16 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
                     </span>
                   )}
                 </p>
+              ))}
+            </div>
+          )}
+
+          {bundleOffers.length > 0 && (
+            <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:-mx-4 sm:px-4 md:mx-0 md:grid md:grid-cols-2 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-3">
+              {bundleOffers.map((offer) => (
+                <div key={offer.id} className="w-64 shrink-0 snap-start md:w-auto">
+                  <OfferBundleCard offer={offer} />
+                </div>
               ))}
             </div>
           )}

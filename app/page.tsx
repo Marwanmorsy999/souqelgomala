@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { logoUrl } from "@/lib/data";
-import { getProducts } from "@/lib/services/catalog";
+import { getProducts, getDailyOffers } from "@/lib/services/catalog";
 
 import { Header } from "@/components/home/Header";
 import { HamburgerMenu } from "@/components/home/HamburgerMenu";
@@ -18,6 +18,9 @@ import { DailyOffers } from "@/components/home/sections/DailyOffers";
 import { LatestProducts } from "@/components/home/sections/LatestProducts";
 import { SocialFeed } from "@/components/home/sections/SocialFeed";
 import { Footer } from "@/components/home/sections/Footer";
+import { TrustStrip } from "@/components/home/sections/TrustStrip";
+import { VisitUs } from "@/components/home/sections/VisitUs";
+import { WhyUs } from "@/components/home/sections/WhyUs";
 
 import { ProductDetail } from "@/components/home/ProductDetail";
 import { CartView } from "@/components/cart/CartView";
@@ -27,7 +30,7 @@ import { AuthDialog } from "@/components/auth/AuthDialog";
 import { BottomNav } from "@/components/shared/BottomNav";
 
 import { useStore } from "@/lib/store";
-import type { Product, View } from "@/lib/types";
+import type { Product, View, Offer } from "@/lib/types";
 import { useSiteStructure } from "@/components/shared/site-structure";
 
 export default function Page() {
@@ -56,6 +59,7 @@ export default function Page() {
   }, []);
 
 const [productMap, setProductMap] = useState<Record<string, Product>>({});
+const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
 
   // Load the catalog once so cart totals can be computed client-side while
   // still reading from D1 (via the public catalog API) as the source of truth.
@@ -71,6 +75,18 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
       .catch(() => {
         /* cart totals default to 0 if the catalog is unavailable */
       });
+
+    getDailyOffers()
+      .then((payload) => {
+        if (!active) return;
+        const map: Record<string, Offer> = {};
+        for (const o of payload.offers) {
+          if (o.discountType === 'bundle') map[o.id] = o;
+        }
+        setOfferMap(map);
+      })
+      .catch(() => {});
+
     return () => {
       active = false;
     };
@@ -79,12 +95,15 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const cartTotal = cart.reduce((s, item) => {
     const product = productMap[item.id];
-    return (
-      s +
-      (product
-        ? (isWholesale ? product.wholesale : product.retail) * item.quantity
-        : 0)
-    );
+    if (product) {
+      return s + (isWholesale ? product.wholesale : product.retail) * item.quantity;
+    }
+    const offer = offerMap[item.id];
+    if (offer) {
+      const bundlePrice = offer.value ?? offer.products.reduce((acc, p) => acc + p.retail, 0);
+      return s + bundlePrice * item.quantity;
+    }
+    return s;
   }, 0);
 
   const goToAnchor = (anchor: string) => {
@@ -193,7 +212,13 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
                 .map((s) => {
                   switch (s.section_key) {
                     case "hero":
-                      return <Hero key="hero" onOffers={() => goToAnchor("offers")} />
+                      return (
+                        <div key="hero-group">
+                          <Hero onOffers={() => goToAnchor("offers")} />
+                          <TrustStrip />
+                          <VisitUs />
+                        </div>
+                      );
                     case "deals_strip":
                       return <DealsCountdown key="deals" />
                     case "products":
@@ -204,6 +229,7 @@ const [productMap, setProductMap] = useState<Record<string, Product>>({});
                 })}
               <DailyOffers onOpen={setSelected} />
               <PromoBanner />
+              <WhyUs />
               <Footer />
               <SocialFeed />
             </div>

@@ -15,10 +15,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { getProducts } from "@/lib/services/catalog";
+import { getProducts, getDailyOffers } from "@/lib/services/catalog";
 import { formatPrice } from "@/lib/utils";
 import { delivery as deliveryConfig } from "@/lib/site";
-import type { CartItem, Product } from "@/lib/types";
+import type { CartItem, Product, Offer } from "@/lib/types";
 
 type Props = {
   cart: CartItem[];
@@ -47,6 +47,7 @@ const [coupon, setCoupon] = useState("");
   const [notes, setNotes] = useState("");
   const [showNotes, setShowNotes] = useState(false);
   const [productMap, setProductMap] = useState<Record<string, Product>>({});
+  const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
 
   useEffect(() => {
     let active = true;
@@ -60,6 +61,18 @@ const [coupon, setCoupon] = useState("");
       .catch(() => {
         /* ignore catalog load failures */
       });
+      
+    getDailyOffers()
+      .then((payload) => {
+        if (!active) return;
+        const map: Record<string, Offer> = {};
+        for (const o of payload.offers) {
+          if (o.discountType === 'bundle') map[o.id] = o;
+        }
+        setOfferMap(map);
+      })
+      .catch(() => {});
+      
     return () => {
       active = false;
     };
@@ -149,7 +162,15 @@ const [coupon, setCoupon] = useState("");
         <section className="flex flex-col gap-3">
 {cart.map((item) => {
             const product = productMap[item.id];
-            if (!product) return null;
+            const offer = offerMap[item.id];
+            if (!product && !offer) return null;
+            
+            const isBundle = !!offer;
+            const name = product ? product.name : offer.title;
+            const size = product ? product.size : "عرض باقة";
+            const image = product ? product.image : (offer.banner || "");
+            const price = product ? product.retail : (offer.value ?? offer.products.reduce((acc, p) => acc + p.retail, 0));
+
             return (
               <motion.div
                 key={item.id}
@@ -161,20 +182,24 @@ const [coupon, setCoupon] = useState("");
                 }}
                 className="flex items-center gap-3 rounded-2xl border border-border/70 bg-card p-3 shadow-sm"
               >
-                <div className="size-20 shrink-0 overflow-hidden rounded-xl">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="size-full object-cover"
-                  />
+                <div className="size-20 shrink-0 overflow-hidden rounded-xl bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground text-center">
+                  {image ? (
+                    <img
+                      src={image}
+                      alt={name}
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <span>باقة التوفير</span>
+                  )}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-bold">{product.name}</p>
+                  <p className="truncate font-bold">{name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {product.size}
+                    {size}
                   </p>
                   <p className="mt-1 font-black text-primary">
-                    {product.retail} ج.م
+                    {price} ج.م
                   </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">

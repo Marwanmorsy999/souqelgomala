@@ -4,7 +4,7 @@
 
 import { sqliteTable, text, integer, real, index } from 'drizzle-orm/sqlite-core'
 
-export type DiscountType = 'percentage' | 'fixed_price' | 'buy_x_get_y'
+export type DiscountType = 'percentage' | 'fixed_price' | 'buy_x_get_y' | 'bundle'
 export type OfferStatus = 'active' | 'inactive' | 'scheduled' | 'expired'
 
 export const offers = sqliteTable(
