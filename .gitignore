@@ -8,6 +8,7 @@ node_modules
 .env
 -w
 scripts/.kz_*
+scripts/.audit/
 tsc-out.txt
 lint-out.txt
 tsconfig.tsbuildinfo

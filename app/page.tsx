@@ -129,12 +129,12 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
     window.scrollTo({ top: 0, behavior: "auto" });
   };
 
-  const handleCategory = (name: string) => {
-    if (name === "العروض") {
+  const handleCategory = (ref: string) => {
+    if (ref === "offers") {
       goToAnchor("offers");
       return;
     }
-    setCategory(name);
+    setCategory(ref);
     setView("category");
     window.scrollTo({ top: 0, behavior: "auto" });
   };

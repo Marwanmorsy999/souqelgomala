@@ -1,10 +1,19 @@
 import { motion } from "framer-motion";
 import { ChevronLeft } from "lucide-react";
 import { useState, useEffect } from "react";
+import { getHomepageTiles } from "@/lib/categorization";
 
 interface CategoryGridProps {
+  /** Called with a taxonomy category id, or the "offers" sentinel. */
   onCategorySelect: (category: string) => void;
 }
+
+// The homepage shows the unified taxonomy tiles (ids match the D1 categories
+// exactly) plus a synthetic "offers" tile that jumps to the daily-offers strip.
+const TILES = [
+  { id: "offers", name: "العروض", image: "/العروض.webp" },
+  ...getHomepageTiles().map((t) => ({ id: t.id, name: t.nameAr, image: t.image })),
+];
 
 const CATEGORIES = [
   { name: "العروض", image: "/العروض.webp", path: "العروض" },
@@ -72,14 +81,14 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
       {/* Flex-wrap + justify-center keeps every row visually balanced — the
           final (short) row is centered instead of leaving orphaned cards. */}
       <div className="flex flex-wrap justify-center gap-1.5 sm:gap-4 lg:gap-6">
-        {CATEGORIES.map((cat, index) => (
+        {TILES.map((cat, index) => (
           <motion.div
-            key={cat.name}
+            key={cat.id}
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: index * 0.05, duration: 0.3 }}
-            onClick={() => onCategorySelect(cat.path)}
+            onClick={() => onCategorySelect(cat.id)}
             className="group category-grid-tile cursor-pointer flex w-[calc(25%-0.375rem)] flex-col items-center rounded-none sm:w-[calc(33.333%-0.7rem)] sm:rounded-2xl sm:bg-card sm:border sm:border-border sm:overflow-hidden product-card-hover lg:w-[calc(25%-1.2rem)]"
           >
             <div className="relative w-full h-[80px] overflow-hidden rounded-lg flex items-center justify-center sm:aspect-square sm:h-auto sm:bg-[#f2f0ea] sm:p-4 sm:rounded-xl sm:border sm:border-black/10 sm:shadow-md sm:shadow-black/40">
