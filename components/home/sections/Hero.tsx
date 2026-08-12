@@ -53,7 +53,7 @@ export function Hero({ onOffers }: Props) {
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <button
             onClick={onOffers}
-            className="flex h-12 items-center gap-2 rounded-lg bg-brand-green px-6 text-base font-black text-white transition-colors hover:bg-brand-green-hover"
+            className="flex h-12 items-center gap-2 rounded-lg bg-brand-green px-6 text-base font-black text-white transition-colors hover:bg-brand-green-hover button-glow"
           >
             {settings.hero.ctaLabel || "شوف عروض النهارده"}
           </button>
@@ -61,7 +61,7 @@ export function Hero({ onOffers }: Props) {
             href={waLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex h-12 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20"
+            className="flex h-12 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20 button-glow"
           >
             {settings.hero.whatsappCtaLabel || "اطلب على واتساب"}
           </a>

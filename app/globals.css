@@ -73,6 +73,8 @@
   --shadow-2xl: 0 24px 48px rgba(0, 0, 0, 0.6);
   --shadow-wa: 0 4px 12px rgba(37, 211, 102, 0.4);
   --shadow-focus: 0 0 0 3px rgba(26, 122, 58, 0.4);
+  --shadow-card-hover: 0 8px 32px rgba(26, 122, 58, 0.15);
+  --shadow-button-hover: 0 4px 16px rgba(245, 166, 35, 0.3);
 
   /* ── Typography scale (spec §3, Cairo font) ── */
   --font-size-display-lg: 2rem;      /* 32px / 900 / 1.2  */
@@ -335,6 +337,66 @@
   @keyframes pulse {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
+  }
+
+  /* Enhanced hover effects for cards */
+  .product-card-hover {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+  .product-card-hover:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-card-hover);
+    border-color: var(--brand-green);
+  }
+
+  /* Button hover glow effect */
+  .button-glow {
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  .button-glow:hover {
+    box-shadow: var(--shadow-button-hover);
+    transform: translateY(-2px);
+  }
+
+  /* Smooth fade-in animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
+  }
+
+  /* Parallax effect class */
+  .parallax-bg {
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  /* Improved focus states for accessibility */
+  .focus-visible-glow:focus-visible {
+    outline: 2px solid var(--brand-green);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px var(--brand-green-dim);
+  }
+
+  /* Cart badge bounce animation */
+  @keyframes badgeBounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+  }
+  .cart-badge-bounce {
+    animation: badgeBounce 0.3s ease-in-out;
+  }
+
+  /* Gradient text effect */
+  .gradient-text-brand {
+    background: linear-gradient(135deg, var(--brand-green-light) 0%, var(--brand-orange) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }
 

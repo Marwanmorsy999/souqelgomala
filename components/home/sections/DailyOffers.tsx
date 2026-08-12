@@ -120,14 +120,14 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
     <section id="offers" className="site-section scroll-mt-20">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-xl font-black sm:text-2xl">🔥 عروض النهارده</h2>
-          <p className="mt-1 text-sm text-text-secondary">{today}</p>
+          <h2 className="text-xl font-black sm:text-2xl fade-in">🔥 عروض النهارده</h2>
+          <p className="mt-1 text-sm text-text-secondary fade-in" style={{ animationDelay: '0.1s' }}>{today}</p>
         </div>
         <button
           onClick={() =>
             document.getElementById("products")?.scrollIntoView({ behavior: "smooth" })
           }
-          className="text-sm font-bold text-brand-green transition-colors hover:text-brand-green-hover"
+          className="text-sm font-bold text-brand-green transition-colors hover:text-brand-green-hover button-glow"
         >
           كل العروض
         </button>

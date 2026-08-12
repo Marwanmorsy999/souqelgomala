@@ -119,7 +119,7 @@ export function ProductCard({ product, onOpen }: Props) {
   const hasImage = hasProductImage(product);
 
   return (
-        <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border-default bg-bg-surface text-foreground transition-all duration-200 hover:border-brand-green hover:shadow-sm">
+        <div className="flex h-full flex-col overflow-hidden rounded-lg border border-border-default bg-bg-surface text-foreground transition-all duration-200 hover:border-brand-green hover:shadow-sm product-card-hover">
       {hasImage && (
         <button
           className="block w-full text-right"
@@ -130,7 +130,7 @@ export function ProductCard({ product, onOpen }: Props) {
         </button>
       )}
 
-            <div className="flex flex-1 flex-col gap-2 p-3 pt-4">
+            <div className="flex flex-1 flex-col gap-2 p-4 pt-4">
         {/* Category chip (spec §10 CARDS) */}
         {product.category && (
           <span className="self-start text-[10px] font-bold text-brand-green-light">
