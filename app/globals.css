@@ -305,14 +305,19 @@
     @apply pt-6 pb-6 sm:pt-8 sm:pb-8 lg:pt-10 lg:pb-10;
   }
 
-  /* Branded hero fallback — deep green gradient (spec §8) */
-  .hero-branded {
-    background: linear-gradient(
-      160deg,
-      oklch(0.2 0.06 150) 0%,
-      oklch(0.29 0.085 150) 55%,
-      oklch(0.42 0.1 148) 100%
-    );
+  /* Hero full-bleed photo background — dark green base + real photo + gradient
+     overlay (spec §8). Photo URL comes from --hero-photo (defaults to the real
+     `public/hero.jpg`) so the admin-managed hero image still works. */
+  .hero-photo {
+    background-color: var(--color-nav);
+    background-image: linear-gradient(
+      90deg,
+      rgba(10, 30, 12, 0.92) 45%,
+      rgba(10, 30, 12, 0.3) 100%
+    ), var(--hero-photo, url("/hero.jpg"));
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
   }
 
   /* Image background behind product photos (spec §8) */

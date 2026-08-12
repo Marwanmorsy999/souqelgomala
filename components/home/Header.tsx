@@ -22,7 +22,7 @@ export function Header({
   const logoUrl = settings.logoUrl ?? "";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border-subtle bg-bg-nav/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-white/[0.08] bg-transparent backdrop-blur">
       <div className="site-section flex h-14 items-center justify-between gap-2">
         {/* Left group */}
         <div className="flex items-center gap-1">
