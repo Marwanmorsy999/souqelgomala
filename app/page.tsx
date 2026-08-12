@@ -21,6 +21,7 @@ import { Footer } from "@/components/home/sections/Footer";
 import { TrustStrip } from "@/components/home/sections/TrustStrip";
 import { VisitUs } from "@/components/home/sections/VisitUs";
 import { WhyUs } from "@/components/home/sections/WhyUs";
+import { CategoryGrid } from "@/components/home/sections/CategoryGrid";
 
 import { ProductDetail } from "@/components/home/ProductDetail";
 import { CartView } from "@/components/cart/CartView";
@@ -215,6 +216,7 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
                       return (
                         <div key="hero-group">
                           <Hero onOffers={() => goToAnchor("offers")} />
+                          <CategoryGrid onCategorySelect={handleCategory} />
                           <TrustStrip />
                           <VisitUs />
                         </div>

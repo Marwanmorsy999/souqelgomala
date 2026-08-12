@@ -1,0 +1,118 @@
+﻿
+┌─────────────────────────────┐
+│ OpenNext — Cloudflare build │
+└─────────────────────────────┘
+
+node.exe : WARN OpenNext is not fully compatible with Windows.
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARN OpenNext i...e with Windows.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARN For optimal performance, it is recommended to use Windows Subsystem for Linux (WSL).
+WARN While OpenNext may function on Windows, it could encounter unpredictable failures during runtime.
+App directory: D:\souk-el-gomla
+Next.js version : 16.3.0
+@opennextjs/cloudflare version: 1.20.2
+@opennextjs/aws version: 4.1.0
+workerd compatibility_date: 2026-08-09
+
+┌─────────────────────────────────┐
+│ OpenNext — Building Next.js app │
+└─────────────────────────────────┘
+
+
+> souk-el-gomla@0.1.0 build
+> next build
+
+▲ Next.js 16.3.0 (Turbopack)
+- Environments: .env.local
+✓ Running next.config.mjs took 18ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 23.3s
+  Running TypeScript ...
+  Finished TypeScript in 31.5s ...
+  Collecting page data using 15 workers ...
+  Generating static pages using 15 workers (0/23) ...
+  Generating static pages using 15 workers (5/23) 
+  Generating static pages using 15 workers (11/23) 
+  Generating static pages using 15 workers (17/23) 
+✓ Generating static pages using 15 workers (23/23) in 665ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /admin
+├ ƒ /admin/[...catchAll]
+├ ƒ /admin/branches
+├ ƒ /admin/categories
+├ ƒ /admin/customers
+├ ƒ /admin/delivery
+├ ƒ /admin/delivery/areas
+├ ƒ /admin/delivery/drivers
+├ ƒ /admin/employees
+├ ○ /admin/login
+├ ƒ /admin/offers
+├ ƒ /admin/orders
+├ ƒ /admin/products
+├ ƒ /admin/reports
+├ ƒ /admin/reviews
+├ ƒ /admin/settings
+├ ƒ /admin/social
+├ ƒ /api/admin/categories
+├ ƒ /api/admin/categories/[id]
+├ ƒ /api/admin/categories/media
+├ ƒ /api/admin/customers
+├ ƒ /api/admin/customers/[id]
+├ ƒ /api/admin/dashboard
+├ ƒ /api/admin/media/upload
+├ ƒ /api/admin/offers
+├ ƒ /api/admin/offers/[id]
+├ ƒ /api/admin/orders
+├ ƒ /api/admin/orders/[id]
+├ ƒ /api/admin/products
+├ ƒ /api/admin/products/[id]
+├ ƒ /api/admin/products/media
+├ ƒ /api/admin/reviews
+├ ƒ /api/admin/reviews/[id]
+├ ƒ /api/admin/settings
+├ ƒ /api/admin/social
+├ ƒ /api/admin/social/[id]
+├ ƒ /api/auth/csrf
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/me
+├ ƒ /api/catalog/categories
+├ ƒ /api/catalog/home
+├ ƒ /api/catalog/offers
+├ ƒ /api/catalog/products
+├ ƒ /api/catalog/products/[slug]
+├ ƒ /api/catalog/social
+├ ƒ /api/orders
+├ ƒ /api/realtime
+├ ƒ /api/reviews
+└ ƒ /api/site
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+┌──────────────────────────────┐
+│ OpenNext — Generating bundle │
+└──────────────────────────────┘
+
+Bundling middleware function...
+Bundling static assets...
+Bundling cache assets...
+Building server function: default...
+Applying code patches: 6.256s
+# copyPackageTemplateFiles
+[35m⚙️ Bundling the OpenNext server...
+[0m
+[35mWorker saved in `.open-next\worker.js` 🚀
+[0m
+OpenNext build complete.

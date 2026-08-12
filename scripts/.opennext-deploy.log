@@ -1,0 +1,76 @@
+﻿
+┌──────────────────────────────┐
+│ OpenNext — Cloudflare deploy │
+└──────────────────────────────┘
+
+node.exe : WARN OpenNext is not fully compatible with Windows.
+At line:1 char:1
++ & "C:\nvm4w\nodejs/node.exe" "C:\nvm4w\nodejs/node_modules/npm/bin/np ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARN OpenNext i...e with Windows.:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+WARN For optimal performance, it is recommended to use Windows Subsystem for Linux (WSL).
+WARN While OpenNext may function on Windows, it could encounter unpredictable failures during runtime.
+Incremental cache does not need populating
+Tag cache does not need populating
+
+ ⛅️ wrangler 4.120.0
+────────────────────
+🌀 Building list of assets...
+✨ Read 69 files from the assets directory D:\souk-el-gomla\.open-next\assets
+🌀 Starting asset upload...
+🌀 Found 23 new or modified static assets to upload. Proceeding with upload...
++ /BUILD_ID
++ /_next/static/chunks/0m0yosaacx0y-.js
++ /_next/static/chunks/2um34uethmlj1.js
++ /_next/static/chunks/33s3a9vdp4opl.js
++ /_next/static/chunks/11nu657fuev6n.js
++ /_next/static/chunks/0xt5gkaenun41.js
++ /_next/static/chunks/0r5kxt8u1qqrw.css
++ /_next/static/chunks/1_5re1ovtnwij.js
++ /_next/static/chunks/3x-nh54u6rx3a.js
++ /_next/static/chunks/3-mucrfx6etz0.js
++ /_next/static/chunks/3tmbj9ul3xk1v.js
++ /_next/static/chunks/0k0cjz69zavf8.js
++ /_next/static/chunks/0apo7hnyvmqnc.js
++ /_next/static/chunks/39wam5l4r9skz.js
++ /_next/static/chunks/077k_s9v2g3a6.js
++ /_next/static/chunks/330c2fm64v1ir.js
++ /_next/static/chunks/1ctk77zjwk5k7.js
++ /_next/static/chunks/turbopack-1or1lovvp6kei.js
++ /_next/static/chunks/3y7ysco-rcy__.js
++ /_next/static/chunks/2dkthpyjopa84.js
++ /_next/static/chunks/2evv7zf62sh_l.js
++ /_next/static/chunks/2uet79qxjctuv.js
++ /_next/static/chunks/1812dbhldvvr3.js
+Uploaded 7 of 23 assets
+Uploaded 15 of 23 assets
+Uploaded 23 of 23 assets
+✨ Success! Uploaded 23 files (39 already uploaded) (2.90 sec)
+
+Total Upload: 8759.18 KiB / gzip: 1711.76 KiB
+Worker Startup Time: 25 ms
+Your Worker has access to the following bindings:
+Binding                                                                                        Resource                  
+env.CACHE (79892e5632a941afad47cfa80fbe294d)                                                   KV Namespace              
+env.ORDER_QUEUE (inherited)                                                                    Queue                     
+env.NOTIFICATION_QUEUE (inherited)                                                             Queue                     
+env.DB (souk-el-gomla-prod)                                                                    D1 Database               
+env.ASSETS                                                                                     Assets                    
+env.NEXT_PUBLIC_APP_URL ("https://souqelgomala.m-2396.workers.dev")                            Environment Variable      
+env.NEXT_PUBLIC_APP_NAME ("Souk El Gomla")                                                     Environment Variable      
+env.NEXT_PUBLIC_APP_LOCALE ("ar-EG")                                                           Environment Variable      
+env.NEXT_PUBLIC_APP_CURRENCY ("EGP")                                                           Environment Variable      
+env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME ("pg7nqahy")                                             Environment Variable      
+env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY ("")                                             Environment Variable      
+
+Uploaded souqelgomala (30.11 sec)
+Deployed souqelgomala triggers (5.99 sec)
+  https://souqelgomala.m-2396.workers.dev
+  schedule: 0 2 * * *
+  schedule: */30 * * * *
+  schedule: 0 0 * * *
+  Producer for souk-el-gomla-order-queue
+  Producer for souk-el-gomla-notification-queue
+Current Version ID: b267f3db-e3fc-4733-89a5-bf0d9dbed5f1

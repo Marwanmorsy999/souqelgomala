@@ -1,0 +1,13 @@
+node_modules
+.next
+.open-next
+.wrangler
+.wrangler-test
+.kilo
+.env.local
+.env
+-w
+scripts/.kz_*
+tsc-out.txt
+lint-out.txt
+tsconfig.tsbuildinfo
