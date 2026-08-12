@@ -35,8 +35,8 @@ export function ProductArtwork({
       src={productImageSrc(product)}
       alt={product.name}
       eager={large}
-            className="w-full aspect-square"
-      imgClassName="size-full object-cover"
+            className="w-full aspect-square max-[640px]:aspect-auto max-[640px]:h-[140px]"
+      imgClassName="size-full object-cover max-[640px]:object-contain"
       wrapperClassName="img-bg"
     >
       {discount > 0 && (
@@ -72,7 +72,7 @@ export function PriceBlock({
     <div className="flex flex-col gap-1">
             <div className="flex flex-wrap items-baseline gap-x-2">
         <span
-          className="text-price-md font-black text-brand-orange"
+          className="text-price-md max-[640px]:text-[13px] font-black text-brand-orange"
           dir="ltr"
         >
           {formatPrice(primary)}
@@ -92,7 +92,7 @@ export function PriceBlock({
           <span className="text-xs font-bold text-accent">خصم {pct}%</span>
         )}
       </div>
-            <p className="text-[11px] text-text-secondary">
+            <p className="text-[11px] text-text-secondary max-[640px]:text-[10px]">
         {isWholesale ? (
           <>جملة: <span dir="ltr">{formatPrice(secondary)}</span></>
         ) : (
@@ -130,7 +130,7 @@ export function ProductCard({ product, onOpen }: Props) {
         </button>
       )}
 
-      <div className="flex flex-1 flex-col gap-2 p-3 pt-3">
+      <div className="flex flex-1 flex-col gap-2 p-3 pt-3 max-[640px]:gap-1 max-[640px]:p-2">
         {/* Category chip (spec §10 CARDS) */}
         {product.category && (
           <span className="self-start text-[10px] font-bold text-brand-green-light">
@@ -143,12 +143,12 @@ export function ProductCard({ product, onOpen }: Props) {
           onClick={() => onOpen(product)}
           aria-label={`عرض ${product.name}`}
         >
-          <p className="line-clamp-2 text-body-sm font-semibold text-foreground">
+          <p className="line-clamp-2 text-body-sm max-[640px]:text-xs font-semibold text-foreground">
             {product.name}
           </p>
         </button>
 
-        <p className="text-micro text-text-muted">
+        <p className="text-micro text-text-muted max-[640px]:text-[10px]">
           {packageLabel(product)}
         </p>
 
@@ -166,13 +166,13 @@ export function ProductCard({ product, onOpen }: Props) {
                   ? `${product.name} نفذت الكمية`
                   : `أضف ${product.name} للسلة`
               }
-                            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-brand-orange text-sm font-black text-white transition-colors hover:bg-brand-orange-hover disabled:cursor-not-allowed disabled:opacity-40"
+                            className="flex h-11 max-[640px]:h-8 w-full items-center justify-center gap-1.5 rounded-md bg-brand-orange text-sm max-[640px]:text-xs font-black text-white transition-colors hover:bg-brand-orange-hover disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ShoppingCart className="size-4" />
               أضف للسلة
             </button>
           ) : (
-                        <div className="flex h-11 w-full items-center justify-between rounded-md border border-brand-green/30 bg-brand-green-dim px-1.5">
+                        <div className="flex h-11 max-[640px]:h-8 w-full items-center justify-between rounded-md border border-brand-green/30 bg-brand-green-dim px-1.5">
               <button
                 onClick={() => decrement(product.id)}
                 aria-label={`إنقاص ${product.name}`}

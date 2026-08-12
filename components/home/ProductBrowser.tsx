@@ -315,7 +315,7 @@ export function ProductBrowser({ initialFilters = {}, hideCategoryTree = false, 
         </button>
       </header>
 
-      <div className="mx-auto flex max-w-6xl gap-5 px-3 py-4">
+      <div className="mx-auto flex max-w-6xl gap-5 px-3 max-[640px]:px-2 py-4">
         {/* Desktop sidebar */}
                 <aside className="hidden w-64 shrink-0 lg:block">
           <div className="sticky top-16 rounded-lg border border-border-default bg-bg-surface p-4">{FilterPanel}</div>
@@ -327,7 +327,7 @@ export function ProductBrowser({ initialFilters = {}, hideCategoryTree = false, 
           </p>
 
           {loading ? (
-                        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+                        <div className="grid grid-cols-2 gap-3 max-[640px]:gap-x-1.5 max-[640px]:gap-y-2 sm:grid-cols-3 lg:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="h-56 animate-pulse rounded-lg bg-bg-surface" />
               ))}
@@ -339,7 +339,7 @@ export function ProductBrowser({ initialFilters = {}, hideCategoryTree = false, 
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 max-[640px]:gap-x-1.5 max-[640px]:gap-y-2 sm:grid-cols-3 lg:grid-cols-4">
                 {products.map((p) => (
                   <ProductCard key={p.id} product={p} onOpen={onOpen} />
                 ))}
