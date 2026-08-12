@@ -107,7 +107,7 @@ export function Header({
           {/* Desktop phone CTA */}
             <a
               href={`tel:${settings.phonePrimary}`}
-              className="hidden h-10 items-center gap-2 rounded-lg bg-brand-green px-3 text-sm font-black text-white transition-colors hover:bg-brand-green-hover lg:flex"
+              className="hidden h-10 items-center gap-2 rounded-lg bg-brand-green px-3 text-sm font-black text-white transition-colors hover:bg-brand-green-hover button-glow"
             >
               <Phone className="size-4" />
               <span dir="ltr">{settings.phonePrimary}</span>
@@ -117,7 +117,7 @@ export function Header({
           <button
             onClick={onSearch}
             aria-label="بحث"
-            className="flex size-10 items-center justify-center rounded-lg text-text-primary transition-colors hover:bg-bg-nav-hover md:hidden"
+            className="flex size-10 items-center justify-center rounded-lg text-text-primary transition-colors hover:bg-bg-nav-hover focus-visible-glow"
           >
             <Search className="size-5" />
           </button>
@@ -126,11 +126,11 @@ export function Header({
           <button
             onClick={onCart}
             aria-label={`السلة (${cartCount} منتج)`}
-            className="relative flex size-10 items-center justify-center rounded-lg text-text-primary transition-colors hover:bg-bg-nav-hover"
+            className="relative flex size-10 items-center justify-center rounded-lg text-text-primary transition-colors hover:bg-bg-nav-hover focus-visible-glow"
           >
             <ShoppingCart className="size-5" />
             {cartCount > 0 && (
-              <span className="absolute -left-0.5 -top-0.5 flex size-5 min-w-5 items-center justify-center rounded-full bg-brand-orange px-1 text-[11px] font-black text-white">
+              <span className="absolute -left-0.5 -top-0.5 flex size-5 min-w-5 items-center justify-center rounded-full bg-brand-orange px-1 text-[11px] font-black text-white cart-badge-bounce">
                 {cartCount}
               </span>
             )}
