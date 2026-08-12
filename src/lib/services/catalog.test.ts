@@ -17,13 +17,14 @@ function makeProduct(id: string, name: string): Product {
 }
 
 function mockJsonFetch(payload: unknown, status = 200) {
-  return vi.fn(
-    () =>
-      Promise.resolve({
-        ok: status >= 200 && status < 300,
-        status,
-        json: () => Promise.resolve(payload),
-      }) as unknown as Response,
+  // The mock is invoked by the catalog client with a URL (+ init); declare
+  // parameters so `mock.calls` is typed as `unknown[][]` (not an empty tuple).
+  return vi.fn((..._args: unknown[]) =>
+    Promise.resolve({
+      ok: status >= 200 && status < 300,
+      status,
+      json: () => Promise.resolve(payload),
+    }) as unknown as Response,
   );
 }
 
