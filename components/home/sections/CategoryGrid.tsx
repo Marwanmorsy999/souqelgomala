@@ -69,7 +69,7 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
+      <div className="grid grid-cols-4 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-4 lg:gap-6">
         {CATEGORIES.map((cat, index) => (
           <motion.div
             key={cat.name}
@@ -78,22 +78,22 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: index * 0.05, duration: 0.3 }}
             onClick={() => onCategorySelect(cat.path)}
-            className="group cursor-pointer flex flex-col items-center bg-card rounded-xl sm:rounded-2xl border border-border overflow-hidden product-card-hover"
+            className="group category-grid-tile cursor-pointer flex flex-col items-center rounded-none sm:rounded-2xl sm:bg-card sm:border sm:border-border sm:overflow-hidden product-card-hover"
           >
-            <div className="w-full aspect-[4/3] max-h-[110px] sm:aspect-square sm:max-h-none bg-[#f2f0ea] relative overflow-hidden flex items-center justify-center p-3 sm:p-4 rounded-xl border border-black/10 shadow-md shadow-black/40">
+            <div className="relative w-full h-[80px] overflow-hidden rounded-lg flex items-center justify-center sm:aspect-square sm:h-auto sm:bg-[#f2f0ea] sm:p-4 sm:rounded-xl sm:border sm:border-black/10 sm:shadow-md sm:shadow-black/40">
               <img
                 src={cat.image}
                 alt={cat.name}
-                className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
+                className="w-full h-full object-cover sm:object-contain transition-transform duration-300 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             
-            <div className="w-full p-2 sm:p-4 flex items-center justify-between bg-card z-10 border-t border-border">
-              <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center">
+            <div className="w-full mt-1.5 sm:mt-0 sm:p-4 sm:flex sm:items-center sm:justify-between sm:bg-card sm:z-10 sm:border-t sm:border-border">
+              <h3 className="text-[11px] sm:text-sm leading-tight font-semibold text-center sm:text-start text-foreground group-hover:text-primary transition-colors line-clamp-2 sm:min-h-[3rem] sm:flex sm:items-center">
                 {cat.name}
               </h3>
-              <div className="size-7 sm:size-8 rounded-full bg-surface-alt flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
+              <div className="hidden sm:flex size-7 sm:size-8 rounded-full bg-surface-alt items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
                 <ChevronLeft className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
             </div>

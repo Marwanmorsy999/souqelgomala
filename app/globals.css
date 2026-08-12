@@ -349,6 +349,16 @@
     border-color: var(--brand-green);
   }
 
+  /* Mobile category grid (flat, 4-column) — disable the card lift/shadow so tiles
+     float on the page background (desktop keeps the card styling). */
+  @media (max-width: 639px) {
+    .category-grid-tile.product-card-hover,
+    .category-grid-tile.product-card-hover:hover {
+      transform: none;
+      box-shadow: none;
+    }
+  }
+
   /* Button hover glow effect */
   .button-glow {
     transition: box-shadow 0.2s ease, transform 0.15s ease;
