@@ -107,7 +107,7 @@ export function Header({
           {/* Desktop phone CTA */}
             <a
               href={`tel:${settings.phonePrimary}`}
-              className="hidden h-10 items-center gap-2 rounded-lg bg-brand-green px-3 text-sm font-black text-white transition-colors hover:bg-brand-green-hover button-glow"
+              className="hidden h-10 items-center gap-2 rounded-lg border border-brand-green/60 px-3 text-sm font-bold text-brand-green-light transition-colors hover:bg-brand-green-dim"
             >
               <Phone className="size-4" />
               <span dir="ltr">{settings.phonePrimary}</span>

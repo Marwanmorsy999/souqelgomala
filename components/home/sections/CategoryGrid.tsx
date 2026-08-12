@@ -80,7 +80,7 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             onClick={() => onCategorySelect(cat.path)}
             className="group cursor-pointer flex flex-col items-center bg-card rounded-xl sm:rounded-2xl border border-border overflow-hidden product-card-hover"
           >
-            <div className="w-full aspect-[4/3] max-h-[110px] sm:aspect-square sm:max-h-none bg-surface-alt relative overflow-hidden flex items-center justify-center p-2 sm:p-4">
+            <div className="w-full aspect-[4/3] max-h-[110px] sm:aspect-square sm:max-h-none bg-[#f2f0ea] relative overflow-hidden flex items-center justify-center p-3 sm:p-4 rounded-xl border border-black/10 shadow-md shadow-black/40">
               <img
                 src={cat.image}
                 alt={cat.name}

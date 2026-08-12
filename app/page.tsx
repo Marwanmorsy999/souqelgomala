@@ -16,7 +16,6 @@ import { DealsCountdown } from "@/components/home/sections/DealsCountdown";
 import { PromoBanner } from "@/components/home/sections/PromoBanner";
 import { DailyOffers } from "@/components/home/sections/DailyOffers";
 import { LatestProducts } from "@/components/home/sections/LatestProducts";
-import { SocialFeed } from "@/components/home/sections/SocialFeed";
 import { Footer } from "@/components/home/sections/Footer";
 import { TrustStrip } from "@/components/home/sections/TrustStrip";
 import { VisitUs } from "@/components/home/sections/VisitUs";
@@ -233,7 +232,6 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
               <PromoBanner />
               <WhyUs />
               <Footer />
-              <SocialFeed />
             </div>
           )}
 

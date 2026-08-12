@@ -54,7 +54,7 @@ export function Hero({ onOffers }: Props) {
           <div className="flex w-full flex-row gap-2 sm:w-auto sm:flex-wrap sm:gap-3">
             <button
               onClick={onOffers}
-              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-green px-2 text-sm font-black text-white transition-colors hover:bg-brand-green-hover sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-2 text-sm font-bold text-white transition-colors hover:bg-white/20 sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
             >
               {settings.hero.ctaLabel || "شوف عروض النهارده"}
             </button>
@@ -62,7 +62,7 @@ export function Hero({ onOffers }: Props) {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-2 text-sm font-bold text-white transition-colors hover:bg-white/20 sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-green px-2 text-sm font-black text-white transition-colors hover:bg-brand-green-hover button-glow sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
             >
               {settings.hero.whatsappCtaLabel || "اطلب على واتساب"}
             </a>
