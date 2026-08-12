@@ -106,8 +106,8 @@ export function OfferProductCard({
             disabled={!product.inStock}
             className="mt-2 flex h-11 w-full items-center justify-center gap-1.5 rounded-md bg-brand-orange text-sm font-black text-white transition-colors hover:bg-brand-orange-hover disabled:cursor-not-allowed disabled:opacity-40"
           >
-            <ShoppingCart className="size-4" />
-            اطلب الآن
+                            <ShoppingCart className="size-4" />
+            اضف للسلة
           </button>
         ) : (
           <div className="mt-2 flex h-11 w-full items-center justify-between rounded-md border border-brand-green/30 bg-brand-green-dim px-1.5">

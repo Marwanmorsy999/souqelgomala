@@ -154,6 +154,19 @@ export async function getProducts(): Promise<Product[]> {
   return fetchAllProducts({ pageSize: 100 });
 }
 
+/**
+ * Fetch exactly the given product ids (one targeted request). Used to resolve
+ * cart items / saved-order items without walking the full 7000+ catalog.
+ */
+export async function getProductsByIds(ids: string[]): Promise<Product[]> {
+  const unique = [...new Set(ids.filter(Boolean))];
+  if (unique.length === 0) return [];
+  const q = new URLSearchParams();
+  q.set("ids", unique.join(","));
+  q.set("pageSize", String(Math.min(unique.length, 100)));
+  return getJSON<Product[]>(`/products?${q.toString()}`);
+}
+
 /** Fetch a single product by id. */
 export async function getProductById(id: string): Promise<Product | undefined> {
   const list = await fetchAllProducts({ pageSize: 100 });

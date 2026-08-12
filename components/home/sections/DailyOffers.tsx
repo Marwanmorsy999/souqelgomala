@@ -1,12 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { MessageCircle } from "lucide-react";
+import { ShoppingBag } from "lucide-react";
 import { ClientImage } from "@/components/ui/client-image";
 import { OfferProductCard } from "@/components/home/OfferProductCard";
 import { OfferBundleCard } from "@/components/home/OfferBundleCard";
 import { getDailyOffers, type DailyOffersPayload } from "@/lib/services/catalog";
-import { waLink } from "@/lib/site";
 import { isPlaceholderImage } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
@@ -35,9 +34,9 @@ function formatDayMonth(iso: string): string {
  *   - Mobile: intentional horizontal swipe · Desktop: static grid.
  *
  * Data always comes from the D1-backed catalog API. If nothing is active the
- * section degrades to a compact WhatsApp CTA.
+ * section degrades to a polite "browse the shop" empty state.
  */
-export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) {
+export function DailyOffers({ onOpen, onBrowse }: { onOpen: (product: Product) => void; onBrowse: () => void }) {
   const [data, setData] = useState<DailyOffersPayload | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -120,9 +119,9 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
     [],
   );
 
-  if (!loading && !hasAny && !banner) {
-    return null;
-  }
+  // The offers section always renders: a live offers board, a decorative
+  // banner, or — when nothing is active — a clear empty state that points
+  // customers to browse products on the site.
 
   return (
     <section id="offers" className="site-section scroll-mt-20">
@@ -196,7 +195,7 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
           )}
         </div>
       ) : (
-        <EmptyOffersState />
+        <EmptyOffersState onBrowse={onBrowse} />
       )}
 
       {banner && (
@@ -213,22 +212,24 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
   );
 }
 
-function EmptyOffersState() {
+function EmptyOffersState({ onBrowse }: { onBrowse: () => void }) {
   return (
-    <div className="flex flex-col items-start gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-      <p className="max-w-md text-sm leading-6 text-foreground">
-        مفيش عروض مُسجلة على الموقع لسه النهارده — بننشر عروض اليوم على صفحة
-        الفيسبوك والإنستجرام، أو اسألنا مباشرة على واتساب.
-      </p>
-            <a
-        href={waLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex h-11 shrink-0 items-center gap-2 rounded-md bg-brand-green px-4 text-sm font-black text-white transition-colors hover:bg-brand-green-hover"
+    <div className="flex flex-col items-center gap-3 rounded-xl border border-border-default bg-bg-surface px-6 py-10 text-center sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h3 className="text-lg font-black text-foreground">
+          مفيش عروض مسجلة حالياً
+        </h3>
+        <p className="mt-1 max-w-md text-sm leading-6 text-text-secondary">
+          تصفح المنتجات وأضف اللي تحتاجه للسلة — كلنا أسعار مناسبة للبيت والمحل.
+        </p>
+      </div>
+      <button
+        onClick={onBrowse}
+        className="flex h-11 shrink-0 items-center gap-2 rounded-md bg-brand-green px-5 text-sm font-black text-white transition-colors hover:bg-brand-green-hover"
       >
-        <MessageCircle className="size-4" />
-        استفسر عن عروض النهارده
-      </a>
+        <ShoppingBag className="size-4" />
+        تصفح المنتجات
+      </button>
     </div>
   );
 }

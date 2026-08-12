@@ -1,19 +1,17 @@
 "use client";
 
 import { Phone } from "lucide-react";
-import { useSiteStructure, useWhatsappHref } from "@/components/shared/site-structure";
+import { useSiteStructure } from "@/components/shared/site-structure";
 import {
   FacebookIcon,
   InstagramIcon,
   TikTokIcon,
-  WhatsAppIcon,
 } from "@/components/ui/SocialIcons";
 
 export function Footer() {
   const { footer, settings } = useSiteStructure();
 
   const quickLinks = footer.filter((l) => l.section === "quick_links");
-  const waHref = useWhatsappHref();
   const logoUrl = settings.logoUrl ?? "";
 
   // Single canonical set of social profiles rendered as branded icon cards.
@@ -80,6 +78,11 @@ export function Footer() {
                 </a>
               )}
             </div>
+            <div className="mt-4 rounded-lg border border-brand-green/20 bg-brand-green/5 p-3 text-xs leading-6 text-text-secondary">
+              <p className="font-bold text-brand-green-light">الطلبات تتم عن طريق الموقع</p>
+              <p className="mt-1">للاستفسارات والشكاوى فقط، كلمنا على التليفون أو واتساب.</p>
+              <p className="mt-1 text-text-muted">مواعيد العمل: يومياً من 9 صباحاً حتى 11 مساءً</p>
+            </div>
           </div>
 
           {/* Links */}
@@ -108,15 +111,6 @@ export function Footer() {
                 أول عرض توصلك.
               </p>
             </div>
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-brand-green/60 px-4 py-2 text-sm font-bold text-foreground transition-colors hover:bg-brand-green-dim sm:self-auto"
-            >
-              <WhatsAppIcon className="size-4" style={{ color: "#25D366" }} />
-              واتساب
-            </a>
           </div>
 
           <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">

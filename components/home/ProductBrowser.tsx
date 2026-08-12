@@ -9,11 +9,11 @@ import type { Product } from "@/lib/types";
 export type { ProductFilters, ProductSort };
 
 const SORT_LABELS: Record<ProductSort, string> = {
-  default: "المميزة",
-  price_asc: "السعر: من الأقل",
-  price_desc: "السعر: من الأعلى",
+  default: "الافتراضي",
+  price_asc: "الأقل سعراً",
+  price_desc: "الأعلى سعراً",
   newest: "الأحدث",
-  best_seller: "الأكثر مبيعاً",
+  best_seller: "الأكثر طلباً",
   featured: "المميزة أولاً",
 };
 

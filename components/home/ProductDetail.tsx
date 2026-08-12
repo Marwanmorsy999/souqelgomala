@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Minus, Plus } from "lucide-react";
 import { useStore } from "@/lib/store";
-import { getProducts } from "@/lib/services/catalog";
+import { fetchProducts } from "@/lib/services/catalog";
 import { hasProductImage, productImageSrc, formatPrice } from "@/lib/utils";
 import ProductJsonLd from "./ProductJsonLd";
 import { ProductCard } from "./ProductCard";
@@ -30,12 +30,20 @@ export function ProductDetail({
     window.scrollTo({ top: 0, behavior: "instant" });
   }, [product.id]);
 
-  useEffect(() => {
+    useEffect(() => {
     let active = true;
-    getProducts()
-      .then((all) => {
+    // Related items come from the same category (a bounded fetch — never load
+    // the full 7000+ catalog just for a "similar products" row).
+    if (!product.category_id) {
+      Promise.resolve().then(() => {
+        if (active) setRelated([]);
+      });
+      return;
+    }
+    fetchProducts({ categoryId: product.category_id, pageSize: 8 })
+      .then((res) => {
         if (!active) return;
-        setRelated(all.filter((p) => p.id !== product.id).slice(0, 6));
+        setRelated(res.data.filter((p) => p.id !== product.id).slice(0, 6));
       })
       .catch(() => {});
     return () => {
@@ -85,13 +93,13 @@ export function ProductDetail({
               {product.size && product.size.trim() ? product.size : "حبة"}
             </p>
 
-            <div className="flex flex-wrap items-baseline gap-x-3">
+                        <div className="flex flex-wrap items-baseline gap-x-3">
               <span className="text-2xl font-black text-brand-orange" dir="ltr">
-                {formatPrice(price)} ج.م
+                {formatPrice(price)}
               </span>
               {product.oldPrice && product.oldPrice > product.retail && (
                 <span className="text-sm text-text-muted line-through" dir="ltr">
-                  {formatPrice(product.oldPrice)} ج.م
+                  {formatPrice(product.oldPrice)}
                 </span>
               )}
             </div>

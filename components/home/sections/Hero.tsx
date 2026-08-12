@@ -1,9 +1,10 @@
 "use client";
 
-import { useSiteSettings, useWhatsappLink } from "@/components/shared/site-settings";
+import { useSiteSettings } from "@/components/shared/site-settings";
 
 type Props = {
   onOffers: () => void;
+  onBrowse: () => void;
 };
 
 /**
@@ -14,9 +15,8 @@ type Props = {
  * existing lib/site.ts values as defaults). Until a real shop photo is set the
  * section renders the same branded deep-green fallback — never generic stock.
  */
-export function Hero({ onOffers }: Props) {
+export function Hero({ onOffers, onBrowse }: Props) {
   const settings = useSiteSettings();
-  const waLink = useWhatsappLink();
   const heroImage = settings.hero.image?.trim();
   const photo = heroImage ? heroImage : undefined;
   const headline = settings.hero.title?.trim() || settings.tagline;
@@ -53,21 +53,21 @@ export function Hero({ onOffers }: Props) {
         <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-3">
           <div className="flex w-full flex-row gap-2 sm:w-auto sm:flex-wrap sm:gap-3">
             <button
+              onClick={onBrowse}
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-green px-2 text-sm font-black text-white transition-colors hover:bg-brand-green-hover button-glow sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
+            >
+              {settings.hero.ctaLabel && settings.hero.ctaLabel !== "شوف عروض النهارده"
+                ? settings.hero.ctaLabel
+                : "تصفح المنتجات"}
+            </button>
+            <button
               onClick={onOffers}
               className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-2 text-sm font-bold text-white transition-colors hover:bg-white/20 sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
             >
-              {settings.hero.ctaLabel || "شوف عروض النهارده"}
+              شوف عروض النهارده
             </button>
-            <a
-              href={waLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-green px-2 text-sm font-black text-white transition-colors hover:bg-brand-green-hover button-glow sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
-            >
-              {settings.hero.whatsappCtaLabel || "اطلب على واتساب"}
-            </a>
           </div>
-          
+
           <div className="flex items-center gap-2 text-white/90">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
             <span className="text-sm font-medium">خلف مسجد آل عطا الله، ميدان كفر شكر</span>

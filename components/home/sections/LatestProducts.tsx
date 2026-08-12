@@ -30,10 +30,12 @@ export function LatestProducts({ onOpen }: Props) {
   }, []);
 
   // Unique products: best-sellers first, then newer arrivals not yet shown.
+  // Curated small section (4–6) so the heavy 7000-product catalog is never
+  // loaded on the homepage — best-sellers + latest only.
   const all = [
     ...best,
     ...latest.filter((p) => !best.some((b) => b.id === p.id)),
-  ].slice(0, 8);
+  ].slice(0, 6);
 
   return (
     <section id="products" className="site-section scroll-mt-20">
@@ -45,7 +47,7 @@ export function LatestProducts({ onOpen }: Props) {
       </div>
 
       {/* Mobile: horizontal swipe · Desktop: static grid */}
-      <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:-mx-4 sm:px-4 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0 lg:grid-cols-4">
+      <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 sm:-mx-4 sm:px-4 md:mx-0 md:grid md:grid-cols-3 md:gap-4 md:overflow-visible md:px-0">
         {loading
           ? Array.from({ length: 4 }).map((_, i) => (
               <div

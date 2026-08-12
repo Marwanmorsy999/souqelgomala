@@ -5,9 +5,8 @@ import {
   FacebookIcon,
   InstagramIcon,
   TikTokIcon,
-  WhatsAppIcon,
 } from "@/components/ui/SocialIcons";
-import { SITE, waLink } from "@/lib/site";
+import { SITE } from "@/lib/site";
 
 export function NewsletterSocial() {
   const [email, setEmail] = useState("");
@@ -17,7 +16,6 @@ export function NewsletterSocial() {
     { label: "فيسبوك", href: SITE.social.facebook, icon: FacebookIcon },
     { label: "إنستجرام", href: SITE.social.instagram, icon: InstagramIcon },
     { label: "تيك توك", href: SITE.social.tiktok, icon: TikTokIcon },
-    { label: "واتساب", href: waLink, icon: WhatsAppIcon },
   ];
 
   return (

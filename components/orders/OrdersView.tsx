@@ -17,7 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { orders as defaultOrders } from "@/lib/data";
-import { getProducts } from "@/lib/services/catalog";
+import { getProductsByIds } from "@/lib/services/catalog";
 import { useStore } from "@/lib/store";
 import type { Order, Product } from "@/lib/types";
 
@@ -214,7 +214,12 @@ export function OrdersView({ onBack }: Props) {
 
   useEffect(() => {
     let active = true;
-    getProducts()
+    // Resolve only the products referenced by the orders (never the full catalog).
+    const ids = [
+      ...new Set(orders.flatMap((o) => o.items.map((i) => i.id))),
+    ];
+    if (ids.length === 0) return;
+    getProductsByIds(ids)
       .then((list) => {
         if (!active) return;
         const map: Record<string, Product> = {};
@@ -227,7 +232,7 @@ export function OrdersView({ onBack }: Props) {
     return () => {
       active = false;
     };
-  }, []);
+  }, [orders]);
 
   const filtered = orders.filter(
     (o) => filter === "all" || o.status === filter,

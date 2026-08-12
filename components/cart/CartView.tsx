@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { getProducts, getDailyOffers } from "@/lib/services/catalog";
+import { getProductsByIds, getDailyOffers } from "@/lib/services/catalog";
 import { formatPrice } from "@/lib/utils";
 import { delivery as deliveryConfig } from "@/lib/site";
 import type { CartItem, Product, Offer } from "@/lib/types";
@@ -49,34 +49,43 @@ const [coupon, setCoupon] = useState("");
   const [productMap, setProductMap] = useState<Record<string, Product>>({});
   const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
 
-  useEffect(() => {
+  // Resolve ONLY the products currently in the cart (never the full 7000+ catalog).
+  const cartIdKey = cart
+    .map((i) => i.id)
+    .sort()
+    .join("|");
+
+    useEffect(() => {
     let active = true;
-    getProducts()
-      .then((list) => {
-        if (!active) return;
-        const map: Record<string, Product> = {};
-        for (const p of list) map[p.id] = p;
-        setProductMap(map);
-      })
-      .catch(() => {
-        /* ignore catalog load failures */
-      });
-      
+    const ids = cart.map((i) => i.id);
+    if (ids.length > 0) {
+      getProductsByIds(ids)
+        .then((list) => {
+          if (!active) return;
+          const map: Record<string, Product> = {};
+          for (const p of list) map[p.id] = p;
+          setProductMap(map);
+        })
+        .catch(() => {
+          /* ignore catalog load failures */
+        });
+    }
+
     getDailyOffers()
       .then((payload) => {
         if (!active) return;
         const map: Record<string, Offer> = {};
         for (const o of payload.offers) {
-          if (o.discountType === 'bundle') map[o.id] = o;
+          if (o.discountType === "bundle") map[o.id] = o;
         }
         setOfferMap(map);
       })
       .catch(() => {});
-      
+
     return () => {
       active = false;
     };
-  }, []);
+  }, [cartIdKey]);
 
   const discount = couponApplied ? Math.round(total * 0.1 * 100) / 100 : 0;
   const delivery =

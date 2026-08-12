@@ -37,6 +37,9 @@ export type ProductSort =
 
 export interface ProductSearchWhere {
   categoryId?: string
+  /** Explicit product ids (used to fetch just the cart items without loading
+   *  the whole catalog — important with 7000+ products). */
+  ids?: string[]
   search?: string
   discountedOnly?: boolean
   minPrice?: number
@@ -228,6 +231,9 @@ export async function findProducts(where: ProductSearchWhere = {}, page = 1, pag
     // parent (or any ancestor) is selected, and vice-versa.
     const ids = await expandCategoryToSubtree(where.categoryId)
     conditions.push(inArray(products.category_id, ids))
+  }
+  if (where.ids && where.ids.length > 0) {
+    conditions.push(inArray(products.id, where.ids))
   }
   if (where.search) {
     const term = `%${where.search.trim()}%`

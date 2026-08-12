@@ -14,9 +14,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { getProducts } from "@/lib/services/catalog";
+import { getProductsByIds } from "@/lib/services/catalog";
 import { useStore } from "@/lib/store";
-import { delivery as deliveryConfig, SITE, waLink } from "@/lib/site";
+import { delivery as deliveryConfig } from "@/lib/site";
 import type { CartItem, Product } from "@/lib/types";
 
 type Props = {
@@ -59,12 +59,21 @@ export function CheckoutView({ cart, total, onBack, onSuccess }: Props) {
 const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
   const [payment, setPayment] = useState("cash");
   const [done, setDone] = useState(false);
+  const [orderNumber, setOrderNumber] = useState<string>("");
   const [productMap, setProductMap] = useState<Record<string, Product>>({});
   const isWholesale = useStore((s) => s.isWholesale);
 
+  // Resolve ONLY the products currently in the cart (never the full catalog).
+  const cartIdKey = cart
+    .map((i) => i.id)
+    .sort()
+    .join("|");
+
   useEffect(() => {
     let active = true;
-    getProducts()
+    const ids = cart.map((i) => i.id);
+    if (ids.length === 0) return;
+    getProductsByIds(ids)
       .then((list) => {
         if (!active) return;
         const map: Record<string, Product> = {};
@@ -77,7 +86,7 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
     return () => {
       active = false;
     };
-  }, []);
+  }, [cartIdKey]);
 
   const itemsTotal = cart.reduce((sum, item) => {
     const p = productMap[item.id];
@@ -90,9 +99,9 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
   const grandTotal = subtotal + delivery;
   const filled = address.street.trim().length > 3 && address.phone.trim().length >= 10;
 
-  // Build a readable Arabic order summary, persist the order to D1, then open
-  // the store's WhatsApp message. The pricing mode (retail / wholesale) is
-  // preserved so the admin sees the exact line-item amounts.
+  // Build the order payload and persist it to D1 — the website is the primary
+  // ordering channel (no WhatsApp handoff). The pricing mode (retail /
+  // wholesale) is preserved so the admin sees the exact line-item amounts.
   const handleOrder = async () => {
     const unitPriceFor = (p: { retail: number; wholesale: number }) =>
       isWholesale ? p.wholesale : p.retail;
@@ -117,33 +126,9 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
       unitPrice: number;
     }[];
 
-    const lines = [
-      "طلب جديد من سوق الجملة 🛒",
-      isWholesale ? "(سعر الجملة)" : "",
-      "",
-      ...itemsPayload.map(
-        (it) =>
-          `• ${it.name} (${productMap[it.id]?.size ?? ""}) × ${it.quantity} = ${
-            it.unitPrice * it.quantity
-          } ج.م`,
-      ),
-      "",
-      `المجموع: ${subtotal} ج.م`,
-      delivery > 0 ? `التوصيل: ${delivery} ج.م` : "التوصيل: مجاني",
-      `الإجمالي: ${grandTotal} ج.م`,
-      "",
-      address.name ? `الاسم: ${address.name}` : "",
-      `رقم الموبايل: ${address.phone}`,
-      `العنوان: ${address.street}${address.building ? ` — عمارة ${address.building}` : ""}${address.floor ? ` — دور ${address.floor}` : ""}`,
-      `وقت التوصيل: ${timeSlot}`,
-      address.notes ? `ملاحظات: ${address.notes}` : "",
-    ]
-      .filter(Boolean)
-      .join("\n");
-
-    // Persist first (best-effort — still open WhatsApp if it fails).
+    let number = "";
     try {
-      await fetch("/api/orders", {
+      const res = await fetch("/api/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -156,36 +141,49 @@ const [timeSlot, setTimeSlot] = useState(timeSlots[0]);
           items: itemsPayload,
         }),
       });
+      if (res.ok) {
+        const body = (await res.json()) as {
+          data?: { orderNumber?: string };
+        };
+        number = body?.data?.orderNumber ?? "";
+      }
     } catch {
-      /* ignore — WhatsApp remains the source of truth for the customer */
+      /* keep showing a confirmation even if persistence hiccups */
     }
 
-    window.open(
-      `${waLink}?text=${encodeURIComponent(lines)}`,
-      "_blank",
-      "noopener,noreferrer",
-    );
+    setOrderNumber(number);
     setDone(true);
-    setTimeout(onSuccess, 3000);
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   if (done) {
     return (
       <main
-        className="flex min-h-screen flex-col items-center justify-center gap-6 bg-background px-6 text-center"
+        className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background px-6 text-center"
         dir="rtl"
       >
         <div className="flex size-24 items-center justify-center rounded-full bg-primary/10">
           <CheckCircle2 className="size-14 text-primary" />
         </div>
-        <h1 className="text-3xl font-black">طلبك اتحضّر! 🎉</h1>
+        <h1 className="text-3xl font-black">تم استلام طلبك بنجاح</h1>
+        {orderNumber && (
+          <p className="rounded-2xl border border-primary/20 bg-primary/5 px-5 py-2 text-lg font-black text-primary" dir="ltr">
+            رقم الطلب: #{orderNumber}
+          </p>
+        )}
         <p className="max-w-sm text-muted-foreground">
-          فتحنا واتساب وأرسلنا تفاصيل طلبك إلى {SITE.name}. هنأكد الطلب معاك على
-          الرقم أو الواتساب بعدها.
+          هيتصل بيك فريق المتجر لتأكيد الطلب وتحديد ميعاد التوصيل — الدفع كاش
+          عند الاستلام.
         </p>
         <p className="text-sm text-muted-foreground">
-          رح يوصل: <strong>{timeSlot}</strong>
+          وقت التوصيل المختار: <strong>{timeSlot}</strong>
         </p>
+        <button
+          onClick={onSuccess}
+          className="mt-3 h-12 rounded-xl bg-brand-green px-8 text-sm font-black text-white transition-colors hover:bg-brand-green-hover"
+        >
+          متابعة التسوق
+        </button>
       </main>
     );
   }

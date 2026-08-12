@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server'
 import {
   getProducts,
+  getProductsByIds,
   searchProducts,
   getDiscountedProducts,
 } from '@/services/catalog/service'
@@ -53,6 +54,14 @@ export async function GET(request: NextRequest) {
     if (discounted) {
       const result = await getDiscountedProducts(page, pageSize)
       return paginated(result.data, result.page, result.pageSize, result.total)
+    }
+
+    // Explicit id set (cart items) — resolved without loading the whole catalog.
+    const idsRaw = sp.get('ids')
+    if (idsRaw && idsRaw.trim()) {
+      const ids = idsRaw.split(',').map((s) => s.trim()).filter(Boolean)
+      const result = await getProductsByIds(ids)
+      return ok(result)
     }
 
     const result = await getProducts(

@@ -20,7 +20,7 @@ export function WhatsAppButton() {
       href={waLink}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="تواصل معنا عبر واتساب"
+            aria-label="دعم و استفسارات — واتساب"
       className={`whatsapp-fab fixed bottom-[88px] sm:bottom-24 md:bottom-6 left-6 z-[99] flex size-12 md:size-14 items-center justify-center rounded-full text-white shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 focus-visible:ring-3 focus-visible:ring-ring ${
         hidden ? "pointer-events-none translate-y-4 opacity-0" : "opacity-100"
       }`}

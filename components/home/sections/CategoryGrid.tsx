@@ -69,7 +69,9 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-4 sm:grid-cols-3 lg:grid-cols-4 gap-1.5 sm:gap-4 lg:gap-6">
+      {/* Flex-wrap + justify-center keeps every row visually balanced — the
+          final (short) row is centered instead of leaving orphaned cards. */}
+      <div className="flex flex-wrap justify-center gap-1.5 sm:gap-4 lg:gap-6">
         {CATEGORIES.map((cat, index) => (
           <motion.div
             key={cat.name}
@@ -78,7 +80,7 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: index * 0.05, duration: 0.3 }}
             onClick={() => onCategorySelect(cat.path)}
-            className="group category-grid-tile cursor-pointer flex flex-col items-center rounded-none sm:rounded-2xl sm:bg-card sm:border sm:border-border sm:overflow-hidden product-card-hover"
+            className="group category-grid-tile cursor-pointer flex w-[calc(25%-0.375rem)] flex-col items-center rounded-none sm:w-[calc(33.333%-0.7rem)] sm:rounded-2xl sm:bg-card sm:border sm:border-border sm:overflow-hidden product-card-hover lg:w-[calc(25%-1.2rem)]"
           >
             <div className="relative w-full h-[80px] overflow-hidden rounded-lg flex items-center justify-center sm:aspect-square sm:h-auto sm:bg-[#f2f0ea] sm:p-4 sm:rounded-xl sm:border sm:border-black/10 sm:shadow-md sm:shadow-black/40">
               <img

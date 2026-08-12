@@ -140,7 +140,7 @@ export function SearchOverlay({ open, onClose, onSelectCategory, onSelectProduct
                 <div className="flex flex-col items-center gap-3 py-16 text-center">
                   <p className="text-lg font-black">مفيش نتائج</p>
                   <p className="text-sm text-text-secondary">
-                    جرّب كلمة تانية أو تواصل معنا على واتساب.
+                    جرّب كلمة تانية أو تصفح المتجر.
                   </p>
                 </div>
               ) : (

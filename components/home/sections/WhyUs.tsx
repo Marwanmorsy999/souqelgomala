@@ -5,7 +5,7 @@ import {
   TrendingDown,
   Truck,
   Package,
-  MessageCircle,
+  ShoppingCart,
   ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,9 +27,9 @@ const REASONS = [
     description: "كل اللي محتاجه البيت والمحل في مكان واحد",
   },
   {
-    icon: MessageCircle,
-    title: "خدمة سريعة على واتساب",
-    description: "اطلب في أي وقت وهنرد عليك فوراً",
+    icon: ShoppingCart,
+    title: "اطلب بسهولة من الموقع",
+    description: "ضيف منتجاتك للسلة واتمم طلبك من الموقع في دقايق",
   },
 ];
 

@@ -225,6 +225,24 @@ export async function getLatestProducts(limit = 6): Promise<StorefrontProduct[]>
   }, CATALOG_TTL)
 }
 
+/**
+ * Fetch exactly the requested product ids (active/visible only). Used to resolve
+ * cart items without ever loading the full 7000+ product catalog client-side.
+ * Kept out of KV caching because the id set changes with every cart.
+ */
+export async function getProductsByIds(ids: string[]): Promise<StorefrontProduct[]> {
+  const unique = [...new Set(ids.filter(Boolean))]
+  if (unique.length === 0) return []
+  const { data } = await findProductsWithRelations(
+    { ids: unique },
+    1,
+    Math.min(unique.length, 100)
+  )
+  return data.map(({ product, categoryName, media }) =>
+    mapProductToStorefront(product, { categoryName, media })
+  )
+}
+
 // ============================================
 // OFFERS (storefront-facing)
 // ============================================

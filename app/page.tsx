@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { logoUrl } from "@/lib/data";
-import { getProducts, getDailyOffers } from "@/lib/services/catalog";
+import { getProductsByIds, getDailyOffers } from "@/lib/services/catalog";
 
 import { Header } from "@/components/home/Header";
 import { HamburgerMenu } from "@/components/home/HamburgerMenu";
@@ -61,27 +61,34 @@ export default function Page() {
 const [productMap, setProductMap] = useState<Record<string, Product>>({});
 const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
 
-  // Load the catalog once so cart totals can be computed client-side while
-  // still reading from D1 (via the public catalog API) as the source of truth.
-  useEffect(() => {
+  // Load ONLY the cart items + bundle offers so cart totals can be computed
+  // client-side without ever loading the full 7000+ product catalog.
+  const cartIdKey = cart
+    .map((i) => i.id)
+    .sort()
+    .join("|");
+    useEffect(() => {
     let active = true;
-    getProducts()
-      .then((list) => {
-        if (!active) return;
-        const map: Record<string, Product> = {};
-        for (const p of list) map[p.id] = p;
-        setProductMap(map);
-      })
-      .catch(() => {
-        /* cart totals default to 0 if the catalog is unavailable */
-      });
+    const ids = cart.map((i) => i.id);
+    if (ids.length > 0) {
+      getProductsByIds(ids)
+        .then((list) => {
+          if (!active) return;
+          const map: Record<string, Product> = {};
+          for (const p of list) map[p.id] = p;
+          setProductMap(map);
+        })
+        .catch(() => {
+          /* cart totals default to 0 if the catalog is unavailable */
+        });
+    }
 
     getDailyOffers()
       .then((payload) => {
         if (!active) return;
         const map: Record<string, Offer> = {};
         for (const o of payload.offers) {
-          if (o.discountType === 'bundle') map[o.id] = o;
+          if (o.discountType === "bundle") map[o.id] = o;
         }
         setOfferMap(map);
       })
@@ -90,7 +97,7 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
     return () => {
       active = false;
     };
-  }, []);
+  }, [cartIdKey]);
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
   const cartTotal = cart.reduce((s, item) => {
@@ -116,6 +123,12 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
     );
   };
 
+  const goToShop = () => {
+    setShopSearch(undefined);
+    setView("shop");
+    window.scrollTo({ top: 0, behavior: "auto" });
+  };
+
   const handleCategory = (name: string) => {
     if (name === "العروض") {
       goToAnchor("offers");
@@ -132,7 +145,8 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
 
   const handleCheckoutSuccess = () => {
     clear();
-    setView("orders");
+    setView("home");
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   // Splash screen (brand first)
@@ -214,7 +228,7 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
                     case "hero":
                       return (
                         <div key="hero-group">
-                          <Hero onOffers={() => goToAnchor("offers")} />
+                          <Hero onOffers={() => goToAnchor("offers")} onBrowse={goToShop} />
                           <CategoryGrid onCategorySelect={handleCategory} />
                           <TrustStrip />
                           <VisitUs />
@@ -228,8 +242,8 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
                       return null
                   }
                 })}
-              <DailyOffers onOpen={setSelected} />
-              <PromoBanner />
+              <DailyOffers onOpen={setSelected} onBrowse={goToShop} />
+              <PromoBanner onBrowse={goToShop} />
               <WhyUs />
               <Footer />
             </div>
