@@ -176,7 +176,7 @@ export interface StorefrontOffer {
   title: string
   description?: string
   banner?: string
-  discountType: 'percentage' | 'fixed_price' | 'buy_x_get_y'
+  discountType: 'percentage' | 'fixed_price' | 'buy_x_get_y' | 'bundle'
   value?: number
   buyX?: number
   getY?: number
