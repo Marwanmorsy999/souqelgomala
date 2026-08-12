@@ -136,17 +136,6 @@ export const TAXONOMY: TaxonomyNode[] = [
     visible: true,
   },
   {
-    id: '10000000-0000-0000-0000-000000000006',
-    nameAr: 'عناية شخصية',
-    nameEn: 'Personal Care',
-    parentId: null,
-    sortOrder: 6,
-    concept: { personalCare: 2, edible: -1.5, baby: 0.4 },
-    intent: ['hygiene', 'cosmetic', 'body care'],
-    image: '/عنايه شخصيه.webp',
-    visible: true,
-  },
-  {
     id: '10000000-0000-0000-0000-000000000007',
     nameAr: 'أطفال',
     nameEn: 'Baby',
@@ -157,29 +146,6 @@ export const TAXONOMY: TaxonomyNode[] = [
     image: '/العنايه بالطفل.webp',
     visible: true,
   },
-  {
-    id: '10000000-0000-0000-0000-000000000070',
-    nameAr: 'قرطاسية',
-    nameEn: 'Stationery',
-    parentId: null,
-    sortOrder: 8,
-    concept: { stationery: 2, edible: -2, appliance: -0.5 },
-    intent: ['school', 'office supplies', 'non-food'],
-    image: '/قرطاسية.webp',
-    visible: true,
-  },
-  {
-    id: '10000000-0000-0000-0000-000000000071',
-    nameAr: 'أجهزة صغيرة',
-    nameEn: 'Small Appliances',
-    parentId: null,
-    sortOrder: 9,
-    concept: { appliance: 2, edible: -2 },
-    intent: ['device', 'hardware', 'non-food'],
-    image: '/اجهزه.webp',
-    visible: true,
-  },
-
   // ---- Grocery leaves ---------------------------------------------------
   {
     id: '10000000-0000-0000-0000-000000000010',
@@ -383,10 +349,7 @@ export const HOMEPAGE_DISPLAY: string[] = [
   '10000000-0000-0000-0000-000000000032', // مياه
   '10000000-0000-0000-0000-000000000005', // تنظيف
   '10000000-0000-0000-0000-000000000007', // أطفال
-  '10000000-0000-0000-0000-000000000006', // عناية شخصية
   '10000000-0000-0000-0000-000000000001', // بقالة
-  '10000000-0000-0000-0000-000000000070', // قرطاسية
-  '10000000-0000-0000-0000-000000000071', // أجهزة صغيرة
 ]
 
 export interface HomepageTile {

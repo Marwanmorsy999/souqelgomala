@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { ProductBrowser } from "@/components/home/ProductBrowser";
 import { getCategories } from "@/lib/services/catalog";
-import { resolveCategory } from "@/lib/categorization";
 import type { Category, Product } from "@/lib/types";
 
 type Props = {
@@ -25,12 +24,7 @@ export function CategoryProducts({ category, onBack, onOpen }: Props) {
     getCategories()
       .then((cats: Category[]) => {
         if (!active) return;
-        // Resolve by id first (homepage passes taxonomy ids), then by name for
-        // legacy callers (nav menu / search overlay) that still pass a name.
-        const match =
-          cats.find((c) => c.id === category) ??
-          cats.find((c) => c.name === category) ??
-          (resolveCategory(category) ? cats.find((c) => c.id === resolveCategory(category)!.id) : undefined);
+        const match = cats.find((c) => c.name === category);
         setCategoryId(match?.id);
         if (match?.parent_id) {
           const parent = cats.find((c) => c.id === match.parent_id) ?? null

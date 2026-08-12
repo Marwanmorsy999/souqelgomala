@@ -31,12 +31,6 @@ describe("taxonomy: single source of truth", () => {
 });
 
 describe("semantic classifier: disambiguates by intent, not keywords", () => {
-  it('"Water Color Pencils" is Stationery, NOT Water', () => {
-    const r = classify({ nameEn: "Water Color Pencils 12 Colors" });
-    expect(r.categoryId).toBe(idOf("قرطاسية"));
-    expect(r.confidence).toBeGreaterThan(0.5);
-  });
-
   it('"Butter Cookies" is Bakery, NOT Butter & Ghee', () => {
     const r = classify({ nameEn: "Butter Cookies 200g" });
     expect(r.categoryId).toBe(idOf("مخبوزات وبسكويت"));
@@ -64,22 +58,18 @@ describe("semantic classifier: disambiguates by intent, not keywords", () => {
     expect(r.categoryId).toBe(idOf("بهارات"));
   });
 
-  it("small appliances are not groceries", () => {
-    const r = classify({ nameEn: "Moulinex Blender 400W" });
-    expect(r.categoryId).toBe(idOf("أجهزة صغيرة"));
-  });
 });
 
 describe("granular audit: every product analysed independently", () => {
   it("flags products whose proposed category differs from current", () => {
     const rows = auditProducts([
-      { id: "kz-1", nameEn: "Water Color Pencils", currentCategoryId: idOf("مياه") },
+      { id: "kz-1", nameEn: "Safa Natural Water 1.5L", currentCategoryId: idOf("مخبوزات وبسكويت") },
       { id: "kz-2", nameEn: "Panda Processed Cheese 200g", currentCategoryId: idOf("أجبان") },
     ]);
     expect(rows).toHaveLength(2);
     const moved = rows.find((r) => r.id === "kz-1")!;
     expect(moved.changed).toBe(true);
-    expect(moved.proposedCategoryId).toBe(idOf("قرطاسية"));
+    expect(moved.proposedCategoryId).toBe(idOf("مياه"));
     const correct = rows.find((r) => r.id === "kz-2")!;
     expect(correct.changed).toBe(false);
   });
