@@ -63,7 +63,7 @@ export function Header({
             <img
               src={logoUrl}
               alt={settings.businessName}
-              className="size-10 rounded-lg object-contain"
+              className="size-8 rounded-lg object-contain"
             />
           ) : null}
         </button>
