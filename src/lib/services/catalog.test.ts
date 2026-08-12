@@ -16,7 +16,7 @@ function makeProduct(id: string, name: string): Product {
   };
 }
 
-function mockJsonFetch(payload: unknown, status = 200): vi.Mock {
+function mockJsonFetch(payload: unknown, status = 200) {
   return vi.fn(
     () =>
       Promise.resolve({
