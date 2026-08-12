@@ -130,7 +130,7 @@ export function ProductCard({ product, onOpen }: Props) {
         </button>
       )}
 
-            <div className="flex flex-1 flex-col gap-2 p-4 pt-4">
+      <div className="flex flex-1 flex-col gap-2 p-3 pt-3">
         {/* Category chip (spec §10 CARDS) */}
         {product.category && (
           <span className="self-start text-[10px] font-bold text-brand-green-light">

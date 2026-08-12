@@ -120,6 +120,10 @@ export function DailyOffers({ onOpen }: { onOpen: (product: Product) => void }) 
     [],
   );
 
+  if (!loading && !hasAny && !banner) {
+    return null;
+  }
+
   return (
     <section id="offers" className="site-section scroll-mt-20">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">

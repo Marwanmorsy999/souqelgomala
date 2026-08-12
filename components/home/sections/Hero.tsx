@@ -39,22 +39,22 @@ export function Hero({ onOffers }: Props) {
         <div className="hero-branded absolute inset-0" aria-hidden="true" />
       )}
 
-      <div className="site-section relative pb-16 pt-14 sm:pb-20 sm:pt-20 md:pb-24 md:pt-28">
-        <h1 className="max-w-2xl text-3xl font-black leading-[1.2] text-white sm:text-4xl md:text-5xl">
+      <div className="site-section relative pb-10 pt-8 sm:pb-20 sm:pt-20 md:pb-24 md:pt-28">
+        <h1 className="max-w-2xl text-[28px] font-black leading-[1.2] text-white sm:text-4xl md:text-5xl">
           <span className="mb-3 block text-lg font-black tracking-wide text-brand-green-light sm:text-xl">
             {settings.name}
           </span>
           {headline}
         </h1>
-        <p className="mt-4 max-w-xl text-base leading-7 text-white/90 sm:text-lg">
+        <p className="mt-4 max-w-xl text-lg font-medium leading-7 text-white/90 sm:text-lg">
           {settings.hero.description || settings.description}
         </p>
 
-        <div className="mt-8 flex flex-col gap-5 sm:flex-row sm:items-center sm:gap-3">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-3">
+          <div className="flex w-full flex-row gap-2 sm:w-auto sm:flex-wrap sm:gap-3">
             <button
               onClick={onOffers}
-              className="flex h-12 items-center gap-2 rounded-lg bg-brand-green px-6 text-base font-black text-white transition-colors hover:bg-brand-green-hover"
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-green px-2 text-sm font-black text-white transition-colors hover:bg-brand-green-hover sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
             >
               {settings.hero.ctaLabel || "شوف عروض النهارده"}
             </button>
@@ -62,7 +62,7 @@ export function Hero({ onOffers }: Props) {
               href={waLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex h-12 items-center gap-2 rounded-lg border border-white/30 bg-white/10 px-6 text-base font-bold text-white transition-colors hover:bg-white/20"
+              className="flex h-12 flex-1 items-center justify-center gap-1.5 rounded-lg border border-white/30 bg-white/10 px-2 text-sm font-bold text-white transition-colors hover:bg-white/20 sm:flex-none sm:justify-start sm:px-6 sm:text-base sm:gap-2"
             >
               {settings.hero.whatsappCtaLabel || "اطلب على واتساب"}
             </a>

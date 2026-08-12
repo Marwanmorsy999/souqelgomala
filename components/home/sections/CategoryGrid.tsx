@@ -92,7 +92,7 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             </div>
             
             <div className="w-full p-4 flex items-center justify-between bg-card z-10 border-t border-border">
-              <h3 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors line-clamp-1">
+              <h3 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] flex items-center">
                 {cat.name}
               </h3>
               <div className="size-8 rounded-full bg-surface-alt flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">

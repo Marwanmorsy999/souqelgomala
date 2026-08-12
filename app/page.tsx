@@ -207,7 +207,7 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
           transition={{ duration: 0.22 }}
         >
           {view === "home" && (
-            <div className="flex flex-col gap-10 pb-4 pt-3">
+            <div className="flex flex-col gap-6 md:gap-10 pb-4 pt-3">
               {homepage
                 .filter((s) => s.visible)
                 .map((s) => {
