@@ -22,7 +22,7 @@ export type OrderStatus =
 
 export type PaymentMethod = 'cash' | 'card' | 'wallet' | 'bank_transfer'
 
-export type DiscountType = 'percentage' | 'fixed_price' | 'buy_x_get_y'
+export type DiscountType = 'percentage' | 'fixed_price' | 'buy_x_get_y' | 'bundle'
 
 export type ProductStatus = 'active' | 'inactive' | 'archived'
 export type PublishStatus = 'draft' | 'published'
