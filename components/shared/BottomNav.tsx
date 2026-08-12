@@ -67,14 +67,15 @@ export function BottomNav({
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       aria-label="شريط التنقل السفلي"
     >
-      <div className="mx-auto flex max-w-md items-center justify-around px-2 py-1.5">
+      {/* Fixed 56px bar; all 6 items split the width evenly via flex-1 */}
+      <div className="mx-auto flex h-14 w-full max-w-md items-stretch px-1">
         {items.map(({ label, icon: Icon, active, action }) => (
           <button
             key={label}
             onClick={action}
             aria-label={label}
             aria-current={active ? "page" : undefined}
-            className={`relative flex min-h-11 min-w-14 flex-col items-center justify-center gap-0.5 rounded-xl px-2 py-1 text-[11px] font-semibold transition-all duration-200 focus-visible-glow ${
+            className={`relative flex h-full flex-1 flex-col items-center justify-center gap-1 rounded-xl text-[11px] font-semibold transition-all duration-200 focus-visible-glow ${
               active ? "text-brand-green" : "text-text-muted hover:text-text-primary"
             }`}
           >
@@ -86,7 +87,7 @@ export function BottomNav({
                 </span>
               )}
             </span>
-            {label}
+            <span>{label}</span>
           </button>
         ))}
       </div>

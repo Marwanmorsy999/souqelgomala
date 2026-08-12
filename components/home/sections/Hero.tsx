@@ -40,13 +40,13 @@ export function Hero({ onOffers }: Props) {
       )}
 
       <div className="site-section relative pb-10 pt-8 sm:pb-20 sm:pt-20 md:pb-24 md:pt-28">
-        <h1 className="max-w-2xl text-[28px] font-black leading-[1.2] text-white sm:text-4xl md:text-5xl">
-          <span className="mb-3 block text-lg font-black tracking-wide text-brand-green-light sm:text-xl">
+        <h1 className="max-w-2xl text-2xl font-black leading-[1.25] text-white sm:text-4xl md:text-5xl">
+          <span className="mb-3 block text-base font-black tracking-wide text-brand-green-light sm:text-xl">
             {settings.name}
           </span>
           {headline}
         </h1>
-        <p className="mt-4 max-w-xl text-lg font-medium leading-7 text-white/90 sm:text-lg">
+        <p className="mt-4 max-w-xl text-base font-medium leading-6 text-white/90 sm:text-lg">
           {settings.hero.description || settings.description}
         </p>
 

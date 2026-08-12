@@ -187,7 +187,7 @@ const [offerMap, setOfferMap] = useState<Record<string, Offer>>({});
     );
   }
   return (
-    <main className="min-h-screen bg-background pb-20" dir="rtl">
+    <main className="min-h-screen overflow-x-hidden bg-background pb-20" dir="rtl">
       {view === "home" && (
         <Header
           cartCount={cartCount}

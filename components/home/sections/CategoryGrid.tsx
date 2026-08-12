@@ -30,8 +30,6 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
   const fullText = "تسوق على حسب اقسامنا";
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
     const handleType = () => {
       setText((current) => {
         if (!isDeleting && current === fullText) {
@@ -55,23 +53,23 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
       });
     };
 
-    timer = setTimeout(handleType, typingSpeed);
+    const timer = setTimeout(handleType, typingSpeed);
     return () => clearTimeout(timer);
   }, [text, isDeleting, typingSpeed, fullText]);
 
   return (
     <section className="site-section section-vrh bg-background">
-      <div className="flex items-center justify-between mb-6 sm:mb-8">
+      <div className="flex items-center justify-between mb-4 sm:mb-8">
         <div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight mb-2 min-h-[36px] flex items-center">
+          <h2 className="text-xl sm:text-3xl font-bold tracking-tight mb-2 min-h-[28px] sm:min-h-[36px] flex items-center">
             {text}
-            <span className="animate-pulse w-[3px] h-6 sm:h-8 bg-primary mr-1 rounded-full" />
+            <span className="animate-pulse w-[3px] h-5 sm:h-8 bg-primary mr-1 rounded-full" />
           </h2>
-          <p className="text-muted-foreground">تصفح جميع المنتجات حسب القسم</p>
+          <p className="text-sm sm:text-base text-muted-foreground">تصفح جميع المنتجات حسب القسم</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 lg:gap-6">
         {CATEGORIES.map((cat, index) => (
           <motion.div
             key={cat.name}
@@ -80,9 +78,9 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
             viewport={{ once: true, margin: "-40px" }}
             transition={{ delay: index * 0.05, duration: 0.3 }}
             onClick={() => onCategorySelect(cat.path)}
-            className="group cursor-pointer flex flex-col items-center bg-card rounded-2xl border border-border overflow-hidden product-card-hover"
+            className="group cursor-pointer flex flex-col items-center bg-card rounded-xl sm:rounded-2xl border border-border overflow-hidden product-card-hover"
           >
-            <div className="w-full aspect-square bg-surface-alt relative overflow-hidden flex items-center justify-center p-4">
+            <div className="w-full aspect-[4/3] max-h-[110px] sm:aspect-square sm:max-h-none bg-surface-alt relative overflow-hidden flex items-center justify-center p-2 sm:p-4">
               <img
                 src={cat.image}
                 alt={cat.name}
@@ -91,11 +89,11 @@ export function CategoryGrid({ onCategorySelect }: CategoryGridProps) {
               <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
             
-            <div className="w-full p-4 flex items-center justify-between bg-card z-10 border-t border-border">
-              <h3 className="font-semibold text-sm sm:text-base text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem] flex items-center">
+            <div className="w-full p-2 sm:p-4 flex items-center justify-between bg-card z-10 border-t border-border">
+              <h3 className="font-semibold text-sm text-foreground group-hover:text-primary transition-colors line-clamp-2 min-h-[2rem] sm:min-h-[3rem] flex items-center">
                 {cat.name}
               </h3>
-              <div className="size-8 rounded-full bg-surface-alt flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
+              <div className="size-7 sm:size-8 rounded-full bg-surface-alt flex items-center justify-center group-hover:bg-primary/10 transition-colors shrink-0">
                 <ChevronLeft className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
             </div>

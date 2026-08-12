@@ -28,7 +28,7 @@ export function WhyUs() {
 
   return (
     <section className="site-section py-12" id="why-us">
-      <h2 className="mb-8 text-center text-2xl font-black sm:text-3xl">
+      <h2 className="mb-8 text-center text-xl font-black sm:text-3xl">
         ليه تشتري من سوق الجملة؟
       </h2>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
