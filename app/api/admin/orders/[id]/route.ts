@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminUser } from '@/services/catalog/admin-auth'
 import { hasPermission, type Role } from '@/lib/permissions'
-import { ok, forbidden, validationError, serverError } from '@/services/api-response'
-import { getOrderDetail, updateOrderStatus } from '@/services/orders'
+import { ok, forbidden, validationError, serverError, fail } from '@/services/api-response'
+import { deleteOrder, getOrderDetail, updateOrderStatus } from '@/services/orders'
 
 export const dynamic = 'force-dynamic'
 
@@ -55,5 +55,24 @@ export async function PATCH(
       { success: false, error: (err as Error).message ?? 'تعذر تحديث الطلب' },
       { status: 400 },
     )
+  }
+}
+
+/** DELETE /api/admin/orders/:id — soft-delete an order (RBAC: orders.write). */
+export async function DELETE(
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  const auth = await requireAdminUser()
+  if (auth instanceof Response) return auth
+  if (!hasPermission(auth.user.role as Role, 'orders.write')) {
+    return forbidden('ليس لديك صلاحية لحذف الطلبات')
+  }
+  const { id } = await params
+  try {
+    await deleteOrder(id)
+    return ok({ success: true })
+  } catch (err) {
+    return fail((err as Error).message ?? 'تعذر حذف الطلب', 400)
   }
 }

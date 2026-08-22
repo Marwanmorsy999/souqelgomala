@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
-import { Truck } from 'lucide-react'
 import { PageHeader } from '@/components/layout/page-header'
-import { EmptyState } from '@/components/feedback/empty-state'
-import { Card, CardContent } from '@/components/ui/card'
+import { DeliveryHub } from '@/components/admin/delivery/delivery-hub'
 
 export const metadata: Metadata = {
   title: 'التوصيل | لوحة التحكم | سوق الجملة',
@@ -10,11 +8,8 @@ export const metadata: Metadata = {
 }
 
 /**
- * Delivery module page.
- *
- * Milestone 2 scope is the application shell only — the delivery
- * module (drivers, areas, assignments) arrives in a future
- * feature milestone.
+ * Delivery module hub — live summary + quick links to the
+ * couriers and delivery zones management views.
  */
 export default function AdminDeliveryPage() {
   return (
@@ -23,16 +18,7 @@ export default function AdminDeliveryPage() {
         title="التوصيل"
         description="إدارة التوصيل والمناديب ومناطق التوصيل"
       />
-
-      <Card>
-        <CardContent className="flex min-h-72 items-center justify-center p-8">
-          <EmptyState
-            icon={Truck}
-            title="وحدة التوصيل قادمة قريباً"
-            description="سيتم بناء إدارة المناديب ومناطق التوصيل في مرحلة وحدة التوصيل."
-          />
-        </CardContent>
-      </Card>
+      <DeliveryHub />
     </div>
   )
 }

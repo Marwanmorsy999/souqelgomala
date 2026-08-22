@@ -58,6 +58,22 @@ export interface SiteSettings {
   social: SiteSocialLinks
   /** Hero / homepage content. */
   hero: SiteHeroContent
+  /**
+   * Operational switches — every toggle updates global state immediately
+   * (persisted via PUT /api/admin/settings, KV cache invalidated).
+   */
+  ops: SiteOpsSettings
+}
+
+export interface SiteOpsSettings {
+  /** Show the maintenance screen to storefront visitors. */
+  maintenanceMode: boolean
+  /** Accept new orders from the storefront checkout. */
+  ordersEnabled: boolean
+  /** Apply tax on order totals. */
+  taxEnabled: boolean
+  /** Tax percentage applied when taxEnabled is on (0-100). */
+  taxRate: number
 }
 
 const INITIAL_SOCIAL: SiteSocialLinks = {
@@ -89,6 +105,12 @@ export const DEFAULT_SITE_SETTINGS: SiteSettings = {
     whatsappCtaLabel: 'اطلب على واتساب',
     alt: 'واجهة محل سوق الجملة — كفر شكر، القليوبية',
   },
+  ops: {
+    maintenanceMode: false,
+    ordersEnabled: true,
+    taxEnabled: false,
+    taxRate: 14,
+  },
 }
 
 function str(value: unknown): string {
@@ -117,6 +139,9 @@ export function normalizeSiteSettings(raw: unknown): SiteSettings {
   const value = (raw ?? {}) as Record<string, unknown>
   const social = (value.social ?? {}) as Record<string, unknown>
   const hero = (value.hero ?? {}) as Record<string, unknown>
+  const ops = (value.ops ?? {}) as Record<string, unknown>
+
+  const taxRateRaw = Number(ops.taxRate)
 
   return {
     name: str(value.name) || DEFAULT_SITE_SETTINGS.name,
@@ -142,6 +167,15 @@ export function normalizeSiteSettings(raw: unknown): SiteSettings {
       ctaLabel: str(hero.ctaLabel) || DEFAULT_SITE_SETTINGS.hero.ctaLabel,
       whatsappCtaLabel: str(hero.whatsappCtaLabel) || DEFAULT_SITE_SETTINGS.hero.whatsappCtaLabel,
       alt: str(hero.alt) || DEFAULT_SITE_SETTINGS.hero.alt,
+    },
+    ops: {
+      maintenanceMode: typeof ops.maintenanceMode === 'boolean' ? ops.maintenanceMode : DEFAULT_SITE_SETTINGS.ops.maintenanceMode,
+      ordersEnabled: typeof ops.ordersEnabled === 'boolean' ? ops.ordersEnabled : DEFAULT_SITE_SETTINGS.ops.ordersEnabled,
+      taxEnabled: typeof ops.taxEnabled === 'boolean' ? ops.taxEnabled : DEFAULT_SITE_SETTINGS.ops.taxEnabled,
+      taxRate:
+        Number.isFinite(taxRateRaw) && taxRateRaw >= 0 && taxRateRaw <= 100
+          ? taxRateRaw
+          : DEFAULT_SITE_SETTINGS.ops.taxRate,
     },
   }
 }

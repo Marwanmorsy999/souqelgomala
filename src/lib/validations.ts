@@ -371,6 +371,14 @@ export const siteSettingsSchema = z.object({
       alt: z.string().optional(),
     })
     .optional(),
+  ops: z
+    .object({
+      maintenanceMode: z.boolean().optional(),
+      ordersEnabled: z.boolean().optional(),
+      taxEnabled: z.boolean().optional(),
+      taxRate: z.coerce.number().min(0).max(100).optional(),
+    })
+    .optional(),
 })
 
 export type SiteSettingsInput = z.infer<typeof siteSettingsSchema>

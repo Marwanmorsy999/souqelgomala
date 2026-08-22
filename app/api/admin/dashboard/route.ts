@@ -10,13 +10,23 @@ import { and, count, eq, gte, inArray, lte, isNull, desc } from 'drizzle-orm'
 
 export const dynamic = 'force-dynamic'
 
+const DAY_MS = 24 * 60 * 60 * 1000
+
+function startOfLocalDay(date: Date): Date {
+  const d = new Date(date)
+  d.setHours(0, 0, 0, 0)
+  return d
+}
+
 /**
  * Admin dashboard endpoint.
  *
  * GET /api/admin/dashboard
  *
  * Returns real, D1-backed business metrics (no demo data):
- *  - Counts: products, categories, active offers, new orders
+ *  - Quick insights: live sales today, total orders, active products,
+ *    products/categories counts, new orders
+ *  - 7-day sales trend (sales + orders per day)
  *  - Recent orders (last 5)
  *  - Today's active offers
  *
@@ -32,7 +42,9 @@ export async function GET(_request: NextRequest) {
   try {
     const db = getDb()
 
-    const [productsCount, categoriesCount, offersCount, newOrdersCount] =
+    const todayStart = startOfLocalDay(new Date())
+
+    const [productsCount, categoriesCount, offersCount, newOrdersCount, totalOrdersCount, activeProductsCount] =
       await Promise.all([
         db
           .select({ value: count() })
@@ -59,7 +71,71 @@ export async function GET(_request: NextRequest) {
           .from(orders)
           .where(and(eq(orders.status, 'new'), isNull(orders.deleted_at)))
           .then((r) => r[0]?.value ?? 0),
+        db
+          .select({ value: count() })
+          .from(orders)
+          .where(isNull(orders.deleted_at))
+          .then((r) => r[0]?.value ?? 0),
+        db
+          .select({ value: count() })
+          .from(products)
+          .where(
+            and(
+              isNull(products.deleted_at),
+              eq(products.status, 'active'),
+              gte(products.stock, 1),
+            ),
+          )
+          .then((r) => r[0]?.value ?? 0),
       ])
+
+    // Quick insight — live sales today + orders placed today.
+    const todayRows = await db
+      .select({
+        total: orders.total,
+        status: orders.status,
+        createdAt: orders.created_at,
+      })
+      .from(orders)
+      .where(and(gte(orders.created_at, todayStart.toISOString()), isNull(orders.deleted_at)))
+
+    const salesToday = todayRows
+      .filter((r) => r.status !== 'cancelled')
+      .reduce((sum, r) => sum + (Number(r.total) || 0), 0)
+    const ordersToday = todayRows.length
+
+    // 7-day sales trend — aggregate real order rows per calendar day.
+    const weekStart = startOfLocalDay(new Date(Date.now() - 6 * DAY_MS))
+    const trendRows = await db
+      .select({
+        total: orders.total,
+        status: orders.status,
+        createdAt: orders.created_at,
+      })
+      .from(orders)
+      .where(and(gte(orders.created_at, weekStart.toISOString()), isNull(orders.deleted_at)))
+
+    const buckets = new Map<string, { sales: number; orders: number }>()
+    for (let i = 6; i >= 0; i -= 1) {
+      const day = startOfLocalDay(new Date(Date.now() - i * DAY_MS))
+      buckets.set(day.toISOString().slice(0, 10), { sales: 0, orders: 0 })
+    }
+    for (const row of trendRows) {
+      const key = row.createdAt.slice(0, 10)
+      const bucket = buckets.get(key)
+      if (!bucket) continue
+      bucket.orders += 1
+      if (row.status !== 'cancelled') {
+        bucket.sales += Number(row.total) || 0
+      }
+    }
+    const AR_DAY_NAMES = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+    const salesTrend = Array.from(buckets.entries()).map(([date, v]) => ({
+      date,
+      label: `${AR_DAY_NAMES[new Date(`${date}T00:00:00`).getDay()]}`,
+      sales: Math.round(v.sales * 100) / 100,
+      orders: v.orders,
+    }))
 
     // Recent orders (last 5) with item counts
     const recentOrderRows = await db
@@ -173,7 +249,12 @@ export async function GET(_request: NextRequest) {
         categoriesCount,
         offersCount,
         newOrdersCount,
+        totalOrdersCount,
+        activeProductsCount,
+        salesToday,
+        ordersToday,
       },
+      salesTrend,
       recentOrders,
       todaysOffers,
     })

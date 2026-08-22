@@ -228,3 +228,57 @@ export async function updateOrderStatus(id: string, status: string) {
     .where(eq(orders.id, id))
   return { success: true, status }
 }
+
+/** Soft-delete an order so history is preserved but it disappears from listings. */
+export async function deleteOrder(id: string): Promise<void> {
+  await ensureOrdersTables()
+  const existing = await getDb().select({ id: orders.id }).from(orders).where(eq(orders.id, id)).limit(1)
+  if (!existing[0]) throw new Error('الطلب غير موجود')
+  await getDb()
+    .update(orders)
+    .set({ deleted_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+    .where(eq(orders.id, id))
+}
+
+export interface AdminCreateOrderItemInput {
+  productId?: string | null
+  name: string
+  quantity: number
+  unitPrice: number
+}
+
+export interface AdminCreateOrderInput {
+  customerName: string
+  customerPhone: string
+  customerAddress?: string
+  notes?: string
+  deliveryFee: number
+  items: AdminCreateOrderItemInput[]
+}
+
+/**
+ * Admin-side order creation (phone / walk-in orders).
+ * Reuses the storefront numbering scheme and pricing rules.
+ */
+export async function createAdminOrder(input: AdminCreateOrderInput) {
+  await ensureOrdersTables()
+  const items = input.items.filter((i) => i.name.trim() && i.quantity > 0 && i.unitPrice >= 0)
+  if (items.length === 0) {
+    throw new Error('أضف صنفاً واحداً على الأقل للطلب')
+  }
+  return createOrder({
+    customerName: input.customerName,
+    customerPhone: input.customerPhone,
+    customerAddress: input.customerAddress ?? '',
+    notes: input.notes,
+    deliveryFee: input.deliveryFee,
+    items: items.map((i) => ({
+      id: i.productId ?? '',
+      name: i.name.trim(),
+      quantity: Math.max(1, Math.round(i.quantity)),
+      unitPrice: i.unitPrice,
+    })),
+    pricingMode: 'retail',
+    source: 'admin',
+  })
+}

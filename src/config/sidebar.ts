@@ -177,7 +177,7 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
         label: 'الموظفين',
         icon: 'UserCog',
         path: '/admin/employees',
-        permission: 'employees.read',
+        permission: 'staff.read',
       },
     ],
   },
