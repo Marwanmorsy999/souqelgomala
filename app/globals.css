@@ -125,6 +125,15 @@
   --color-ring-offset: var(--color-bg-base);
   --color-destructive: var(--color-red-error);
   --color-destructive-foreground: #ffffff;
+  /* Sidebar (admin shell) — must be registered here or bg-sidebar emits no CSS */
+  --color-sidebar: var(--color-bg-surface);
+  --color-sidebar-foreground: var(--color-text-primary);
+  --color-sidebar-primary: var(--color-brand-orange);
+  --color-sidebar-primary-foreground: #ffffff;
+  --color-sidebar-accent: var(--color-bg-surface-alt);
+  --color-sidebar-accent-foreground: var(--color-text-primary);
+  --color-sidebar-border: var(--color-border-default);
+  --color-sidebar-ring: var(--color-brand-green);
 
   /* Text opacity levels (spec §2) */
   --color-text-primary: #ffffff;
